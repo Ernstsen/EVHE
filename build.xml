@@ -1,0 +1,32 @@
+<project name="myFirstBlockchains" default="help" basedir="."
+         xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <property name="build.dir" value="out"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="doc.dir" value="doc"/>
+
+    <target name="help">
+        <echo>
+            myFirstBlockchain build management
+            Targets:
+            initialize: Download dependencies
+            clean: Removes all bytecode and libs
+            =====
+        </echo>
+    </target>
+
+    <target name="initialize">
+        <ivy:retrieve/>
+    </target>
+
+    <target name="re-initialize" depends="remove-libs, initialize"/>
+
+    <target name="clean" depends="remove-libs">
+        <delete dir="${build.dir}"/>
+        <delete dir="${doc.dir}"/>
+    </target>
+
+    <target name="remove-libs">
+        <delete dir="${lib.dir}"/>
+    </target>
+</project>

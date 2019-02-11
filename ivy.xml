@@ -1,0 +1,7 @@
+<ivy-module version="2.0">
+    <info organisation="dk.eSoftware" module="myFirstBlockchains"/>
+    <dependencies>
+        <!-- Testing -->
+        <dependency org="junit" name="junit" rev="4.13-beta-2"/>
+    </dependencies>
+</ivy-module>
