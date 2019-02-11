@@ -1,4 +1,4 @@
-<project name="myFirstBlockchains" default="help" basedir="."
+<project name="EVHE" default="help" basedir="."
          xmlns:ivy="antlib:org.apache.ivy.ant">
 
     <property name="build.dir" value="out"/>
