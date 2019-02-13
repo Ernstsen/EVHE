@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="junit-4.13" level="project" />
     <orderEntry type="library" name="commandLineParser" level="project" />
+    <orderEntry type="library" name="junit-4.13" level="project" />
   </component>
 </module>
