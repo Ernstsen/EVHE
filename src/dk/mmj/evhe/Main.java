@@ -19,7 +19,7 @@ public class Main {
         CommandLineParser parser = getParser();
         Configuration parse;
 
-        if (args.length > 0 && ("-h".equals(args[0]) || "-help".equals(args[0]))) {
+        if (args.length == 0 || "-h".equals(args[0]) || "-help".equals(args[0])) {
             System.out.println(parser.help());
             return;
         }
