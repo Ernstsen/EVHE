@@ -5,7 +5,7 @@ import java.security.SecureRandom;
 import java.util.Random;
 
 /**
- * Class for handling encryption, decryption and key-generation for the El-Gamal encryption scheme
+ * Class for handling encryption, decryption and key-generation for the Elgamal encryption scheme
  */
 public class ElGamal {
 
