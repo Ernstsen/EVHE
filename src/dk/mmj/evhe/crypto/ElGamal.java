@@ -22,7 +22,7 @@ public class ElGamal {
         try {
             g = findGeneratorForGq(q);
         } catch (NoGeneratorFoundException e) {
-            throw new KeyPairGenerationException("Error occured doing key generation phase: " + e.getMessage());
+            throw new KeyPairGenerationException("Error occurred doing key generation phase: " + e.getMessage());
         }
 
         BigInteger secretKey = generateSecretKey(q);
@@ -32,20 +32,33 @@ public class ElGamal {
         return new KeyPair(secretKey, publicKey);
     }
 
+    /**
+     * Finds a suitable generator g for the cyclic group Gq
+     *
+     * @param q prime number used in the cyclic group Gq
+     * @return generator g for cyclic group Gq
+     * @throws NoGeneratorFoundException
+     */
     private static BigInteger findGeneratorForGq(BigInteger q) throws NoGeneratorFoundException {
-        BigInteger i = new BigInteger("2");
+        BigInteger g = new BigInteger("2");
 
-        // While the prime number q is greater than the potential generator i
-        while (q.compareTo(i) == 1) {
-            if (q.gcd(i) == BigInteger.ONE) {
-                return i;
+        // While the prime number q is greater than the potential generator g
+        while (q.compareTo(g) == 1) {
+            if (q.gcd(g) == BigInteger.ONE) {
+                return g;
             }
-            i.add(BigInteger.ONE);
+            g.add(BigInteger.ONE);
         }
 
         throw new NoGeneratorFoundException("No generator g for cyclic group Gq was found");
     }
 
+    /**
+     * Generates the secret key
+     *
+     * @param q prime number used in the cyclic group Gq
+     * @return the secret key
+     */
     private static BigInteger generateSecretKey(BigInteger q) {
         Random randomBits = new SecureRandom();
         BigInteger secretKey = new BigInteger(q.bitLength(), randomBits);
@@ -58,6 +71,14 @@ public class ElGamal {
         return secretKey;
     }
 
+    /**
+     * Generates the public key
+     *
+     * @param secretKey the secret key
+     * @param g generator for cyclic group Gq
+     * @param q prime number used in the cyclic group Gq
+     * @return the public key
+     */
     private static PublicKey generatePublicKey(BigInteger secretKey, BigInteger g, BigInteger q) {
         BigInteger h = g.modPow(secretKey, q);
         return new PublicKey(h, g, q);
