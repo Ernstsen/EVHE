@@ -11,7 +11,7 @@ public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
 
     @Override
     public Configuration build() {
-        return null;
+        return new KeyServer.KeyServerConfiguration(8081);
     }
 
     @Override

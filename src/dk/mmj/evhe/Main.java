@@ -6,6 +6,7 @@ import dk.eSoftware.commandLineParser.NoSuchBuilderException;
 import dk.eSoftware.commandLineParser.WrongFormatException;
 import dk.mmj.evhe.client.Client;
 import dk.mmj.evhe.client.ClientConfigBuilder;
+import dk.mmj.evhe.abstractions.Application;
 import dk.mmj.evhe.keyServer.KeyServer;
 import dk.mmj.evhe.keyServer.KeyServerConfigBuilder;
 import dk.mmj.evhe.publicServer.PublicServer;
@@ -27,7 +28,7 @@ public class Main {
         try {
             parse = parser.parse(args);
         } catch (NoSuchBuilderException e) {
-            System.out.printf("Failed to match first parameter \"" + args[0] + "\" to a mode of configuration");
+            System.out.println("Failed to match first parameter \"" + args[0] + "\" to a mode of configuration");
             return;
         } catch (WrongFormatException e) {
             System.out.println("One or more parameters were incorrectly formatted: \"" + e.getMessage() + "\"");
@@ -56,9 +57,9 @@ public class Main {
 
     private static CommandLineParser getParser() {
         HashMap<String, CommandLineParser.ConfigBuilder> mapping = new HashMap<>();
-        mapping.put("client", new ClientConfigBuilder());
-        mapping.put("keyServer", new KeyServerConfigBuilder());
-        mapping.put("publicServer", new PublicServerConfigBuilder());
+        mapping.put("--client", new ClientConfigBuilder());
+        mapping.put("--keyServer", new KeyServerConfigBuilder());
+        mapping.put("--publicServer", new PublicServerConfigBuilder());
         return new CommandLineParser(mapping);
     }
 }
