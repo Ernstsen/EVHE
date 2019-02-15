@@ -21,9 +21,12 @@
 
     <target name="re-initialize" depends="remove-libs, initialize"/>
 
-    <target name="clean" depends="remove-libs">
-        <delete dir="${build.dir}"/>
+    <target name="clean" depends="remove-libs, clean-build">
         <delete dir="${doc.dir}"/>
+    </target>
+
+    <target name="clean-build">
+        <delete dir="${build.dir}"/>
     </target>
 
     <target name="remove-libs">
