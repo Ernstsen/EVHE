@@ -12,7 +12,7 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
 
     @Override
     public Configuration build() {
-        return null;
+        return new PublicServer.PublicServerConfiguration(8080);
     }
 
     @Override

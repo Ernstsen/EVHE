@@ -1,4 +1,4 @@
-package dk.mmj.evhe;
+package dk.mmj.evhe.abstractions;
 
 public interface Application {
 

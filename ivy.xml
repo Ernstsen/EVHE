@@ -3,5 +3,24 @@
     <dependencies>
         <!-- Testing -->
         <dependency org="junit" name="junit" rev="4.13-beta-2"/>
+        <!-- javax  -->
+        <dependency org="javax.servlet" name="javax.servlet-api" rev="4.0.0"/>
+        <dependency org="javax.xml.bind" name="jaxb-api" rev="2.3.0"/>
+        <dependency org="com.sun.xml.bind" name="jaxb-core" rev="2.3.0"/>
+        <dependency org="com.sun.xml.bind" name="jaxb-impl" rev="2.3.0"/>
+
+        <!-- Jetty -->
+        <dependency org="javax.servlet" name="javax.servlet-api" rev="4.0.1"/>
+        <dependency org="org.eclipse.jetty" name="jetty-server" rev="9.4.14.v20181114"/>
+        <dependency org="org.eclipse.jetty" name="jetty-servlet" rev="9.4.14.v20181114"/>
+        <dependency org="org.glassfish.jersey.core" name="jersey-server" rev="2.22.1"/>
+        <dependency org="org.glassfish.jersey.containers" name="jersey-container-servlet-core" rev="2.22.1"/>
+        <dependency org="org.glassfish.jersey.containers" name="jersey-container-jetty-http" rev="2.22.1"/>
+        <dependency org="org.glassfish.jersey.media" name="jersey-media-moxy" rev="2.22.1"/>
+        <dependency org="org.glassfish.hk2.external" name="javax.inject" rev="2.5.0-b62"/>
+
+        <!--<dependency org="org.glassfish.jersey.inject" name="jersey-hk2" rev="2.28"/>-->
+        <!--<dependency org="org.glassfish.hk2" name="hk2-api" rev="2.4.0-b31"/>-->
+
     </dependencies>
 </ivy-module>

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="org.eclipse.persistence-2.7.4">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.asm-2.6.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.moxy-2.6.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.core-2.6.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
