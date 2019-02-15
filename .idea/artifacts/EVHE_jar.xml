@@ -1,0 +1,21 @@
+<component name="ArtifactManager">
+  <artifact name="EVHE:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/EVHE_jar</output-path>
+    <root id="root">
+      <element id="archive" name="EVHE.jar">
+        <element id="module-output" name="EVHE" />
+      </element>
+      <element id="library" level="project" name="org.eclipse.persistence-2.7.4" />
+      <element id="library" level="project" name="commandLineParser" />
+      <element id="library" level="project" name="javax.servlet-api-4.0.1-javadoc" />
+      <element id="library" level="project" name="jersey" />
+      <element id="library" level="project" name="osgi-resource-locator-1.0.1" />
+      <element id="library" level="project" name="jaxb-api-2.3.0" />
+      <element id="library" level="project" name="jetty-9.4.12.v20180830" />
+      <element id="library" level="project" name="validation-api-2.0.1.Final" />
+      <element id="library" level="project" name="hk2-2.28" />
+      <element id="library" level="project" name="javax.ws.rs-api-2.0.1" />
+      <element id="library" level="project" name="junit-4.13" />
+    </root>
+  </artifact>
+</component>
