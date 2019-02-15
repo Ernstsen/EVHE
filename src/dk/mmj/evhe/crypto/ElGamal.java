@@ -13,44 +13,20 @@ public class ElGamal {
      * Generates both secret key and public key
      *
      * @return KeyPair containing secret key and public key
+     * @throws NoGeneratorFoundException when no suitable generator g is found
      */
-    public static KeyPair generateKeys() throws KeyPairGenerationException {
+    public static KeyPair generateKeys() throws NoGeneratorFoundException {
         Random randomBits = new SecureRandom();
         BigInteger q = BigInteger.probablePrime(64, randomBits);
         BigInteger g;
 
-        try {
-            g = findGeneratorForGq(q);
-        } catch (NoGeneratorFoundException e) {
-            throw new KeyPairGenerationException("Error occurred doing key generation phase: " + e.getMessage());
-        }
+        g = Utils.findGeneratorForGq(q);
 
         BigInteger secretKey = generateSecretKey(q);
 
         PublicKey publicKey = generatePublicKey(secretKey, g, q);
 
         return new KeyPair(secretKey, publicKey);
-    }
-
-    /**
-     * Finds a suitable generator g for the cyclic group Gq
-     *
-     * @param q prime number used in the cyclic group Gq
-     * @return generator g for cyclic group Gq
-     * @throws NoGeneratorFoundException
-     */
-    private static BigInteger findGeneratorForGq(BigInteger q) throws NoGeneratorFoundException {
-        BigInteger g = new BigInteger("2");
-
-        // While the prime number q is greater than the potential generator g
-        while (q.compareTo(g) == 1) {
-            if (q.gcd(g) == BigInteger.ONE) {
-                return g;
-            }
-            g.add(BigInteger.ONE);
-        }
-
-        throw new NoGeneratorFoundException("No generator g for cyclic group Gq was found");
     }
 
     /**
@@ -99,6 +75,34 @@ public class ElGamal {
 
         public PublicKey getPublicKey() {
             return publicKey;
+        }
+    }
+
+    public static class PublicKey {
+        private BigInteger h, g, q;
+
+        /**
+         * Unused object mapper constructor
+         */
+        @SuppressWarnings("unused")
+        private PublicKey() {}
+
+        private PublicKey (BigInteger h, BigInteger g, BigInteger q) {
+            this.g = g;
+            this.q = q;
+            this.h = h;
+        }
+
+        public BigInteger getH() {
+            return h;
+        }
+
+        public BigInteger getG() {
+            return g;
+        }
+
+        public BigInteger getQ() {
+            return q;
         }
     }
 }
