@@ -43,9 +43,36 @@ public class ElGamal {
      * @return the public key
      */
     private static PublicKey generatePublicKey(BigInteger secretKey, BigInteger g, BigInteger q) {
-        BigInteger h = g.modPow(secretKey, q);
+        BigInteger p = q.multiply(new BigInteger("2")).add(BigInteger.ONE);
+        BigInteger h = g.modPow(secretKey, p);
         return new PublicKey(h, g, q);
     }
+
+    /**
+     * Homomorphic encryption
+     *
+     * @param publicKey the public key
+     * @param message the message to encrypt
+     * @return the cipher text
+     */
+    public static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message) {
+        BigInteger r = Utils.getRandomNumModN(publicKey.getQ());
+        BigInteger p = publicKey.getQ().multiply(new BigInteger("2")).add(BigInteger.ONE);
+
+        BigInteger c = publicKey.getG().modPow(r, p);
+        BigInteger d = publicKey.getG().modPow(message, p).multiply(publicKey.getH().modPow(r, p));
+        return new CipherText(c, d);
+    }
+
+    /**
+     * Homomorphic decryption
+     */
+    public static BigInteger homomorphicDecryption(KeyPair keyPair, CipherText cipherText) {
+        BigInteger p = keyPair.getPublicKey().getQ().multiply(new BigInteger("2")).add(BigInteger.ONE);
+        BigInteger message = cipherText.getC().modPow(keyPair.getSecretKey().multiply(new BigInteger("-1")), p).multiply(cipherText.getD());
+        return message;
+    }
+
 
     public static class KeyPair {
         private BigInteger secretKey;
@@ -90,6 +117,24 @@ public class ElGamal {
 
         public BigInteger getQ() {
             return q;
+        }
+    }
+
+    public static class CipherText {
+        private BigInteger c;
+        private BigInteger d;
+
+        private CipherText(BigInteger c, BigInteger d) {
+            this.c = c;
+            this.d = d;
+        }
+
+        public BigInteger getC() {
+            return c;
+        }
+
+        public BigInteger getD() {
+            return d;
         }
     }
 }

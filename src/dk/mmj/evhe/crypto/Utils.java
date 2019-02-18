@@ -9,14 +9,20 @@ import java.util.Random;
  */
 class Utils {
     /**
-     * Find a random number in the range [0;n-1]
+     * Find a random number in the range [1;n-1]
      *
-     * @param n
-     * @return random number in range [0;n-1]
+     * @param n n-1 is upper limit in interval
+     * @return random number in range [1;n-1]
      */
     static BigInteger getRandomNumModN(BigInteger n) {
         Random randomBits = new SecureRandom();
-        return new BigInteger(n.bitLength(), randomBits).mod(n);
+        BigInteger result = null;
+
+        while (result == null || result.compareTo(new BigInteger("0")) == 0) {
+            result = new BigInteger(n.bitLength(), randomBits).mod(n);
+        }
+
+        return result;
     }
 
     /**
@@ -42,13 +48,12 @@ class Utils {
     /**
      * Finds a suitable generator g for the cyclic group Gq
      *
-     * @param q prime number used in the cyclic group Gq
+     * @param primes prime number used in the cyclic group Gq
      * @return generator g for cyclic group Gq
      */
     static BigInteger findGeneratorForGq(Primes primes) {
-        // Sets g to random number in range [0;p-1]
         BigInteger g = getRandomNumModN(primes.getP());
-        // Lemma 4 pp. 6
+
         BigInteger exponent2 = primes.getP().subtract(BigInteger.ONE).divide(new BigInteger("2"));
         BigInteger exponentQ = primes.getP().subtract(BigInteger.ONE).divide(primes.getQ());
 
@@ -56,7 +61,6 @@ class Utils {
             g = getRandomNumModN(primes.getP());
         }
 
-        // pp. 9
         return g.pow(2);
     }
 
@@ -68,7 +72,7 @@ class Utils {
         private BigInteger p;
         private BigInteger q;
 
-        private Primes(BigInteger p, BigInteger q) {
+        Primes(BigInteger p, BigInteger q) {
             this.p = p;
             this.q = q;
         }
