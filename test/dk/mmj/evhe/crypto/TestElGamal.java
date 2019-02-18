@@ -7,7 +7,7 @@ import java.math.BigInteger;
 
 public class TestElGamal {
     private ElGamal.KeyPair generateKeysFromP11G2() {
-        Utils.Primes primes = new Utils.Primes(new BigInteger("11"), new BigInteger("5"));
+        Utils.PrimePair primes = new Utils.PrimePair(new BigInteger("11"), new BigInteger("5"));
         BigInteger g = new BigInteger("2");
         return ElGamal.generateKeys(primes, g);
     }

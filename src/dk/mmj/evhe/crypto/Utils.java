@@ -7,7 +7,7 @@ import java.util.Random;
 /**
  * Class used for methods not tied directly to ElGamal
  */
-class Utils {
+public class Utils {
     /**
      * Find a random number in the range [1;n-1]
      *
@@ -30,9 +30,9 @@ class Utils {
      *
      * @param primeBitLength bit length of prime number q
      * @param primeCertainty certainty of p being a prime number (1 - 1/2^certainty)
-     * @return Primes containing p and q
+     * @return PrimePair containing p and q
      */
-    static Primes findPrimes(int primeBitLength, int primeCertainty) {
+    public static PrimePair findPrimes(int primeBitLength, int primeCertainty) {
         Random randomBits = new SecureRandom();
         BigInteger q = null;
         BigInteger p = null;
@@ -42,29 +42,22 @@ class Utils {
             p = q.multiply(new BigInteger("2")).add(BigInteger.ONE);
         }
 
-        return new Primes(p,q);
+        return new PrimePair(p, q);
     }
 
     /**
      * Finds a suitable generator g for the cyclic group Gq
      *
-     * @param primes prime number used in the cyclic group Gq
+     * @param primePair prime number used in the cyclic group Gq
      * @return generator g for cyclic group Gq
      */
-    static BigInteger findGeneratorForGq(Primes primes) {
-        BigInteger g = getRandomNumModN(primes.getP());
-
-//        BigInteger exponent2 = primes.getP().subtract(BigInteger.ONE).divide(new BigInteger("2"));
-//        BigInteger exponentQ = primes.getP().subtract(BigInteger.ONE).divide(primes.getQ());
-//
-//        while (!(g.modPow(exponent2, primes.getP()).compareTo(BigInteger.ONE) == 0) && !(g.modPow(exponentQ, primes.getP()).compareTo(BigInteger.ONE) == 0)) {
-//            g = getRandomNumModN(primes.getP());
-//        }
+    public static BigInteger findGeneratorForGq(PrimePair primePair) {
+        BigInteger g = getRandomNumModN(primePair.getP());
 
         BigInteger i = BigInteger.ONE;
-        while (i.compareTo(primes.getQ()) < 0) {
-            if (g.modPow(i.multiply(new BigInteger("2")), primes.getQ()).equals(BigInteger.ONE)) {
-                g = getRandomNumModN(primes.getP());
+        while (i.compareTo(primePair.getQ()) < 0) {
+            if (g.modPow(i.multiply(new BigInteger("2")), primePair.getQ()).equals(BigInteger.ONE)) {
+                g = getRandomNumModN(primePair.getP());
                 i = BigInteger.ONE;
             } else {
                 i = i.add(BigInteger.ONE);
@@ -78,11 +71,11 @@ class Utils {
      * Class containing primes p and q
      * where p is a so-called safe prime due to its construction: p = 2q + 1
      */
-    static class Primes {
+    public static class PrimePair {
         private BigInteger p;
         private BigInteger q;
 
-        Primes(BigInteger p, BigInteger q) {
+        PrimePair(BigInteger p, BigInteger q) {
             this.p = p;
             this.q = q;
         }

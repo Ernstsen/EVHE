@@ -1,8 +1,6 @@
 package dk.mmj.evhe.crypto;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.Random;
 
 /**
  * Class for handling encryption, decryption and key-generation for the Elgamal encryption scheme
@@ -12,13 +10,18 @@ public class ElGamal {
     /**
      * Generates both secret key and public key
      *
-     * @param primes safe prime p and prime q
-     * @param g generator of group Gq
-     * @return KeyPair containing secret key and public key
+     /**
+     * Generates secret and public key from a pair of primes p,q and a generator g
+     * <br/>
+     * It should be the cases that <code> p=2q+1 </code> and that g is a generator for the cyclic group <code>G_q</code>
+     *
+     * @param primePair the pair of primes (p,q)
+     * @param g         the generator for G_q
+     * @return a KeyPair consisting of a private and secret key
      */
-    public static KeyPair generateKeys(Utils.Primes primes, BigInteger g) {
-        BigInteger secretKey = generateSecretKey(primes.getQ());
-        PublicKey publicKey = generatePublicKey(secretKey, g, primes.getQ());
+    public static KeyPair generateKeys(Utils.PrimePair primePair, BigInteger g) {
+        BigInteger secretKey = generateSecretKey(primePair.getQ());
+        PublicKey publicKey = generatePublicKey(secretKey, g, primePair.getQ());
 
         return new KeyPair(secretKey, publicKey);
     }
@@ -37,8 +40,8 @@ public class ElGamal {
      * Generates the public key
      *
      * @param secretKey the secret key
-     * @param g generator for cyclic group Gq
-     * @param q prime number used in the cyclic group Gq
+     * @param g         generator for cyclic group Gq
+     * @param q         prime number used in the cyclic group Gq
      * @return the public key
      */
     private static PublicKey generatePublicKey(BigInteger secretKey, BigInteger g, BigInteger q) {
@@ -51,7 +54,7 @@ public class ElGamal {
      * Homomorphic encryption
      *
      * @param publicKey the public key
-     * @param message the message to encrypt
+     * @param message   the message to encrypt
      * @return the cipher text
      */
     public static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message) {
@@ -107,9 +110,10 @@ public class ElGamal {
          * Unused object mapper constructor
          */
         @SuppressWarnings("unused")
-        private PublicKey() {}
+        private PublicKey() {
+        }
 
-        private PublicKey (BigInteger h, BigInteger g, BigInteger q) {
+        private PublicKey(BigInteger h, BigInteger g, BigInteger q) {
             this.g = g;
             this.q = q;
             this.h = h;

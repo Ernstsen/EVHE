@@ -9,8 +9,8 @@ public class TestUtils {
     public void testGenerator() {
         BigInteger p = new BigInteger("11");
         BigInteger q = new BigInteger("5");
-        Utils.Primes primes = new Utils.Primes(p, q);
-        BigInteger g = Utils.findGeneratorForGq(primes);
+        Utils.PrimePair primePair = new Utils.PrimePair(p, q);
+        BigInteger g = Utils.findGeneratorForGq(primePair);
         // Proper test is needed here...
         System.out.println("Value of g: " + g.toString());
     }
