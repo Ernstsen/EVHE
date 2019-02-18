@@ -54,14 +54,24 @@ class Utils {
     static BigInteger findGeneratorForGq(Primes primes) {
         BigInteger g = getRandomNumModN(primes.getP());
 
-        BigInteger exponent2 = primes.getP().subtract(BigInteger.ONE).divide(new BigInteger("2"));
-        BigInteger exponentQ = primes.getP().subtract(BigInteger.ONE).divide(primes.getQ());
+//        BigInteger exponent2 = primes.getP().subtract(BigInteger.ONE).divide(new BigInteger("2"));
+//        BigInteger exponentQ = primes.getP().subtract(BigInteger.ONE).divide(primes.getQ());
+//
+//        while (!(g.modPow(exponent2, primes.getP()).compareTo(BigInteger.ONE) == 0) && !(g.modPow(exponentQ, primes.getP()).compareTo(BigInteger.ONE) == 0)) {
+//            g = getRandomNumModN(primes.getP());
+//        }
 
-        while (!(g.modPow(exponent2, primes.getP()).compareTo(BigInteger.ONE) == 0) && !(g.modPow(exponentQ, primes.getP()).compareTo(BigInteger.ONE) == 0)) {
-            g = getRandomNumModN(primes.getP());
+        BigInteger i = BigInteger.ONE;
+        while (i.compareTo(primes.getQ()) < 0) {
+            if (g.modPow(i.multiply(new BigInteger("2")), primes.getQ()).equals(BigInteger.ONE)) {
+                g = getRandomNumModN(primes.getP());
+                i = BigInteger.ONE;
+            } else {
+                i = i.add(BigInteger.ONE);
+            }
         }
 
-        return g.pow(2);
+        return g;
     }
 
     /**

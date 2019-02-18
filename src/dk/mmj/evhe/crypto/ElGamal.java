@@ -12,12 +12,11 @@ public class ElGamal {
     /**
      * Generates both secret key and public key
      *
+     * @param primes safe prime p and prime q
+     * @param g generator of group Gq
      * @return KeyPair containing secret key and public key
      */
-    public static KeyPair generateKeys(int primeBitLength, int primeCertainty) {
-        Utils.Primes primes = Utils.findPrimes(primeBitLength, primeCertainty);
-        BigInteger g = Utils.findGeneratorForGq(primes);
-
+    public static KeyPair generateKeys(Utils.Primes primes, BigInteger g) {
         BigInteger secretKey = generateSecretKey(primes.getQ());
         PublicKey publicKey = generatePublicKey(secretKey, g, primes.getQ());
 
@@ -67,10 +66,19 @@ public class ElGamal {
     /**
      * Homomorphic decryption
      */
-    public static BigInteger homomorphicDecryption(KeyPair keyPair, CipherText cipherText) {
+    public static int homomorphicDecryption(KeyPair keyPair, CipherText cipherText) {
         BigInteger p = keyPair.getPublicKey().getQ().multiply(new BigInteger("2")).add(BigInteger.ONE);
-        BigInteger message = cipherText.getC().modPow(keyPair.getSecretKey().multiply(new BigInteger("-1")), p).multiply(cipherText.getD());
-        return message;
+        BigInteger hr = cipherText.getC().modPow(keyPair.getSecretKey(), p);
+        BigInteger message = cipherText.getD().multiply(hr.modInverse(p)).mod(p);
+        int b = 0;
+        int max = 1000;
+        while (b < max) {
+            if (message.equals(keyPair.getPublicKey().getG().pow(b))) {
+                return b;
+            }
+            b++;
+        }
+        return -1;
     }
 
 
