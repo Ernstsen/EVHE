@@ -1,28 +1,40 @@
 package dk.mmj.evhe.abstractions;
 
+import dk.mmj.evhe.logging.Log4jWrapper;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-public abstract class AbstractServer implements Application {
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+public abstract class AbstractServer implements Application {
+    private Logger logger = LogManager.getLogger(AbstractServer.class);
 
     public void run() {
-        Server server = getServer(getPort());
+
+        int port = getPort();
+        logger.info("Starting server on port: " + port);
+        Server server = getServer(port);
         try {
             server.start();
             server.join();
         } catch (Exception e) {
             try {
-                e.printStackTrace();
+                logger.warn("Server threw exception while starting or joining:", e);
                 server.stop();
                 server.destroy();
             } catch (Exception e1) {
-                e1.printStackTrace();
-            }finally {
+                logger.warn("Server threw exception while stopping or destroying:", e1);
+            } finally {
                 server.destroy();
+                logger.info("Server as been destroyed");
             }
         }
+//        finally {
+//            server.destroy();
+//            logger.info("Server as been destroyed");
+//        }
     }
 
     /**
@@ -37,6 +49,8 @@ public abstract class AbstractServer implements Application {
     protected Server getServer(int port) {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
+//        context.setLogger(new Log4jWrapper(logger));
+
 
         ServletHolder jerseyServlet = context.addServlet(
                 org.glassfish.jersey.servlet.ServletContainer.class, "/*");
@@ -44,6 +58,7 @@ public abstract class AbstractServer implements Application {
 
         Server jettyServer = new Server(port);
         jettyServer.setHandler(context);
+
 
         configure(jerseyServlet);
         return jettyServer;

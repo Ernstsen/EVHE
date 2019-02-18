@@ -1,20 +1,30 @@
 Manifest-Version: 1.0
-Class-Path: org.eclipse.persistence.asm-2.6.0.jar org.eclipse.persiste
- nce.moxy-2.6.0.jar org.eclipse.persistence.core-2.6.0.jar commandLine
- Parser.jar javax.servlet-api-4.0.1.jar javax.annotation-api-1.2.jar j
- avax.inject-1.jar javax.inject-2.5.0-b62.jar javax.json-1.0.4.jar jav
- ax.ws.rs-api-2.0.1.jar jersey-client-2.22.1.jar jersey-common-2.22.1.
- jar jersey-container-jetty-http-2.22.1.jar jersey-container-servlet-c
- ore-2.22.1.jar jersey-entity-filtering-2.22.1.jar jersey-guava-2.22.1
- .jar jersey-media-moxy-2.22.1.jar jersey-server-2.22.1.jar jersey-med
- ia-jaxb-2.22.1.jar osgi-resource-locator-1.0.1.jar org.osgi.core-4.2.
- 0.jar jaxb-api-2.3.0.jar jaxb-core-2.3.0.jar jaxb-impl-2.3.0.jar jaxb
- -runtime-2.3.0.jar jetty-http-9.4.14.v20181114.jar jetty-io-9.4.14.v2
- 0181114.jar jetty-jmx-9.4.14.v20181114.jar jetty-security-9.4.14.v201
- 81114.jar jetty-server-9.4.14.v20181114.jar jetty-servlet-9.4.14.v201
- 81114.jar jetty-util-9.4.14.v20181114.jar validation-api-1.1.0.Final.
- jar hk2-api-2.4.0-b31.jar hk2-locator-2.4.0-b31.jar hk2-utils-2.4.0-b
- 31.jar javax.ws.rs-api-2.0.1.jar hamcrest-core-1.3.jar junit-4.13-bet
- a-2.jar
+Class-Path: commons-compress-1.10.jar commons-csv-1.2.jar disruptor-3.
+ 3.2.jar FastInfoset-1.2.13.jar aopalliance-repackaged-2.4.0-b31.jar i
+ stack-commons-runtime-3.0.5.jar jersey-client-2.22.1.jar jersey-commo
+ n-2.22.1.jar jersey-container-jetty-http-2.22.1.jar jersey-container-
+ servlet-core-2.22.1.jar jersey-entity-filtering-2.22.1.jar jersey-gua
+ va-2.22.1.jar jersey-media-moxy-2.22.1.jar jersey-server-2.22.1.jar j
+ ersey-media-jaxb-2.22.1.jar servlet-api-2.4.jar javassist-3.18.1-GA.j
+ ar log4j-jul-2.5.jar jetty-http-9.4.14.v20181114.jar jetty-io-9.4.14.
+ v20181114.jar jetty-jmx-9.4.14.v20181114.jar jetty-security-9.4.14.v2
+ 0181114.jar jetty-server-9.4.14.v20181114.jar jetty-servlet-9.4.14.v2
+ 0181114.jar jetty-util-9.4.14.v20181114.jar asm-debug-all-5.0.4.jar s
+ nakeyaml-1.15.jar commandLineParser.jar jaxb-api-2.3.0.jar jaxb-core-
+ 2.3.0.jar jaxb-impl-2.3.0.jar jaxb-runtime-2.3.0.jar stax-api-1.0-2.j
+ ar stax-ex-1.7.8.jar stax2-api-3.1.4.jar log4j-core-2.5.jar kafka-cli
+ ents-0.9.0.0.jar javax.servlet-api-4.0.1.jar javax.annotation-api-1.2
+ .jar javax.inject-1.jar javax.inject-2.5.0-b62.jar javax.json-1.0.4.j
+ ar javax.ws.rs-api-2.0.1.jar jeromq-0.3.5.jar jboss-jms-api_1.1_spec-
+ 1.0.1.Final.jar osgi-resource-locator-1.0.1.jar lz4-1.2.0.jar woodsto
+ x-core-asl-4.3.0.jar validation-api-1.1.0.Final.jar hk2-api-2.4.0-b31
+ .jar hk2-locator-2.4.0-b31.jar hk2-utils-2.4.0-b31.jar activation-1.1
+ .jar snappy-java-1.1.1.7.jar javax.ws.rs-api-2.0.1.jar log4j-api-2.5.
+ jar jackson-annotations-2.6.0.jar jackson-core-2.6.3.jar jackson-data
+ bind-2.6.3.jar jackson-dataformat-xml-2.6.3.jar jackson-dataformat-ya
+ ml-2.6.3.jar jackson-module-jaxb-annotations-2.6.3.jar org.eclipse.pe
+ rsistence.asm-2.6.0.jar org.eclipse.persistence.moxy-2.6.0.jar org.ec
+ lipse.persistence.core-2.6.0.jar jansi-1.11.jar hamcrest-core-1.3.jar
+  junit-4.13-beta-2.jar disruptor-3.3.2.jar
 Main-Class: dk.mmj.evhe.Main
 

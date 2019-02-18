@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="commons-compress-1.10">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/commons-compress-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-csv-1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/disruptor-3.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/FastInfoset-1.2.13.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
