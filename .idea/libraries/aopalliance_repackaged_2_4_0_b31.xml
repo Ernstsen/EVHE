@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="aopalliance-repackaged-2.4.0-b31">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/aopalliance-repackaged-2.4.0-b31.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

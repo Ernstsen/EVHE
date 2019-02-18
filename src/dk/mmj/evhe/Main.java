@@ -4,9 +4,9 @@ import dk.eSoftware.commandLineParser.CommandLineParser;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.eSoftware.commandLineParser.NoSuchBuilderException;
 import dk.eSoftware.commandLineParser.WrongFormatException;
+import dk.mmj.evhe.abstractions.Application;
 import dk.mmj.evhe.client.Client;
 import dk.mmj.evhe.client.ClientConfigBuilder;
-import dk.mmj.evhe.abstractions.Application;
 import dk.mmj.evhe.keyServer.KeyServer;
 import dk.mmj.evhe.keyServer.KeyServerConfigBuilder;
 import dk.mmj.evhe.publicServer.PublicServer;
@@ -15,6 +15,13 @@ import dk.mmj.evhe.publicServer.PublicServerConfigBuilder;
 import java.util.HashMap;
 
 public class Main {
+
+    static {
+        //Disable JMX as a way to bypass errors known to OpenJDK8
+        System.setProperty("log4j2.disable.jmx", Boolean.TRUE.toString());
+        //Set loggingManager to be one supplied by Log4J for proper logging
+        System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+    }
 
     public static void main(String[] args) {
         CommandLineParser parser = getParser();

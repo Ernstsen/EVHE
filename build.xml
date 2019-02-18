@@ -15,8 +15,13 @@
         </echo>
     </target>
 
-    <target name="initialize">
+    <target name="initialize" depends="mkdirs">
         <ivy:retrieve/>
+    </target>
+
+    <target name="mkdirs">
+        <mkdir dir="log"/>
+        <mkdir dir="lib"/>
     </target>
 
     <target name="re-initialize" depends="remove-libs, initialize"/>

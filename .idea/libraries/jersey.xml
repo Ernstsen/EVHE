@@ -10,6 +10,7 @@
       <root url="jar://$PROJECT_DIR$/lib/jersey-media-moxy-2.22.1.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/jersey-server-2.22.1.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/jersey-media-jaxb-2.22.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/servlet-api-2.4.jar!/" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$PROJECT_DIR$/lib/jersey-container-jetty-http-2.22.1-javadoc.jar!/" />

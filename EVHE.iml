@@ -21,5 +21,25 @@
     <orderEntry type="library" name="javax.servlet-api-4.0.1-javadoc" level="project" />
     <orderEntry type="library" name="javax.ws.rs-api-2.0.1" level="project" />
     <orderEntry type="library" name="jaxb-api-2.3.0" level="project" />
+    <orderEntry type="library" name="log4j-jul-2.11.2" level="project" />
+    <orderEntry type="library" name="jackson-2.6.0" level="project" />
+    <orderEntry type="library" name="log4j-core-2.5-javadoc" level="project" />
+    <orderEntry type="library" name="activation-1.1" level="project" />
+    <orderEntry type="library" name="aopalliance-repackaged-2.4.0-b31" level="project" />
+    <orderEntry type="library" name="asm-debug-all-5.0.4" level="project" />
+    <orderEntry type="library" name="commons-compress-1.10" level="project" />
+    <orderEntry type="library" name="istack-commons-runtime-3.0.5" level="project" />
+    <orderEntry type="library" name="stax-api-1.0-2" level="project" />
+    <orderEntry type="library" name="log4j-api-2.5-javadoc" level="project" />
+    <orderEntry type="library" name="disruptor-3.3.2" level="project" />
+    <orderEntry type="library" name="jansi-1.11" level="project" />
+    <orderEntry type="library" name="jeromq-0.3.5" level="project" />
+    <orderEntry type="library" name="javassist-3.18.1-GA" level="project" />
+    <orderEntry type="library" name="jboss-jms-api_1.1_spec-1.0.1.Final" level="project" />
+    <orderEntry type="library" name="kafka-clients-0.9.0.0" level="project" />
+    <orderEntry type="library" name="lz4-1.2.0" level="project" />
+    <orderEntry type="library" name="woodstox-core-asl-4.3.0" level="project" />
+    <orderEntry type="library" name="snakeyaml-1.15" level="project" />
+    <orderEntry type="library" name="snappy-java-1.1.1.7" level="project" />
   </component>
 </module>

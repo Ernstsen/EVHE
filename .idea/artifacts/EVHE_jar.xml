@@ -5,17 +5,37 @@
       <element id="archive" name="EVHE.jar">
         <element id="module-output" name="EVHE" />
       </element>
-      <element id="library" level="project" name="org.eclipse.persistence-2.7.4" />
-      <element id="library" level="project" name="commandLineParser" />
-      <element id="library" level="project" name="javax.servlet-api-4.0.1-javadoc" />
+      <element id="library" level="project" name="commons-compress-1.10" />
+      <element id="library" level="project" name="aopalliance-repackaged-2.4.0-b31" />
+      <element id="library" level="project" name="istack-commons-runtime-3.0.5" />
       <element id="library" level="project" name="jersey" />
-      <element id="library" level="project" name="osgi-resource-locator-1.0.1" />
-      <element id="library" level="project" name="jaxb-api-2.3.0" />
+      <element id="library" level="project" name="javassist-3.18.1-GA" />
+      <element id="library" level="project" name="log4j-jul-2.11.2" />
       <element id="library" level="project" name="jetty-9.4.12.v20180830" />
+      <element id="library" level="project" name="asm-debug-all-5.0.4" />
+      <element id="library" level="project" name="snakeyaml-1.15" />
+      <element id="library" level="project" name="commandLineParser" />
+      <element id="library" level="project" name="jaxb-api-2.3.0" />
+      <element id="library" level="project" name="stax-api-1.0-2" />
+      <element id="library" level="project" name="log4j-core-2.5-javadoc" />
+      <element id="library" level="project" name="kafka-clients-0.9.0.0" />
+      <element id="library" level="project" name="javax.servlet-api-4.0.1-javadoc" />
+      <element id="library" level="project" name="jeromq-0.3.5" />
+      <element id="library" level="project" name="jboss-jms-api_1.1_spec-1.0.1.Final" />
+      <element id="library" level="project" name="osgi-resource-locator-1.0.1" />
+      <element id="library" level="project" name="lz4-1.2.0" />
+      <element id="library" level="project" name="woodstox-core-asl-4.3.0" />
       <element id="library" level="project" name="validation-api-2.0.1.Final" />
       <element id="library" level="project" name="hk2-2.28" />
+      <element id="library" level="project" name="activation-1.1" />
+      <element id="library" level="project" name="snappy-java-1.1.1.7" />
       <element id="library" level="project" name="javax.ws.rs-api-2.0.1" />
+      <element id="library" level="project" name="log4j-api-2.5-javadoc" />
+      <element id="library" level="project" name="jackson-2.6.0" />
+      <element id="library" level="project" name="org.eclipse.persistence-2.7.4" />
+      <element id="library" level="project" name="jansi-1.11" />
       <element id="library" level="project" name="junit-4.13" />
+      <element id="library" level="project" name="disruptor-3.3.2" />
     </root>
   </artifact>
 </component>
