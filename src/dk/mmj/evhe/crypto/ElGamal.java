@@ -13,18 +13,13 @@ public class ElGamal {
      * Generates both secret key and public key
      *
      * @return KeyPair containing secret key and public key
-     * @throws NoGeneratorFoundException when no suitable generator g is found
      */
-    public static KeyPair generateKeys() throws NoGeneratorFoundException {
-        Random randomBits = new SecureRandom();
-        BigInteger q = BigInteger.probablePrime(64, randomBits);
-        BigInteger g;
+    public static KeyPair generateKeys(int primeBitLength, int primeCertainty) {
+        Utils.Primes primes = Utils.findPrimes(primeBitLength, primeCertainty);
+        BigInteger g = Utils.findGeneratorForGq(primes);
 
-        g = Utils.findGeneratorForGq(q);
-
-        BigInteger secretKey = generateSecretKey(q);
-
-        PublicKey publicKey = generatePublicKey(secretKey, g, q);
+        BigInteger secretKey = generateSecretKey(primes.getQ());
+        PublicKey publicKey = generatePublicKey(secretKey, g, primes.getQ());
 
         return new KeyPair(secretKey, publicKey);
     }
@@ -36,15 +31,7 @@ public class ElGamal {
      * @return the secret key
      */
     private static BigInteger generateSecretKey(BigInteger q) {
-        Random randomBits = new SecureRandom();
-        BigInteger secretKey = new BigInteger(q.bitLength(), randomBits);
-
-        // While q is greater or equal to the secret key (the secret key most lie in the interval [0,q-1])
-        while (q.compareTo(secretKey) >= 0) {
-            secretKey = new BigInteger(q.bitLength(), randomBits);
-        }
-
-        return secretKey;
+        return Utils.getRandomNumModN(q);
     }
 
     /**
@@ -56,9 +43,36 @@ public class ElGamal {
      * @return the public key
      */
     private static PublicKey generatePublicKey(BigInteger secretKey, BigInteger g, BigInteger q) {
-        BigInteger h = g.modPow(secretKey, q);
+        BigInteger p = q.multiply(new BigInteger("2")).add(BigInteger.ONE);
+        BigInteger h = g.modPow(secretKey, p);
         return new PublicKey(h, g, q);
     }
+
+    /**
+     * Homomorphic encryption
+     *
+     * @param publicKey the public key
+     * @param message the message to encrypt
+     * @return the cipher text
+     */
+    public static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message) {
+        BigInteger r = Utils.getRandomNumModN(publicKey.getQ());
+        BigInteger p = publicKey.getQ().multiply(new BigInteger("2")).add(BigInteger.ONE);
+
+        BigInteger c = publicKey.getG().modPow(r, p);
+        BigInteger d = publicKey.getG().modPow(message, p).multiply(publicKey.getH().modPow(r, p));
+        return new CipherText(c, d);
+    }
+
+    /**
+     * Homomorphic decryption
+     */
+    public static BigInteger homomorphicDecryption(KeyPair keyPair, CipherText cipherText) {
+        BigInteger p = keyPair.getPublicKey().getQ().multiply(new BigInteger("2")).add(BigInteger.ONE);
+        BigInteger message = cipherText.getC().modPow(keyPair.getSecretKey().multiply(new BigInteger("-1")), p).multiply(cipherText.getD());
+        return message;
+    }
+
 
     public static class KeyPair {
         private BigInteger secretKey;
@@ -103,6 +117,24 @@ public class ElGamal {
 
         public BigInteger getQ() {
             return q;
+        }
+    }
+
+    public static class CipherText {
+        private BigInteger c;
+        private BigInteger d;
+
+        private CipherText(BigInteger c, BigInteger d) {
+            this.c = c;
+            this.d = d;
+        }
+
+        public BigInteger getC() {
+            return c;
+        }
+
+        public BigInteger getD() {
+            return d;
         }
     }
 }
