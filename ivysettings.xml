@@ -1,12 +1,12 @@
 <ivysettings>
     <settings defaultResolver="chain-example"/>
     <resolvers>
-        <chain name="chain-example">
+        <chain name="resolver-chain">
             <filesystem name="libraries">
                 <artifact pattern="${ivy.settings.dir}/repository/[artifact]-[revision].[ext]"/>
             </filesystem>
-            <ibiblio name='archiva' m2compatible='true' root='http://e-software.dk:8088/repository/internal/'/>
             <ibiblio name='central' m2compatible='true'/>
+            <ibiblio name='archiva' m2compatible='true' root='http://e-software.dk:8088/repository/internal/'/>
         </chain>
     </resolvers>
 </ivysettings>
