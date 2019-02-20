@@ -18,3 +18,5 @@ The voters will send votes which is either 1 or 0, which the publicServer then a
 ## Contributing
 Even though this was created as a bachelors project, which has been finished as this is made public, pull requests are welcome.
 They must adhere to the guidelines set forth i GUIDELINES.md
+
+For thoughts and descriptions about different parts of the system, such as logging or encryption, please visit the wiki
