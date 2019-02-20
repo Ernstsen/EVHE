@@ -1,11 +1,12 @@
 package dk.mmj.evhe.server.keyServer;
 
 import dk.eSoftware.commandLineParser.Configuration;
-import dk.mmj.evhe.crypto.*;
+import dk.mmj.evhe.crypto.ElGamal;
+import dk.mmj.evhe.crypto.KeyGenerationParameters;
+import dk.mmj.evhe.crypto.KeyGenerationParametersImpl;
+import dk.mmj.evhe.crypto.KeyPair;
 import dk.mmj.evhe.server.AbstractServer;
 import org.eclipse.jetty.servlet.ServletHolder;
-
-import java.math.BigInteger;
 
 public class KeyServer extends AbstractServer {
     private int port = 8081;
