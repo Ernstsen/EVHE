@@ -7,7 +7,7 @@
 
     <target name="help">
         <echo>
-            myFirstBlockchain build management
+            EVHE build management
             Targets:
             initialize: Download dependencies
             clean: Removes all bytecode and libs
@@ -16,6 +16,7 @@
     </target>
 
     <target name="initialize" depends="mkdirs">
+        <ivy:settings file="ivysettings.xml"/>
         <ivy:retrieve/>
     </target>
 
