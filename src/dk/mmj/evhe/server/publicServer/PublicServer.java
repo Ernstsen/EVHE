@@ -1,11 +1,8 @@
-package dk.mmj.evhe.publicServer;
+package dk.mmj.evhe.server.publicServer;
 
 
 import dk.eSoftware.commandLineParser.Configuration;
-import dk.mmj.evhe.abstractions.AbstractServer;
-import dk.mmj.evhe.abstractions.Application;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
+import dk.mmj.evhe.server.AbstractServer;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 public class PublicServer extends AbstractServer {

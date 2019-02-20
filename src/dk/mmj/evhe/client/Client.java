@@ -1,7 +1,7 @@
 package dk.mmj.evhe.client;
 
 import dk.eSoftware.commandLineParser.Configuration;
-import dk.mmj.evhe.abstractions.Application;
+import dk.mmj.evhe.Application;
 
 public class Client implements Application {
 

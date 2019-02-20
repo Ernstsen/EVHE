@@ -1,5 +1,6 @@
-package dk.mmj.evhe.abstractions;
+package dk.mmj.evhe.server;
 
+import dk.mmj.evhe.Application;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;

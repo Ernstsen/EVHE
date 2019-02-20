@@ -1,4 +1,4 @@
-package dk.mmj.evhe.publicServer;
+package dk.mmj.evhe.server.publicServer;
 
 import dk.eSoftware.commandLineParser.CommandLineParser;
 import dk.eSoftware.commandLineParser.Configuration;

@@ -4,13 +4,12 @@ import dk.eSoftware.commandLineParser.CommandLineParser;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.eSoftware.commandLineParser.NoSuchBuilderException;
 import dk.eSoftware.commandLineParser.WrongFormatException;
-import dk.mmj.evhe.abstractions.Application;
 import dk.mmj.evhe.client.Client;
 import dk.mmj.evhe.client.ClientConfigBuilder;
-import dk.mmj.evhe.keyServer.KeyServer;
-import dk.mmj.evhe.keyServer.KeyServerConfigBuilder;
-import dk.mmj.evhe.publicServer.PublicServer;
-import dk.mmj.evhe.publicServer.PublicServerConfigBuilder;
+import dk.mmj.evhe.server.keyServer.KeyServer;
+import dk.mmj.evhe.server.keyServer.KeyServerConfigBuilder;
+import dk.mmj.evhe.server.publicServer.PublicServer;
+import dk.mmj.evhe.server.publicServer.PublicServerConfigBuilder;
 
 import java.util.HashMap;
 

@@ -1,4 +1,4 @@
-package dk.mmj.evhe.publicServer;
+package dk.mmj.evhe.server.publicServer;
 
 
 import org.apache.logging.log4j.LogManager;

@@ -1,7 +1,7 @@
-package dk.mmj.evhe.keyServer;
+package dk.mmj.evhe.server.keyServer;
 
 import dk.eSoftware.commandLineParser.Configuration;
-import dk.mmj.evhe.abstractions.AbstractServer;
+import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.KeyGenerationParameters;
 import dk.mmj.evhe.crypto.Utils;

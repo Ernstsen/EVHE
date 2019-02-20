@@ -1,4 +1,4 @@
-package dk.mmj.evhe.keyServer;
+package dk.mmj.evhe.server.keyServer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
