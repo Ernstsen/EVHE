@@ -11,7 +11,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
 
     @Override
     public Configuration build() {
-        return null;
+        return new Client.ClientConfiguration();
     }
 
     @Override

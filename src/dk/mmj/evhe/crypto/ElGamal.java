@@ -19,7 +19,10 @@ public class ElGamal {
      * @param g         the generator for G_q
      * @return a KeyPair consisting of a private and secret key
      */
-    public static KeyPair generateKeys(PrimePair primePair, BigInteger g) {
+    public static KeyPair generateKeys(KeyGenerationParameters params) {
+        BigInteger g = params.getGenerator();
+        PrimePair primePair = params.getPrimePair();
+
         BigInteger secretKey = generateSecretKey(primePair.getQ());
         PublicKey publicKey = generatePublicKey(secretKey, g, primePair.getQ());
 

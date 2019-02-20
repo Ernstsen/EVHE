@@ -6,27 +6,47 @@ import org.junit.Test;
 import java.math.BigInteger;
 
 public class TestElGamal {
-    private ElGamal.KeyPair generateKeysFromP11G2() {
-        Utils.PrimePair primes = new Utils.PrimePair(new BigInteger("11"), new BigInteger("5"));
+    private KeyPair generateKeysFromP11G2() {
+        PrimePair primes = new PrimePair(new BigInteger("11"), new BigInteger("5"));
         BigInteger g = new BigInteger("2");
-        return ElGamal.generateKeys(primes, g);
+        return ElGamal.generateKeys(new SimpleKeyGenParams(g, primes));
     }
 
     @Test
-    public void shouldBeAbleToEncryptAndDecrypt0(){
-        ElGamal.KeyPair keyPair = generateKeysFromP11G2();
-        ElGamal.CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), new BigInteger("0"));
+    public void shouldBeAbleToEncryptAndDecrypt0() {
+        KeyPair keyPair = generateKeysFromP11G2();
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), new BigInteger("0"));
         int b = ElGamal.homomorphicDecryption(keyPair, cipherText);
 
         Assert.assertEquals(0, b);
     }
 
     @Test
-    public void shouldBeAbleToEncryptAndDecrypt1(){
-        ElGamal.KeyPair keyPair = generateKeysFromP11G2();
-        ElGamal.CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
+    public void shouldBeAbleToEncryptAndDecrypt1() {
+        KeyPair keyPair = generateKeysFromP11G2();
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
         int b = ElGamal.homomorphicDecryption(keyPair, cipherText);
 
         Assert.assertEquals(1, b);
+    }
+
+    private static class SimpleKeyGenParams implements KeyGenerationParameters {
+        private BigInteger g;
+        private PrimePair pair;
+
+        private SimpleKeyGenParams(BigInteger g, PrimePair pair) {
+            this.g = g;
+            this.pair = pair;
+        }
+
+        @Override
+        public PrimePair getPrimePair() {
+            return pair;
+        }
+
+        @Override
+        public BigInteger getGenerator() {
+            return g;
+        }
     }
 }

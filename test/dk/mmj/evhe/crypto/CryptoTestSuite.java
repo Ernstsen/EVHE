@@ -6,7 +6,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 
 @Suite.SuiteClasses({
-        TestUtils.class,
+        TestKeyGenerationsParametersImpl.class,
         TestElGamal.class
 })
 public class CryptoTestSuite {

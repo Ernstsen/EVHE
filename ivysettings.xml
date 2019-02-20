@@ -1,5 +1,5 @@
 <ivysettings>
-    <settings defaultResolver="chain-example"/>
+    <settings defaultResolver="resolver-chain"/>
     <resolvers>
         <chain name="resolver-chain">
             <filesystem name="libraries">
