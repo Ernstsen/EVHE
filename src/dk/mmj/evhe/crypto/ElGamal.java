@@ -15,8 +15,7 @@ public class ElGamal {
      * <br/>
      * It should be the cases that <code> p=2q+1 </code> and that g is a generator for the cyclic group <code>G_q</code>
      *
-     * @param primePair the pair of primes (p,q)
-     * @param g         the generator for G_q
+     * @param params the pair of primes (p,q) and the generator for G_q
      * @return a KeyPair consisting of a private and secret key
      */
     public static KeyPair generateKeys(KeyGenerationParameters params) {
