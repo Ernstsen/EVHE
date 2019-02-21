@@ -7,8 +7,8 @@ import java.util.Random;
 import static dk.mmj.evhe.crypto.Utils.getRandomNumModN;
 
 public class KeyGenerationParametersImpl implements KeyGenerationParameters {
-    private BigInteger g = null;
-    private PrimePair primePair = null;
+    private BigInteger g;
+    private PrimePair primePair;
 
     public KeyGenerationParametersImpl(int primeBitLength, int primeCertainty) {
         primePair = findPrimes(primeBitLength, primeCertainty);
@@ -18,7 +18,7 @@ public class KeyGenerationParametersImpl implements KeyGenerationParameters {
     /**
      * Finds primes p and q such that p = 2q + 1
      *
-     * @param primeBitLength bit length of prime number q
+     * @param primeBitLength bit length of prime number p
      * @param primeCertainty certainty of p being a prime number (1 - 1/2^certainty)
      * @return PrimePair containing p and q
      */
@@ -28,7 +28,7 @@ public class KeyGenerationParametersImpl implements KeyGenerationParameters {
         BigInteger p = null;
 
         while (p == null || !p.isProbablePrime(primeCertainty)) {
-            q = BigInteger.probablePrime(primeBitLength, randomBits);
+            q = BigInteger.probablePrime(primeBitLength - 1, randomBits);
             p = q.multiply(new BigInteger("2")).add(BigInteger.ONE);
         }
 
@@ -42,19 +42,22 @@ public class KeyGenerationParametersImpl implements KeyGenerationParameters {
      * @return generator g for cyclic group Gq
      */
     private BigInteger findGeneratorForGq(PrimePair primePair) {
-        BigInteger g = getRandomNumModN(primePair.getP());
+        BigInteger g = null;
+        boolean generatorFound = false;
 
-        BigInteger i = BigInteger.ONE;
-        while (i.compareTo(primePair.getQ()) < 0) {
-            if (g.modPow(i.multiply(new BigInteger("2")), primePair.getQ()).equals(BigInteger.ONE)) {
-                g = getRandomNumModN(primePair.getP());
-                i = BigInteger.ONE;
-            } else {
-                i = i.add(BigInteger.ONE);
+        while (!generatorFound) {
+            g = getRandomNumModN(primePair.getP());
+            BigInteger i = BigInteger.ONE;
+
+            while (!g.modPow(i, primePair.getP()).equals(BigInteger.ONE) && !generatorFound) {
+                if (i.equals(primePair.getP().subtract(BigInteger.valueOf(2)))) {
+                    generatorFound = true;
+                } else {
+                    i = i.add(BigInteger.ONE);
+                }
             }
         }
-
-        return g;
+        return g.pow(2);
     }
 
     @Override
