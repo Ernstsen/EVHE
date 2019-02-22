@@ -8,18 +8,22 @@ import org.apache.logging.log4j.Logger;
 public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(ClientConfigBuilder.class);
     private static final String SELF = "--client";
+    private static final String TARGET_URL = "server=";
+    private String targetUrl = "http://localhost:8080";
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
         String cmd = command.getCommand();
-        if(!cmd.equals(SELF)){
+        if (cmd.startsWith(TARGET_URL)) {
+            targetUrl = cmd.substring(TARGET_URL.length());
+        } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
     }
 
     @Override
     public Configuration build() {
-        return new Client.ClientConfiguration("http://localhost:8080");//TODO: PARAMETERIZE! - look at KeyServer for example
+        return new Client.ClientConfiguration(targetUrl);//TODO: PARAMETERIZE! - look at KeyServer for example
     }
 
     @Override
