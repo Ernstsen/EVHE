@@ -19,7 +19,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
 
     @Override
     public Configuration build() {
-        return new Client.ClientConfiguration();
+        return new Client.ClientConfiguration("http://localhost:8080");//TODO: PARAMETERIZE! - look at KeyServer for example
     }
 
     @Override
