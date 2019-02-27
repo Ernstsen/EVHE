@@ -24,6 +24,7 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
 
     @Override
     public String help() {
-        return null;
+        return "\tMODE: keyServer\n" +
+                "\t Currently not configurable";
     }
 }

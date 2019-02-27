@@ -10,7 +10,7 @@ Class-Path: commons-compress-1.10.jar commons-csv-1.2.jar disruptor-3.
  v20181114.jar jetty-jmx-9.4.14.v20181114.jar jetty-security-9.4.14.v2
  0181114.jar jetty-server-9.4.14.v20181114.jar jetty-servlet-9.4.14.v2
  0181114.jar jetty-util-9.4.14.v20181114.jar asm-debug-all-5.0.4.jar s
- nakeyaml-1.15.jar commandLineParser-1.1.0.jar jaxb-api-2.3.0.jar jaxb
+ nakeyaml-1.15.jar commandLineParser-1.1.1.jar jaxb-api-2.3.0.jar jaxb
  -core-2.3.0.jar jaxb-impl-2.3.0.jar jaxb-runtime-2.3.0.jar stax-api-1
  .0-2.jar stax-ex-1.7.8.jar stax2-api-3.1.4.jar log4j-core-2.5.jar kaf
  ka-clients-0.9.0.0.jar javax.servlet-api-4.0.1.jar javax.annotation-a
@@ -20,11 +20,11 @@ Class-Path: commons-compress-1.10.jar commons-csv-1.2.jar disruptor-3.
  oodstox-core-asl-4.3.0.jar validation-api-1.1.0.Final.jar hk2-api-2.4
  .0-b31.jar hk2-locator-2.4.0-b31.jar hk2-utils-2.4.0-b31.jar activati
  on-1.1.jar snappy-java-1.1.1.7.jar javax.ws.rs-api-2.0.1.jar log4j-ap
- i-2.5.jar jackson-annotations-2.6.0.jar jackson-core-2.6.3.jar jackso
- n-databind-2.6.3.jar jackson-dataformat-xml-2.6.3.jar jackson-datafor
- mat-yaml-2.6.3.jar jackson-module-jaxb-annotations-2.6.3.jar org.ecli
- pse.persistence.asm-2.6.0.jar org.eclipse.persistence.moxy-2.6.0.jar 
- org.eclipse.persistence.core-2.6.0.jar jansi-1.11.jar hamcrest-core-1
- .3.jar junit-4.13-beta-2.jar disruptor-3.3.2.jar
+ i-2.5.jar log4j-web-2.5.jar jackson-annotations-2.6.0.jar jackson-cor
+ e-2.6.3.jar jackson-databind-2.6.3.jar jackson-dataformat-xml-2.6.3.j
+ ar jackson-dataformat-yaml-2.6.3.jar jackson-module-jaxb-annotations-
+ 2.6.3.jar org.eclipse.persistence.asm-2.6.0.jar org.eclipse.persisten
+ ce.moxy-2.6.0.jar org.eclipse.persistence.core-2.6.0.jar jansi-1.11.j
+ ar hamcrest-core-1.3.jar junit-4.13-beta-2.jar disruptor-3.3.2.jar
 Main-Class: dk.mmj.evhe.Main
 

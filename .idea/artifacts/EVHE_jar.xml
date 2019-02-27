@@ -36,6 +36,7 @@
       <element id="library" level="project" name="jansi-1.11" />
       <element id="library" level="project" name="junit-4.13" />
       <element id="library" level="project" name="disruptor-3.3.2" />
+      <element id="library" level="project" name="log4j-web-2.5" />
     </root>
   </artifact>
 </component>

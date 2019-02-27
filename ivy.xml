@@ -24,8 +24,9 @@
         <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.5"/>
         <dependency org="org.apache.logging.log4j" name="log4j-jul" rev="2.5"/>
         <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.5"/>
+        <dependency org="org.apache.logging.log4j" name="log4j-web" rev="2.5"/>
 
         <!-- CommandLineTool -->
-        <dependency org="dk.eSoftware" name="commandLineParser" rev="1.1.0"/>
+        <dependency org="dk.eSoftware" name="commandLineParser" rev="1.1.1"/>
     </dependencies>
 </ivy-module>
