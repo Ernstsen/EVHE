@@ -23,11 +23,15 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
 
     @Override
     public Configuration build() {
-        return new Client.ClientConfiguration(targetUrl);//TODO: PARAMETERIZE! - look at KeyServer for example
+        return new Client.ClientConfiguration(this);
     }
 
     @Override
     public String help() {
         return null;
+    }
+
+    String getTargetUrl() {
+        return targetUrl;
     }
 }

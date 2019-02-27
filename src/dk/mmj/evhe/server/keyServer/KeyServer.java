@@ -32,7 +32,6 @@ public class KeyServer extends AbstractServer {
         servletHolder.setInitParameter(
                 "jersey.config.server.provider.classnames",
                 KeyServerResource.class.getCanonicalName());
-
     }
 
     @Override
