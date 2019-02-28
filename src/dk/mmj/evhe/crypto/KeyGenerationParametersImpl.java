@@ -44,17 +44,14 @@ public class KeyGenerationParametersImpl implements KeyGenerationParameters {
     private BigInteger findGeneratorForGq(PrimePair primePair) {
         BigInteger g = null;
         boolean generatorFound = false;
+        BigInteger pMinus1 = primePair.getP().subtract(BigInteger.ONE);
 
         while (!generatorFound) {
             g = getRandomNumModN(primePair.getP());
-            BigInteger i = BigInteger.ONE;
-
-            while (!g.modPow(i, primePair.getP()).equals(BigInteger.ONE) && !generatorFound) {
-                if (i.equals(primePair.getP().subtract(BigInteger.valueOf(2)))) {
-                    generatorFound = true;
-                } else {
-                    i = i.add(BigInteger.ONE);
-                }
+            boolean lemma4Condition1 = !g.modPow(pMinus1.divide(primePair.getQ()), primePair.getP()).equals(BigInteger.ONE);
+            boolean lemma4Condition2 = !g.modPow(pMinus1.divide(BigInteger.valueOf(2)), primePair.getP()).equals(BigInteger.ONE);
+            if (lemma4Condition1 && lemma4Condition2) {
+                generatorFound = true;
             }
         }
         return g.pow(2);
