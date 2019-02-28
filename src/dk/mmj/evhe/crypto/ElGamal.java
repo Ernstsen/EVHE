@@ -47,7 +47,7 @@ public class ElGamal {
      * @return the public key
      */
     private static PublicKey generatePublicKey(BigInteger secretKey, BigInteger g, BigInteger q) {
-        BigInteger p = q.multiply(new BigInteger("2")).add(BigInteger.ONE);
+        BigInteger p = q.multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
         BigInteger h = g.modPow(secretKey, p);
         return new PublicKey(h, g, q);
     }
@@ -61,7 +61,7 @@ public class ElGamal {
      */
     public static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message) {
         BigInteger r = Utils.getRandomNumModN(publicKey.getQ());
-        BigInteger p = publicKey.getQ().multiply(new BigInteger("2")).add(BigInteger.ONE);
+        BigInteger p = publicKey.getQ().multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
 
         BigInteger c = publicKey.getG().modPow(r, p);
         BigInteger d = publicKey.getG().modPow(message, p).multiply(publicKey.getH().modPow(r, p));
@@ -76,7 +76,7 @@ public class ElGamal {
      * @return the original number which were encrypted
      */
     public static int homomorphicDecryption(KeyPair keyPair, CipherText cipherText) {
-        BigInteger p = keyPair.getPublicKey().getQ().multiply(new BigInteger("2")).add(BigInteger.ONE);
+        BigInteger p = keyPair.getPublicKey().getQ().multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
         BigInteger hr = cipherText.getC().modPow(keyPair.getSecretKey(), p);
         BigInteger message = cipherText.getD().multiply(hr.modInverse(p)).mod(p);
         int b = 0;
@@ -88,5 +88,11 @@ public class ElGamal {
             b++;
         }
         return -1;
+    }
+
+    public static CipherText homomorphicCipherProduct(CipherText cipherText1, CipherText cipherText2) {
+        BigInteger c = cipherText1.getC().multiply(cipherText2.getC());
+        BigInteger d = cipherText1.getD().multiply(cipherText2.getD());
+        return new CipherText(c, d);
     }
 }

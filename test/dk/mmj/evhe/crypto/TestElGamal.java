@@ -30,6 +30,54 @@ public class TestElGamal {
         Assert.assertEquals(1, b);
     }
 
+    @Test
+    public void testCipherProductsWhenPlainTextsAreBoth1() {
+        KeyPair keyPair = generateKeysFromP11G2();
+        CipherText cipherText1 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
+        CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
+        CipherText cipherTextProduct = ElGamal.homomorphicCipherProduct(cipherText1, cipherText2);
+
+        int b = ElGamal.homomorphicDecryption(keyPair, cipherTextProduct);
+
+        Assert.assertEquals(2, b);
+    }
+
+    @Test
+    public void testCipherProductsWhenPlainTextsAreBoth0() {
+        KeyPair keyPair = generateKeysFromP11G2();
+        CipherText cipherText1 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO);
+        CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO);
+        CipherText cipherTextProduct = ElGamal.homomorphicCipherProduct(cipherText1, cipherText2);
+
+        int b = ElGamal.homomorphicDecryption(keyPair, cipherTextProduct);
+
+        Assert.assertEquals(0, b);
+    }
+
+    @Test
+    public void testCipherProductsWhenPlainTextsAre0And1() {
+        KeyPair keyPair = generateKeysFromP11G2();
+        CipherText cipherText1 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO);
+        CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
+        CipherText cipherTextProduct = ElGamal.homomorphicCipherProduct(cipherText1, cipherText2);
+
+        int b = ElGamal.homomorphicDecryption(keyPair, cipherTextProduct);
+
+        Assert.assertEquals(1, b);
+    }
+
+    @Test
+    public void testCipherProductsWhenPlainTextsAre1And0() {
+        KeyPair keyPair = generateKeysFromP11G2();
+        CipherText cipherText1 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
+        CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO);
+        CipherText cipherTextProduct = ElGamal.homomorphicCipherProduct(cipherText1, cipherText2);
+
+        int b = ElGamal.homomorphicDecryption(keyPair, cipherTextProduct);
+
+        Assert.assertEquals(1, b);
+    }
+
     private static class SimpleKeyGenParams implements KeyGenerationParameters {
         private BigInteger g;
         private PrimePair pair;
