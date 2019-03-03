@@ -90,7 +90,14 @@ public class ElGamal {
         return -1;
     }
 
-    public static CipherText homomorphicCipherProduct(CipherText cipherText1, CipherText cipherText2) {
+    /**
+     * Creates a cipher text containing the sum of two original plaintext's, given their ciphertext's
+     *
+     * @param cipherText1 cipher text of first original plaintext
+     * @param cipherText2 cipher text of second original plaintext
+     * @return cipher text containing sum of two plaintext's
+     */
+    public static CipherText homomorphicPlaintextSum(CipherText cipherText1, CipherText cipherText2) {
         BigInteger c = cipherText1.getC().multiply(cipherText2.getC());
         BigInteger d = cipherText1.getD().multiply(cipherText2.getD());
         return new CipherText(c, d);

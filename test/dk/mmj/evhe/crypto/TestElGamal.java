@@ -31,11 +31,11 @@ public class TestElGamal {
     }
 
     @Test
-    public void testCipherProductsWhenPlainTextsAreBoth1() {
+    public void testPlaintextSumWhenPlaintextsBothAre1() {
         KeyPair keyPair = generateKeysFromP11G2();
         CipherText cipherText1 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
         CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
-        CipherText cipherTextProduct = ElGamal.homomorphicCipherProduct(cipherText1, cipherText2);
+        CipherText cipherTextProduct = ElGamal.homomorphicPlaintextSum(cipherText1, cipherText2);
 
         int b = ElGamal.homomorphicDecryption(keyPair, cipherTextProduct);
 
@@ -43,11 +43,11 @@ public class TestElGamal {
     }
 
     @Test
-    public void testCipherProductsWhenPlainTextsAreBoth0() {
+    public void testPlaintextSumWhenPlaintextsBothAre0() {
         KeyPair keyPair = generateKeysFromP11G2();
         CipherText cipherText1 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO);
         CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO);
-        CipherText cipherTextProduct = ElGamal.homomorphicCipherProduct(cipherText1, cipherText2);
+        CipherText cipherTextProduct = ElGamal.homomorphicPlaintextSum(cipherText1, cipherText2);
 
         int b = ElGamal.homomorphicDecryption(keyPair, cipherTextProduct);
 
@@ -55,11 +55,11 @@ public class TestElGamal {
     }
 
     @Test
-    public void testCipherProductsWhenPlainTextsAre0And1() {
+    public void testPlaintextSumWhenPlaintextsAre0And1() {
         KeyPair keyPair = generateKeysFromP11G2();
         CipherText cipherText1 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO);
         CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
-        CipherText cipherTextProduct = ElGamal.homomorphicCipherProduct(cipherText1, cipherText2);
+        CipherText cipherTextProduct = ElGamal.homomorphicPlaintextSum(cipherText1, cipherText2);
 
         int b = ElGamal.homomorphicDecryption(keyPair, cipherTextProduct);
 
@@ -67,11 +67,11 @@ public class TestElGamal {
     }
 
     @Test
-    public void testCipherProductsWhenPlainTextsAre1And0() {
+    public void testPlaintextSumWhenPlaintextsAre1And0() {
         KeyPair keyPair = generateKeysFromP11G2();
         CipherText cipherText1 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE);
         CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO);
-        CipherText cipherTextProduct = ElGamal.homomorphicCipherProduct(cipherText1, cipherText2);
+        CipherText cipherTextProduct = ElGamal.homomorphicPlaintextSum(cipherText1, cipherText2);
 
         int b = ElGamal.homomorphicDecryption(keyPair, cipherTextProduct);
 
