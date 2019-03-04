@@ -91,11 +91,11 @@ public class ElGamal {
     }
 
     /**
-     * Creates a cipher text containing the sum of two original plaintext's, given their ciphertext's
+     * Creates a cipher text containing the sum of two original plaintexts, given their ciphertexts
      *
      * @param cipherText1 cipher text of first original plaintext
      * @param cipherText2 cipher text of second original plaintext
-     * @return cipher text containing sum of two plaintext's
+     * @return cipher text containing sum of two plaintexts
      */
     public static CipherText homomorphicPlaintextSum(CipherText cipherText1, CipherText cipherText2) {
         BigInteger c = cipherText1.getC().multiply(cipherText2.getC());
