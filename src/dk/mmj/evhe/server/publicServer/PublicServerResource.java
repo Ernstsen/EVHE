@@ -3,18 +3,25 @@ package dk.mmj.evhe.server.publicServer;
 
 import dk.mmj.evhe.crypto.PublicKey;
 import dk.mmj.evhe.server.ServerState;
+import dk.mmj.evhe.server.VoteDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static dk.mmj.evhe.server.ServerState.PUBLIC_KEY;
+import static dk.mmj.evhe.server.publicServer.PublicServer.HAS_VOTED;
+import static dk.mmj.evhe.server.publicServer.PublicServer.VOTES;
 
 @Path("/")
 public class PublicServerResource {
     private static Logger logger = LogManager.getLogger(PublicServerResource.class);
+    private ServerState state = ServerState.getInstance();
 
     @GET
     @Path("type")
@@ -28,7 +35,8 @@ public class PublicServerResource {
     @Path("publicKey")
     @Produces(MediaType.WILDCARD)
     public PublicKey getPublicKey() {
-        PublicKey publicKey = ServerState.getInstance().get("publicKey", PublicKey.class);
+        PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
+
         if (publicKey == null) {
             NotFoundException notFoundException = new NotFoundException("Currently the server has no public key");
             logger.warn("A request was made for a public key but none was found", notFoundException);
@@ -36,5 +44,23 @@ public class PublicServerResource {
         }
 
         return publicKey;
+    }
+
+    @POST
+    @Path("vote")
+    @SuppressWarnings("unchecked")
+    public void Vote(VoteDTO vote) {
+        Set hasVoted = state.get(HAS_VOTED, HashSet.class);
+        String voterId = vote.getId();
+
+        if (hasVoted.contains(voterId)) {
+            NotAllowedException e = new NotAllowedException("A vote has already been registered with this ID");
+            logger.warn("Voter with id=" + voterId + " attempted to vote more than once", e);
+            throw e;
+        }
+
+        List votes = state.get(VOTES, ArrayList.class);
+        votes.add(vote.getCipherText());
+        hasVoted.add(voterId);
     }
 }
