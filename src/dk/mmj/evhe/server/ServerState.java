@@ -10,9 +10,6 @@ import java.util.Map;
  * Singleton state for a server. Acts like a map
  */
 public class ServerState {
-    /* Constant fields for elements */
-    public static final String PUBLIC_KEY = "publicKey";
-    static final String PRIVATE_KEY = "privateKey";
     /* State */
     private static ServerState instance = new ServerState();
     private static Logger logger = LogManager.getLogger(ServerState.class);

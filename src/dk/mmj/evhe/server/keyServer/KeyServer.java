@@ -6,17 +6,19 @@ import dk.mmj.evhe.crypto.KeyGenerationParameters;
 import dk.mmj.evhe.crypto.KeyGenerationParametersImpl;
 import dk.mmj.evhe.crypto.KeyPair;
 import dk.mmj.evhe.server.AbstractServer;
+import dk.mmj.evhe.server.ServerState;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 public class KeyServer extends AbstractServer {
+    static final String KEY_PAIR = "keypair";
     private int port = 8081;
-    private KeyPair keyPair;
 
     public KeyServer(KeyServerConfiguration configuration) {
         if (configuration.builder.getPort() != null) {
             port = configuration.builder.getPort();
         }
 
+        KeyPair keyPair;
         if (configuration.hasKeygenParameters()) {
             KeyGenerationParameters params = configuration.builder.getKeygenParams();
             keyPair = ElGamal.generateKeys(params);
@@ -24,6 +26,8 @@ public class KeyServer extends AbstractServer {
             KeyGenerationParametersImpl params = new KeyGenerationParametersImpl(1024, 50);
             keyPair = ElGamal.generateKeys(params);
         }
+
+        ServerState.getInstance().put(KEY_PAIR, keyPair);
     }
 
 

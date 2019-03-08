@@ -14,9 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static dk.mmj.evhe.server.ServerState.PUBLIC_KEY;
-import static dk.mmj.evhe.server.publicServer.PublicServer.HAS_VOTED;
-import static dk.mmj.evhe.server.publicServer.PublicServer.VOTES;
+import static dk.mmj.evhe.server.publicServer.PublicServer.*;
 
 @Path("/")
 public class PublicServerResource {

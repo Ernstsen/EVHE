@@ -17,12 +17,11 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import static dk.mmj.evhe.server.ServerState.PUBLIC_KEY;
-
 
 public class PublicServer extends AbstractServer {
-    public static final String VOTES = "votes";
-    public static final String HAS_VOTED = "hasVoted";
+    public static final String PUBLIC_KEY = "publicKey";
+    static final String VOTES = "votes";
+    static final String HAS_VOTED = "hasVoted";
     private static final Logger logger = LogManager.getLogger(PublicServer.class);
     private PublicServerConfiguration configuration;
 
