@@ -9,7 +9,7 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
     private static final Logger logger = LogManager.getLogger(PublicServerConfigBuilder.class);
     private static final String SELF = "--publicServer";
     private static final String KEY_SERVER = "keyServer=";
-    private String keyServer = "localhost:8081";
+    private String keyServer = "http://localhost:8081";
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {

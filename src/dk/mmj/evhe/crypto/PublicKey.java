@@ -29,4 +29,16 @@ public class PublicKey {
     public BigInteger getQ() {
         return q;
     }
+
+    public void setH(BigInteger h) {
+        this.h = h;
+    }
+
+    public void setG(BigInteger g) {
+        this.g = g;
+    }
+
+    public void setQ(BigInteger q) {
+        this.q = q;
+    }
 }

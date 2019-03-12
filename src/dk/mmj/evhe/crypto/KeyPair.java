@@ -2,6 +2,7 @@ package dk.mmj.evhe.crypto;
 
 import java.math.BigInteger;
 
+@SuppressWarnings("WeakerAccess")
 public class KeyPair {
     private BigInteger secretKey;
     private PublicKey publicKey;

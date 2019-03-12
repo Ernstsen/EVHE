@@ -16,7 +16,6 @@ import javax.ws.rs.core.MediaType;
 import java.math.BigInteger;
 
 import static dk.mmj.evhe.server.keyServer.KeyServer.KEY_PAIR;
-import static dk.mmj.evhe.server.publicServer.PublicServer.PUBLIC_KEY;
 
 @Path("/")
 public class KeyServerResource {
@@ -34,7 +33,8 @@ public class KeyServerResource {
     @GET
     @Path("publicKey")
     public PublicKey getPublicKey() {
-        return state.get(PUBLIC_KEY, PublicKey.class);
+        KeyPair keyPair = state.get(KEY_PAIR, KeyPair.class);
+        return keyPair.getPublicKey();
     }
 
     @POST

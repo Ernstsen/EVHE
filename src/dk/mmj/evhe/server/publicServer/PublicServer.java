@@ -3,6 +3,7 @@ package dk.mmj.evhe.server.publicServer;
 
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.crypto.CipherText;
+import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.PublicKey;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
@@ -12,21 +13,30 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
+import org.glassfish.jersey.jackson.JacksonFeature;
 
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 
 
 public class PublicServer extends AbstractServer {
-    public static final String PUBLIC_KEY = "publicKey";
+    static final String PUBLIC_KEY = "publicKey";
     static final String VOTES = "votes";
     static final String HAS_VOTED = "hasVoted";
+    static final String SERVER = "server";
     private static final Logger logger = LogManager.getLogger(PublicServer.class);
+    private final JerseyWebTarget keyServer;
     private PublicServerConfiguration configuration;
+    private ServerState state = ServerState.getInstance();
 
     public PublicServer(PublicServerConfiguration configuration) {
         this.configuration = configuration;
+        JerseyClient client = JerseyClientBuilder.createClient();
+        keyServer = client.target(configuration.keyServer);
 
     }
 
@@ -34,7 +44,7 @@ public class PublicServer extends AbstractServer {
     protected void configure(ServletHolder servletHolder) {
         servletHolder.setInitParameter(
                 "jersey.config.server.provider.classnames",
-                PublicServerResource.class.getCanonicalName());
+                PublicServerResource.class.getCanonicalName() + ";" + "org.glassfish.jersey.jackson.JacksonFeature");
 
         retrievePublicKey();
         initializeVoting();
@@ -44,13 +54,12 @@ public class PublicServer extends AbstractServer {
     private void initializeVoting() {
         ServerState.getInstance().put(VOTES, new ArrayList<CipherText>());
         ServerState.getInstance().put(HAS_VOTED, new HashSet<String>());
+        ServerState.getInstance().put(SERVER, this);
     }
 
     private void retrievePublicKey() {
-        JerseyClient client = JerseyClientBuilder.createClient();
-        JerseyWebTarget target = client.target(configuration.keyServer);
 
-        Response response = target.path("publicKey").request().buildGet().invoke();
+        Response response = keyServer.path("publicKey").request().buildGet().invoke();
 
         if (response.getStatus() != 200) {
             RuntimeException e = new RuntimeException("Error when getting Public Key with status " + response.getStatus());
@@ -60,7 +69,45 @@ public class PublicServer extends AbstractServer {
 
         PublicKey key = response.readEntity(PublicKey.class);
 
-        ServerState.getInstance().put(PUBLIC_KEY, key);
+        state.put(PUBLIC_KEY, key);
+    }
+
+    void terminateVoting() {
+        ArrayList voteObjects = state.get(VOTES, ArrayList.class);
+        logger.info("Terminating voting - adding votes");
+
+        ArrayList<CipherText> votes = new ArrayList<>();
+        for (Object vote : voteObjects) {
+            if (vote instanceof CipherText) {
+                votes.add((CipherText) vote);
+            } else {
+                logger.error("Found vote that was not ciphertext. Was " + vote.getClass() + ". Terminating server");
+                terminate();
+            }
+        }
+
+        if (votes.size() < 1) {
+            logger.error("No votes registered. Terminating server without result");
+            terminate();
+        }
+
+        CipherText first = votes.remove(0);
+        CipherText sum = votes.stream().reduce(first, ElGamal::homomorphicPlaintextSum);
+
+        logger.info("Dispatching decryption request");
+
+        Entity<CipherText> entity = Entity.entity(sum, MediaType.APPLICATION_JSON);
+        Response response = keyServer.path("result").request().post(entity);
+
+        if (response.getStatus() != 200) {
+            logger.error("Failed to decrypt result. Response status was " + response.getStatus() + ". Terminating.");
+            terminate();
+        }
+
+        BigInteger result = response.readEntity(BigInteger.class);
+
+        logger.info("Result was: " + result.toString() + " with " + (votes.size() + 1) + " votes");
+        terminate();
     }
 
     @Override

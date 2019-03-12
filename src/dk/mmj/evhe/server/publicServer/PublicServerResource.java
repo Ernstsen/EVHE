@@ -31,7 +31,7 @@ public class PublicServerResource {
 
     @GET
     @Path("publicKey")
-    @Produces(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
     public PublicKey getPublicKey() {
         PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
 
@@ -46,6 +46,7 @@ public class PublicServerResource {
 
     @POST
     @Path("vote")
+    @Consumes(MediaType.APPLICATION_JSON)
     @SuppressWarnings("unchecked")
     public void Vote(VoteDTO vote) {
         Set hasVoted = state.get(HAS_VOTED, HashSet.class);
@@ -60,5 +61,12 @@ public class PublicServerResource {
         List votes = state.get(VOTES, ArrayList.class);
         votes.add(vote.getCipherText());
         hasVoted.add(voterId);
+    }
+
+    @POST
+    @Path("terminate")
+    public void terminate() {
+        PublicServer server = state.get(SERVER, PublicServer.class);
+        server.terminateVoting();
     }
 }

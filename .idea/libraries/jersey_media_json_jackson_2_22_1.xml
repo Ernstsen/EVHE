@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="jersey-media-json-jackson-2.22.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jersey-media-json-jackson-2.22.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jersey-media-jaxb-2.22.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/jersey-media-json-jackson-2.22.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/jersey-media-json-jackson-2.22.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

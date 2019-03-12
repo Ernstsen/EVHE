@@ -10,12 +10,13 @@ import org.eclipse.jetty.servlet.ServletHolder;
 @SuppressWarnings("WeakerAccess")
 public abstract class AbstractServer implements Application {
     private Logger logger = LogManager.getLogger(AbstractServer.class);
+    private Server server;
 
     public void run() {
 
         int port = getPort();
         logger.info("Starting server on port: " + port);
-        Server server = getServer(port);
+        server = getServer(port);
         try {
             server.start();
             server.join();
@@ -30,6 +31,21 @@ public abstract class AbstractServer implements Application {
                 server.destroy();
                 logger.info("Server as been destroyed");
             }
+        }
+    }
+
+    /**
+     * Stops and destroys the server
+     */
+    protected void terminate() {
+        logger.info("Terminating server instance");
+        try {
+            server.stop();
+            logger.info("Successfully terminated server");
+        } catch (Exception e) {
+            logger.warn("Error occurred when stopping server", e);
+        } finally {
+            server.destroy();
         }
     }
 

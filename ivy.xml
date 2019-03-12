@@ -19,6 +19,7 @@
         <dependency org="org.glassfish.jersey.containers" name="jersey-container-jetty-http" rev="2.22.1"/>
         <dependency org="org.glassfish.jersey.media" name="jersey-media-moxy" rev="2.22.1"/>
         <dependency org="org.glassfish.hk2.external" name="javax.inject" rev="2.5.0-b62"/>
+        <dependency org="org.glassfish.jersey.media" name="jersey-media-json-jackson" rev="2.22.1"/>
 
         <!-- Logging -->
         <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.5"/>

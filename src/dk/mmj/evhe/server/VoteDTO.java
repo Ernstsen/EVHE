@@ -7,6 +7,9 @@ public class VoteDTO {
     private CipherText cipherText;
     private String id;
 
+    public VoteDTO() {
+    }
+
     public VoteDTO(CipherText cipherText, String id) {
         this.cipherText = cipherText;
         this.id = id;

@@ -1,5 +1,7 @@
 package dk.mmj.evhe.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.CipherText;
@@ -9,6 +11,7 @@ import dk.mmj.evhe.server.VoteDTO;
 import dk.mmj.evhe.server.keyServer.KeyServerConfigBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
@@ -25,7 +28,10 @@ public class Client implements Application {
     private String id = UUID.randomUUID().toString();
 
     public Client(ClientConfiguration configuration) {
-        JerseyClient client = JerseyClientBuilder.createClient();
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(VoteDTO.class);
+        clientConfig.register(PublicKey.class);
+        JerseyClient client = JerseyClientBuilder.createClient(clientConfig);
         target = client.target(configuration.builder.getTargetUrl());
     }
 
@@ -57,12 +63,16 @@ public class Client implements Application {
     }
 
     private void postVote(CipherText encryptedVote) {
-        VoteDTO payload = new VoteDTO(encryptedVote, id);
-        Entity<VoteDTO> entity = Entity.entity(payload, MediaType.WILDCARD);
+        try {
+            VoteDTO payload = new VoteDTO(encryptedVote, id);
+            Entity<?> entity = Entity.entity(new ObjectMapper().writeValueAsString(payload), MediaType.APPLICATION_JSON_TYPE);
+            Response response = target.path("vote").request().post(entity);
 
-        Response response = target.path("vote").request().post(entity);
-        if (response.getStatus() != 200) {
-            logger.warn("Failed to post vote to server: Error code was " + response.getStatus());
+            if (response.getStatus() != 204) {
+                logger.warn("Failed to post vote to server: Error code was " + response.getStatus());
+            }
+        } catch (JsonProcessingException e) {
+            logger.error("Unable write VoteDTO as JSON", e);
         }
 
     }
