@@ -8,9 +8,6 @@ import java.math.BigInteger;
 public class ElGamal {
 
     /**
-     * Generates both secret key and public key
-     *
-     /**
      * Generates secret and public key from a pair of primes p,q and a generator g
      * <br/>
      * It should be the cases that <code> p=2q+1 </code> and that g is a generator for the cyclic group <code>G_q</code>
@@ -91,13 +88,15 @@ public class ElGamal {
     }
 
     /**
+     * Homomorphic addition
+     * <br/>
      * Creates a cipher text containing the sum of two original plaintexts, given their ciphertexts
      *
      * @param cipherText1 cipher text of first original plaintext
      * @param cipherText2 cipher text of second original plaintext
      * @return cipher text containing sum of two plaintexts
      */
-    public static CipherText homomorphicPlaintextSum(CipherText cipherText1, CipherText cipherText2) {
+    public static CipherText homomorphicAddition(CipherText cipherText1, CipherText cipherText2) {
         BigInteger c = cipherText1.getC().multiply(cipherText2.getC());
         BigInteger d = cipherText1.getD().multiply(cipherText2.getD());
         return new CipherText(c, d);
