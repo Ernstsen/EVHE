@@ -79,7 +79,7 @@ public class ElGamal {
         int b = 0;
         int max = 1000;
         while (b < max) {
-            if (message.equals(keyPair.getPublicKey().getG().pow(b))) {
+            if (message.equals(keyPair.getPublicKey().getG().modPow(BigInteger.valueOf(b), p))) {
                 return b;
             }
             b++;

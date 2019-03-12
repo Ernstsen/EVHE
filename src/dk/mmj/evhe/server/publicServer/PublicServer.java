@@ -92,7 +92,7 @@ public class PublicServer extends AbstractServer {
         }
 
         CipherText first = votes.remove(0);
-        CipherText sum = votes.stream().reduce(first, ElGamal::homomorphicPlaintextSum);
+        CipherText sum = votes.stream().reduce(first, ElGamal::homomorphicAddition);
 
         logger.info("Dispatching decryption request");
 
