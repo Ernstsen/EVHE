@@ -19,7 +19,7 @@ public class PersistedKeyParameters implements KeyGenerationParameters {
     public PersistedKeyParameters(String pString, String gString) {
         this.g = new BigInteger(gString);
 
-        BigInteger p = new BigInteger(-1, HexBin.decode(pString.replaceAll(" ", "")));
+        BigInteger p = new BigInteger(1, HexBin.decode(pString.replaceAll(" ", "")));
         BigInteger q = p.subtract(ONE).divide(BigInteger.valueOf(2));
 
         this.primePair = new PrimePair(p, q);
