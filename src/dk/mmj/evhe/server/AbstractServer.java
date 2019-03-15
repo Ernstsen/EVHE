@@ -3,9 +3,12 @@ package dk.mmj.evhe.server;
 import dk.mmj.evhe.Application;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+
+import static org.apache.logging.log4j.web.WebLoggerContextUtils.getServletContext;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class AbstractServer implements Application {
@@ -66,10 +69,28 @@ public abstract class AbstractServer implements Application {
                 org.glassfish.jersey.servlet.ServletContainer.class, "/*");
         jerseyServlet.setInitOrder(0);
 
-        Server jettyServer = new Server(port);
+        Server jettyServer = new Server();
+
+        HttpConfiguration https = new HttpConfiguration();
+        https.addCustomizer(new SecureRequestCustomizer());
+
+        SslContextFactory sslContextFactory = new SslContextFactory();
+        sslContextFactory.setKeyStorePath("certs/keystore.jks");
+        sslContextFactory.setKeyStorePassword("password");
+        sslContextFactory.setKeyManagerPassword("password");
+        sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
+
+        ServerConnector sslConnector = new ServerConnector(jettyServer,
+                new SslConnectionFactory(sslContextFactory, "http/1.1"),
+                new HttpConnectionFactory(https));
+        sslConnector.setPort(port);
+
+        jettyServer.setConnectors(new Connector[]{sslConnector});
+
         jettyServer.setHandler(context);
 
         configure(jerseyServlet);
+
         return jettyServer;
     }
 

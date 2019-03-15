@@ -42,8 +42,8 @@ public class Client implements Application {
         PublicKey publicKey = getPublicKey();
         int vote = getVote();
         CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote));
-        postVote(encryptedVote);
 
+        postVote(encryptedVote);
     }
 
     private void assertPublicServer() {
