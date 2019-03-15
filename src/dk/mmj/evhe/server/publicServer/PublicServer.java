@@ -13,7 +13,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
-import org.glassfish.jersey.jackson.JacksonFeature;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -28,6 +27,9 @@ public class PublicServer extends AbstractServer {
     static final String VOTES = "votes";
     static final String HAS_VOTED = "hasVoted";
     static final String SERVER = "server";
+    static final String IS_TEST = "isTesting";
+    static final String RESULT = "finished";
+
     private static final Logger logger = LogManager.getLogger(PublicServer.class);
     private final JerseyWebTarget keyServer;
     private PublicServerConfiguration configuration;
@@ -37,7 +39,7 @@ public class PublicServer extends AbstractServer {
         this.configuration = configuration;
         JerseyClient client = JerseyClientBuilder.createClient();
         keyServer = client.target(configuration.keyServer);
-
+        state.put(IS_TEST, configuration.test);
     }
 
     @Override
@@ -106,8 +108,9 @@ public class PublicServer extends AbstractServer {
 
         BigInteger result = response.readEntity(BigInteger.class);
 
-        logger.info("Result was: " + result.toString() + " with " + (votes.size() + 1) + " votes");
-        terminate();
+        String resultString = "Result was: " + result.toString() + " with " + (votes.size() + 1) + " votes";
+        logger.info(resultString);
+        state.put(RESULT, resultString);
     }
 
     @Override
@@ -118,10 +121,12 @@ public class PublicServer extends AbstractServer {
     public static class PublicServerConfiguration implements Configuration {
         private Integer port;
         private String keyServer;
+        private boolean test;
 
-        PublicServerConfiguration(Integer port, String keyServer) {
+        PublicServerConfiguration(Integer port, String keyServer, boolean test) {
             this.port = port;
             this.keyServer = keyServer;
+            this.test = test;
         }
     }
 }

@@ -25,14 +25,15 @@ import java.util.UUID;
 public class Client implements Application {
     private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
     private JerseyWebTarget target;
-    private String id = UUID.randomUUID().toString();
+    private String id;
 
     public Client(ClientConfiguration configuration) {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.register(VoteDTO.class);
         clientConfig.register(PublicKey.class);
         JerseyClient client = JerseyClientBuilder.createClient(clientConfig);
-        target = client.target(configuration.builder.getTargetUrl());
+        target = client.target(configuration.targetUrl);
+        id = configuration.id;
     }
 
     @Override
@@ -87,12 +88,14 @@ public class Client implements Application {
     }
 
     public static class ClientConfiguration implements Configuration {
-        private ClientConfigBuilder builder;
 
-        ClientConfiguration(ClientConfigBuilder builder) {
-            this.builder = builder;
+        private final String targetUrl;
+        private final String id;
+
+        ClientConfiguration(String targetUrl, String id) {
+            this.targetUrl = targetUrl;
+            this.id = id;
         }
-
     }
 }
 
