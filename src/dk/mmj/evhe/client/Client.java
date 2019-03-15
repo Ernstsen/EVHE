@@ -29,8 +29,8 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.UUID;
 
-import static dk.mmj.evhe.server.AbstractServer.certificatePassword;
-import static dk.mmj.evhe.server.AbstractServer.certificatePath;
+import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PASSORD;
+import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PATH;
 
 public class Client implements Application {
     private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
@@ -48,7 +48,7 @@ public class Client implements Application {
             HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
 
             KeyStore keyStore = KeyStore.getInstance("jceks");
-            keyStore.load(new FileInputStream(certificatePath), certificatePassword.toCharArray());
+            keyStore.load(new FileInputStream(CERTIFICATE_PATH), CERTIFICATE_PASSORD.toCharArray());
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(keyStore);
 
