@@ -12,7 +12,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 @SuppressWarnings("WeakerAccess")
 public abstract class AbstractServer implements Application {
     public static final String CERTIFICATE_PATH = "certs/keystore.jks";
-    public static final String CERTIFICATE_PASSORD = "password";
+    public static final String CERTIFICATE_PASSWORD = "password";
     private Logger logger = LogManager.getLogger(AbstractServer.class);
     private Server server;
 
@@ -77,8 +77,8 @@ public abstract class AbstractServer implements Application {
 
         SslContextFactory sslContextFactory = new SslContextFactory();
         sslContextFactory.setKeyStorePath(CERTIFICATE_PATH);
-        sslContextFactory.setKeyStorePassword(CERTIFICATE_PASSORD);
-        sslContextFactory.setKeyManagerPassword(CERTIFICATE_PASSORD);
+        sslContextFactory.setKeyStorePassword(CERTIFICATE_PASSWORD);
+        sslContextFactory.setKeyManagerPassword(CERTIFICATE_PASSWORD);
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
 
         ServerConnector sslConnector = new ServerConnector(jettyServer,
