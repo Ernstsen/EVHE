@@ -46,7 +46,7 @@ public class PublicServer extends AbstractServer {
             HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
 
             KeyStore keyStore = KeyStore.getInstance("jceks");
-            keyStore.load(new FileInputStream(certificatePath), certificatePassword.toCharArray());
+            keyStore.load(new FileInputStream(CERTIFICATE_PATH), certificatePassword.toCharArray());
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(keyStore);
 
