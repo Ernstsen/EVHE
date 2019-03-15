@@ -47,10 +47,16 @@ public abstract class AbstractServer implements Application {
             server.stop();
             logger.info("Successfully terminated server");
         } catch (Exception e) {
-            logger.warn("Error occurred when stopping server", e);
+            logger.warn("Error occurred when stopping server, retrying");
+            try {
+                server.stop();
+            } catch (Exception e1) {
+                logger.warn("Error occurred during second attempt at stopping server", e);
+            }
         } finally {
             server.destroy();
         }
+        System.exit(0);
     }
 
     /**
