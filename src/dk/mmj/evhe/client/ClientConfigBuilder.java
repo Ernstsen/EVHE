@@ -9,7 +9,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(ClientConfigBuilder.class);
     private static final String SELF = "--client";
     private static final String TARGET_URL = "server=";
-    private String targetUrl = "http://localhost:8080";
+    private String targetUrl = "https://localhost:8080";
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
