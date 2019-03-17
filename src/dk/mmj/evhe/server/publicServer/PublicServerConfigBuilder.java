@@ -11,7 +11,7 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
     private static final String KEY_SERVER = "keyServer=";
     private static final String TEST = "test=";
     private boolean test = false;
-    private String keyServer = "http://localhost:8081";
+    private String keyServer = "https://localhost:8081";
 
 
     @Override

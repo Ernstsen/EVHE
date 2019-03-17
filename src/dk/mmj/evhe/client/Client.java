@@ -16,11 +16,21 @@ import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.UUID;
+
+import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PASSWORD;
+import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PATH;
 
 public class Client implements Application {
     private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
@@ -28,12 +38,35 @@ public class Client implements Application {
     private String id;
 
     public Client(ClientConfiguration configuration) {
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.register(VoteDTO.class);
-        clientConfig.register(PublicKey.class);
-        JerseyClient client = JerseyClientBuilder.createClient(clientConfig);
-        target = client.target(configuration.targetUrl);
-        id = configuration.id;
+        try {
+            ClientConfig clientConfig = new ClientConfig();
+            clientConfig.register(VoteDTO.class);
+            clientConfig.register(PublicKey.class);
+
+            // The following is needed for localhost testing.
+            HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
+
+            KeyStore keyStore = KeyStore.getInstance("jceks");
+            keyStore.load(new FileInputStream(CERTIFICATE_PATH), CERTIFICATE_PASSWORD.toCharArray());
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(keyStore);
+
+            SSLContext ssl = SSLContext.getInstance("SSL");
+            ssl.init(null, tmf.getTrustManagers(), new SecureRandom());
+
+            JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().withConfig(clientConfig).sslContext(ssl).build();
+
+            target = client.target(configuration.targetUrl);
+            id = configuration.id;
+
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Unrecognized SSL context algorithm:", e);
+            System.exit(-1);
+        } catch (KeyManagementException e) {
+            logger.error("Initializing SSL Context failed: ", e);
+        } catch (CertificateException | KeyStoreException | IOException e) {
+            logger.error("Error Initializing the Certificate: ", e);
+        }
     }
 
     @Override
@@ -43,6 +76,7 @@ public class Client implements Application {
         PublicKey publicKey = getPublicKey();
         int vote = getVote();
         CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote));
+
         postVote(encryptedVote);
 
     }
@@ -88,6 +122,7 @@ public class Client implements Application {
     }
 
     public static class ClientConfiguration implements Configuration {
+        private ClientConfigBuilder builder;
 
         private final String targetUrl;
         private final String id;
@@ -98,4 +133,3 @@ public class Client implements Application {
         }
     }
 }
-

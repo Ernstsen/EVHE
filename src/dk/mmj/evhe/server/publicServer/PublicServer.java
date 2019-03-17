@@ -14,10 +14,17 @@ import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -31,15 +38,36 @@ public class PublicServer extends AbstractServer {
     static final String RESULT = "finished";
 
     private static final Logger logger = LogManager.getLogger(PublicServer.class);
-    private final JerseyWebTarget keyServer;
+    private JerseyWebTarget keyServer;
     private PublicServerConfiguration configuration;
     private ServerState state = ServerState.getInstance();
 
     public PublicServer(PublicServerConfiguration configuration) {
         this.configuration = configuration;
-        JerseyClient client = JerseyClientBuilder.createClient();
-        keyServer = client.target(configuration.keyServer);
-        state.put(IS_TEST, configuration.test);
+
+        try {
+            // The following is needed for localhost testing.
+            HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
+
+            KeyStore keyStore = KeyStore.getInstance("jceks");
+            keyStore.load(new FileInputStream(CERTIFICATE_PATH), CERTIFICATE_PASSWORD.toCharArray());
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(keyStore);
+
+            SSLContext ssl = SSLContext.getInstance("SSL");
+            ssl.init(null, tmf.getTrustManagers(), new SecureRandom());
+            JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().sslContext(ssl).build();
+            keyServer = client.target(configuration.keyServer);
+            state.put(IS_TEST, configuration.test);
+
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Unrecognized SSL context algorithm:", e);
+            System.exit(-1);
+        } catch (KeyManagementException e) {
+            logger.error("Initializing SSL Context failed: ", e);
+        } catch (CertificateException | KeyStoreException | IOException e) {
+            logger.error("Error Initializing the Certificate: ", e);
+        }
     }
 
     @Override
@@ -60,7 +88,6 @@ public class PublicServer extends AbstractServer {
     }
 
     private void retrievePublicKey() {
-
         Response response = keyServer.path("publicKey").request().buildGet().invoke();
 
         if (response.getStatus() != 200) {

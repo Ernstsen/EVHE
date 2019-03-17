@@ -10,7 +10,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final String SELF = "--client";
     private static final String TARGET_URL = "server=";
     private static final String ID = "id=";
-    private String targetUrl = "http://localhost:8080";
+    private String targetUrl = "https://localhost:8080";
     private String id = "TESTID";
 
     @Override
