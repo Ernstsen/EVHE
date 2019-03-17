@@ -109,7 +109,6 @@ public class Client implements Application {
         } catch (JsonProcessingException e) {
             logger.error("Unable write VoteDTO as JSON", e);
         }
-
     }
 
     private int getVote() {
