@@ -35,10 +35,9 @@ import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PATH;
 public class Client implements Application {
     private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
     private JerseyWebTarget target;
-    private String id = UUID.randomUUID().toString();
+    private String id;
 
     public Client(ClientConfiguration configuration) {
-
         try {
             ClientConfig clientConfig = new ClientConfig();
             clientConfig.register(VoteDTO.class);
@@ -58,6 +57,7 @@ public class Client implements Application {
             JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().withConfig(clientConfig).sslContext(ssl).build();
 
             target = client.target(configuration.builder.getTargetUrl());
+            id = configuration.id;
 
         } catch (NoSuchAlgorithmException e) {
             logger.error("Unrecognized SSL context algorithm:", e);
@@ -78,6 +78,7 @@ public class Client implements Application {
         CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote));
 
         postVote(encryptedVote);
+
     }
 
     private void assertPublicServer() {
@@ -123,10 +124,13 @@ public class Client implements Application {
     public static class ClientConfiguration implements Configuration {
         private ClientConfigBuilder builder;
 
-        ClientConfiguration(ClientConfigBuilder builder) {
-            this.builder = builder;
-        }
+        private final String targetUrl;
+        private final String id;
 
+        ClientConfiguration(String targetUrl, String id) {
+            this.targetUrl = targetUrl;
+            this.id = id;
+        }
     }
 }
 
