@@ -56,7 +56,7 @@ public class Client implements Application {
 
             JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().withConfig(clientConfig).sslContext(ssl).build();
 
-            target = client.target(configuration.builder.getTargetUrl());
+            target = client.target(configuration.targetUrl);
             id = configuration.id;
 
         } catch (NoSuchAlgorithmException e) {
