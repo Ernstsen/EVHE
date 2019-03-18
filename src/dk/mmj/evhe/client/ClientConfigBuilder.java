@@ -13,9 +13,11 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final String TARGET_URL = "server=";
     private static final String ID = "id=";
     private static final String VOTE = "vote=";
+    private static final String MULTI = "multi=";
     private String targetUrl = "https://localhost:8080";
     private String id = "TESTID" + UUID.randomUUID().toString();
     private Boolean vote = null;
+    private Integer multi = null;
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
@@ -26,6 +28,8 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
             id = cmd.substring(ID.length());
         } else if (cmd.startsWith(VOTE)) {
             vote = Boolean.parseBoolean(cmd.substring(VOTE.length()));
+        } else if (cmd.startsWith(MULTI)) {
+            multi = Integer.parseInt(cmd.substring(MULTI.length()));
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -33,7 +37,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
 
     @Override
     public Configuration build() {
-        return new Client.ClientConfiguration(targetUrl, id, vote);
+        return new Client.ClientConfiguration(targetUrl, id, vote, multi);
     }
 
     @Override
@@ -42,6 +46,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
                 "\t  --" + TARGET_URL + "publicServerUrl\t Specifies url for public server to connect to. Standard is: "
                 + targetUrl + "\n" +
                 "\t  --" + ID + "idString\t id identifying this instance as a unique voter\n" +
-                "\t  --" + VOTE + "{true,false} the vote to be cast. If not supplied program will prompt for it\n";
+                "\t  --" + VOTE + "{true,false}\t the vote to be cast. If not supplied program will prompt for it\n" +
+                "\t  --" + MULTI+"int\t How many random votes should be cast. If set, id and vote is ignored as it is test.";
     }
 }

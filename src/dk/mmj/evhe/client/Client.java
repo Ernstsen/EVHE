@@ -29,6 +29,8 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.Random;
+import java.util.UUID;
 
 import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PASSWORD;
 import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PATH;
@@ -38,6 +40,7 @@ public class Client implements Application {
     private JerseyWebTarget target;
     private String id;
     private Boolean vote;
+    private Integer multi;
 
     public Client(ClientConfiguration configuration) {
         ClientConfig clientConfig = new ClientConfig();
@@ -46,8 +49,8 @@ public class Client implements Application {
 
         id = configuration.id;
         vote = configuration.vote;
+        multi = configuration.multi;
         try {
-
 
             // The following is needed for localhost testing.
             HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
@@ -79,11 +82,35 @@ public class Client implements Application {
         assertPublicServer();
 
         PublicKey publicKey = getPublicKey();
-        int vote = getVote();
+        if (multi != null) {
+            doMultiVote(publicKey);
+        } else {
+            int vote = getVote();
+            doVote(publicKey, vote);
+        }
+    }
+
+    private void doMultiVote(PublicKey publicKey) {
+        Random random = new Random();
+        int trueVotes = 0;
+        int falseVotes = 0;
+        for (int i = 0; i < multi; i++) {
+            System.out.print("Dispatching votes: " + i + "/" + multi + " \r");
+            id = UUID.randomUUID().toString();
+            int vote = random.nextInt(2);
+            if (vote == 0) {
+                falseVotes++;
+            } else {
+                trueVotes++;
+            }
+            doVote(publicKey, vote);
+        }
+        System.out.println("Dispatched " + multi + " votes with " + trueVotes + " for, and " + falseVotes + " against");
+    }
+
+    private void doVote(PublicKey publicKey, int vote) {
         CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote));
-
         postVote(encryptedVote);
-
     }
 
     private void assertPublicServer() {
@@ -147,11 +174,13 @@ public class Client implements Application {
         private final String targetUrl;
         private final String id;
         private Boolean vote;
+        private Integer multi;
 
-        ClientConfiguration(String targetUrl, String id, Boolean vote) {
+        ClientConfiguration(String targetUrl, String id, Boolean vote, Integer multi) {
             this.targetUrl = targetUrl;
             this.id = id;
             this.vote = vote;
+            this.multi = multi;
         }
     }
 }
