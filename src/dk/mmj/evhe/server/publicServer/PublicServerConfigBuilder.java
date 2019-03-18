@@ -28,7 +28,7 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
 
     @Override
     public Configuration build() {
-        return new PublicServer.PublicServerConfiguration(8080, keyServer, test);
+        return new PublicServer.PublicServerConfiguration(8082, keyServer, test);
     }
 
     @Override

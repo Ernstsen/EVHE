@@ -1,9 +1,6 @@
 package dk.mmj.evhe.server.keyServer;
 
-import dk.mmj.evhe.crypto.CipherText;
-import dk.mmj.evhe.crypto.ElGamal;
-import dk.mmj.evhe.crypto.KeyPair;
-import dk.mmj.evhe.crypto.PublicKey;
+import dk.mmj.evhe.crypto.*;
 import dk.mmj.evhe.server.ServerState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,9 +36,9 @@ public class KeyServerResource {
 
     @POST
     @Path("result")
-    public BigInteger calculateResult(CipherText cipherText) {
+    public BigInteger calculateResult(CipherText cipherText) throws UnableToDecryptException {
         KeyPair keyPair = state.get(KEY_PAIR, KeyPair.class);
-        int result = ElGamal.homomorphicDecryption(keyPair, cipherText);
+        int result = ElGamal.homomorphicDecryption(keyPair, cipherText, 1000);
         return BigInteger.valueOf(result);
     }
 }

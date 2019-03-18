@@ -91,8 +91,8 @@ public class ElGamal {
      * <br/>
      * Creates a cipher text containing the sum of two original plaintexts, given their ciphertexts
      *
-     * @param cipherText1 cipher text of first original plaintext
-     * @param cipherText2 cipher text of second original plaintext
+     * @param c1 cipher text of first original plaintext
+     * @param c2 cipher text of second original plaintext
      * @return cipher text containing sum of two plaintexts
      */
     public static CipherText homomorphicAddition(CipherText c1, CipherText c2) {
