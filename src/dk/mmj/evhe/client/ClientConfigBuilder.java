@@ -5,13 +5,15 @@ import dk.eSoftware.commandLineParser.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.UUID;
+
 public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(ClientConfigBuilder.class);
     private static final String SELF = "--client";
     private static final String TARGET_URL = "server=";
     private static final String ID = "id=";
     private String targetUrl = "https://localhost:8080";
-    private String id = "TESTID";
+    private String id = "TESTID" + UUID.randomUUID().toString();
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
