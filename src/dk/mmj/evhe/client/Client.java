@@ -22,12 +22,13 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.UUID;
 
 import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PASSWORD;
 import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PATH;
@@ -36,12 +37,17 @@ public class Client implements Application {
     private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
     private JerseyWebTarget target;
     private String id;
+    private Boolean vote;
 
     public Client(ClientConfiguration configuration) {
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(VoteDTO.class);
+        clientConfig.register(PublicKey.class);
+
+        id = configuration.id;
+        vote = configuration.vote;
         try {
-            ClientConfig clientConfig = new ClientConfig();
-            clientConfig.register(VoteDTO.class);
-            clientConfig.register(PublicKey.class);
+
 
             // The following is needed for localhost testing.
             HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
@@ -57,7 +63,6 @@ public class Client implements Application {
             JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().withConfig(clientConfig).sslContext(ssl).build();
 
             target = client.target(configuration.targetUrl);
-            id = configuration.id;
 
         } catch (NoSuchAlgorithmException e) {
             logger.error("Unrecognized SSL context algorithm:", e);
@@ -113,7 +118,24 @@ public class Client implements Application {
     }
 
     private int getVote() {
-        return 1;
+        if (vote == null) {
+            System.out.println("Please enter vote to be cast: true/false");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            try {
+                String s = reader.readLine();
+                vote = Boolean.parseBoolean(s);
+                System.out.println("voting: " + vote);
+            } catch (IOException ignored) {
+            }
+        }
+
+        if (vote) {
+            return 1;
+        } else {
+            return 0;
+        }
+
+
     }
 
     private PublicKey getPublicKey() {
@@ -122,14 +144,14 @@ public class Client implements Application {
     }
 
     public static class ClientConfiguration implements Configuration {
-        private ClientConfigBuilder builder;
-
         private final String targetUrl;
         private final String id;
+        private Boolean vote;
 
-        ClientConfiguration(String targetUrl, String id) {
+        ClientConfiguration(String targetUrl, String id, Boolean vote) {
             this.targetUrl = targetUrl;
             this.id = id;
+            this.vote = vote;
         }
     }
 }

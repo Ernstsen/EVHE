@@ -12,8 +12,10 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final String SELF = "--client";
     private static final String TARGET_URL = "server=";
     private static final String ID = "id=";
+    private static final String VOTE = "vote=";
     private String targetUrl = "https://localhost:8080";
     private String id = "TESTID" + UUID.randomUUID().toString();
+    private Boolean vote = null;
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
@@ -22,6 +24,8 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
             targetUrl = cmd.substring(TARGET_URL.length());
         } else if (cmd.startsWith(ID)) {
             id = cmd.substring(ID.length());
+        } else if (cmd.startsWith(VOTE)) {
+            vote = Boolean.parseBoolean(cmd.substring(VOTE.length()));
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -29,13 +33,15 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
 
     @Override
     public Configuration build() {
-        return new Client.ClientConfiguration(targetUrl, id);
+        return new Client.ClientConfiguration(targetUrl, id, vote);
     }
 
     @Override
     public String help() {
         return "\tMODE: keyServer\n" +
                 "\t  --" + TARGET_URL + "publicServerUrl\t Specifies url for public server to connect to. Standard is: "
-                + targetUrl;
+                + targetUrl + "\n" +
+                "\t  --" + ID + "idString\t id identifying this instance as a unique voter\n" +
+                "\t  --" + VOTE + "{true,false} the vote to be cast. If not supplied program will prompt for it\n";
     }
 }

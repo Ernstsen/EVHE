@@ -28,12 +28,13 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
 
     @Override
     public Configuration build() {
-        return new PublicServer.PublicServerConfiguration(8082, keyServer, test);
+        return new PublicServer.PublicServerConfiguration(8080, keyServer, test);
     }
 
     @Override
     public String help() {
         return "\tMODE: keyServer\n" +
-                "\t Currently not configurable";
+                "\t  --" + KEY_SERVER + "keyServerUrl\t Specifies url for public server to connect to. Standard is: " + keyServer + "\n" +
+                "\t  --" + TEST + "{true,false}\t specifies whether ids is allowed to be testing ids - not pre-determined ones";
     }
 }
