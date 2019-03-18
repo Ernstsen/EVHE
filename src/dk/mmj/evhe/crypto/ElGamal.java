@@ -72,19 +72,18 @@ public class ElGamal {
      * @param cipherText cipher text consisting of c and d
      * @return the original number which were encrypted
      */
-    public static int homomorphicDecryption(KeyPair keyPair, CipherText cipherText) {
+    public static int homomorphicDecryption(KeyPair keyPair, CipherText cipherText, int max) throws UnableToDecryptException {
         BigInteger p = keyPair.getPublicKey().getQ().multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
         BigInteger hr = cipherText.getC().modPow(keyPair.getSecretKey(), p);
-        BigInteger message = cipherText.getD().multiply(hr.modInverse(p)).mod(p);
+        BigInteger gPowMessage = cipherText.getD().multiply(hr.modInverse(p)).mod(p);
         int b = 0;
-        int max = 1000;
         while (b < max) {
-            if (message.equals(keyPair.getPublicKey().getG().modPow(BigInteger.valueOf(b), p))) {
+            if (gPowMessage.equals(keyPair.getPublicKey().getG().modPow(BigInteger.valueOf(b), p))) {
                 return b;
             }
             b++;
         }
-        return -1;
+        throw new UnableToDecryptException("Could not decrypt message");
     }
 
     /**
@@ -96,9 +95,9 @@ public class ElGamal {
      * @param cipherText2 cipher text of second original plaintext
      * @return cipher text containing sum of two plaintexts
      */
-    public static CipherText homomorphicAddition(CipherText cipherText1, CipherText cipherText2) {
-        BigInteger c = cipherText1.getC().multiply(cipherText2.getC());
-        BigInteger d = cipherText1.getD().multiply(cipherText2.getD());
+    public static CipherText homomorphicAddition(CipherText c1, CipherText c2) {
+        BigInteger c = c1.getC().multiply(c2.getC());
+        BigInteger d = c1.getD().multiply(c2.getD());
         return new CipherText(c, d);
     }
 }

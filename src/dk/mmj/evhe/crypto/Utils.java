@@ -9,10 +9,10 @@ import java.util.Random;
  */
 public class Utils {
     /**
-     * Find a random number in the range [1;n-1]
+     * Find a random number in the range [1;n)
      *
      * @param n n-1 is upper limit in interval
-     * @return random number in range [1;n-1]
+     * @return random number in range [1;n)
      */
     static BigInteger getRandomNumModN(BigInteger n) {
         Random randomBits = new SecureRandom();
