@@ -19,6 +19,7 @@ public class KeyServer extends AbstractServer {
         }
 
         KeyPair keyPair;
+
         if (configuration.hasKeygenParameters()) {
             KeyGenerationParameters params = configuration.builder.getKeygenParams();
             keyPair = ElGamal.generateKeys(params);

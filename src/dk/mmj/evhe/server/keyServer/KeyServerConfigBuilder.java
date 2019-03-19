@@ -24,6 +24,7 @@ public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
     @Override
     public void applyCommand(CommandLineParser.Command command) {
         String cmd = command.getCommand();
+
         if (cmd.startsWith(PORT)) {
             String intString = cmd.substring(PORT.length());
             port = Integer.parseInt(intString);

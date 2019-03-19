@@ -78,7 +78,6 @@ public class PublicServer extends AbstractServer {
 
         retrievePublicKey();
         initializeVoting();
-
     }
 
     private void initializeVoting() {
@@ -106,6 +105,7 @@ public class PublicServer extends AbstractServer {
         logger.info("Terminating voting - adding votes");
 
         ArrayList<CipherText> votes = new ArrayList<>();
+
         for (Object vote : voteObjects) {
             if (vote instanceof CipherText) {
                 votes.add((CipherText) vote);

@@ -50,10 +50,12 @@ public class KeyGenerationParametersImpl implements KeyGenerationParameters {
             g = getRandomNumModN(primePair.getP());
             boolean lemma4Condition1 = !g.modPow(pMinus1.divide(primePair.getQ()), primePair.getP()).equals(BigInteger.ONE);
             boolean lemma4Condition2 = !g.modPow(pMinus1.divide(BigInteger.valueOf(2)), primePair.getP()).equals(BigInteger.ONE);
+
             if (lemma4Condition1 && lemma4Condition2) {
                 generatorFound = true;
             }
         }
+
         return g.pow(2);
     }
 

@@ -94,17 +94,22 @@ public class Client implements Application {
         Random random = new Random();
         int trueVotes = 0;
         int falseVotes = 0;
+
         for (int i = 0; i < multi; i++) {
             System.out.print("Dispatching votes: " + i + "/" + multi + " \r");
+
             id = UUID.randomUUID().toString();
             int vote = random.nextInt(2);
+
             if (vote == 0) {
                 falseVotes++;
             } else {
                 trueVotes++;
             }
+
             doVote(publicKey, vote);
         }
+
         System.out.println("Dispatched " + multi + " votes with " + trueVotes + " for, and " + falseVotes + " against");
     }
 
@@ -141,18 +146,19 @@ public class Client implements Application {
         } catch (JsonProcessingException e) {
             logger.error("Unable write VoteDTO as JSON", e);
         }
-
     }
 
     private int getVote() {
         if (vote == null) {
             System.out.println("Please enter vote to be cast: true/false");
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
             try {
                 String s = reader.readLine();
                 vote = Boolean.parseBoolean(s);
                 System.out.println("voting: " + vote);
             } catch (IOException ignored) {
+                // Being ignored.
             }
         }
 
@@ -161,12 +167,11 @@ public class Client implements Application {
         } else {
             return 0;
         }
-
-
     }
 
     private PublicKey getPublicKey() {
         Response response = target.path("publicKey").request().buildGet().invoke();
+        
         return response.readEntity(PublicKey.class);
     }
 

@@ -17,6 +17,7 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
     @Override
     public void applyCommand(CommandLineParser.Command command) {
         String cmd = command.getCommand();
+
         if (cmd.startsWith(KEY_SERVER)) {
             keyServer = cmd.substring(KEY_SERVER.length());
         } else if (cmd.startsWith(TEST)) {

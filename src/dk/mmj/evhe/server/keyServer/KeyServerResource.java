@@ -24,6 +24,7 @@ public class KeyServerResource {
     @Produces(MediaType.TEXT_HTML)
     public String test() {
         logger.info("Received request for server type");
+
         return "<b>ServerType:</b> Key Server";
     }
 
@@ -31,6 +32,7 @@ public class KeyServerResource {
     @Path("publicKey")
     public PublicKey getPublicKey() {
         KeyPair keyPair = state.get(KEY_PAIR, KeyPair.class);
+
         return keyPair.getPublicKey();
     }
 
@@ -39,6 +41,7 @@ public class KeyServerResource {
     public BigInteger calculateResult(CipherText cipherText) throws UnableToDecryptException {
         KeyPair keyPair = state.get(KEY_PAIR, KeyPair.class);
         int result = ElGamal.homomorphicDecryption(keyPair, cipherText, 1000);
+
         return BigInteger.valueOf(result);
     }
 }

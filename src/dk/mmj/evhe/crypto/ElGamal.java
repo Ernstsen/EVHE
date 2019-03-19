@@ -46,6 +46,7 @@ public class ElGamal {
     private static PublicKey generatePublicKey(BigInteger secretKey, BigInteger g, BigInteger q) {
         BigInteger p = q.multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
         BigInteger h = g.modPow(secretKey, p);
+
         return new PublicKey(h, g, q);
     }
 
@@ -62,13 +63,14 @@ public class ElGamal {
 
         BigInteger c = publicKey.getG().modPow(r, p);
         BigInteger d = publicKey.getG().modPow(message, p).multiply(publicKey.getH().modPow(r, p));
+
         return new CipherText(c, d);
     }
 
     /**
      * Homomorphic decryption
      *
-     * @param keyPair key pair consisting of public and private key
+     * @param keyPair    key pair consisting of public and private key
      * @param cipherText cipher text consisting of c and d
      * @return the original number which were encrypted
      */
@@ -76,13 +78,17 @@ public class ElGamal {
         BigInteger p = keyPair.getPublicKey().getQ().multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
         BigInteger hr = cipherText.getC().modPow(keyPair.getSecretKey(), p);
         BigInteger gPowMessage = cipherText.getD().multiply(hr.modInverse(p)).mod(p);
+
         int b = 0;
+
         while (b < max) {
             if (gPowMessage.equals(keyPair.getPublicKey().getG().modPow(BigInteger.valueOf(b), p))) {
                 return b;
             }
+
             b++;
         }
+
         throw new UnableToDecryptException("Could not decrypt message");
     }
 
@@ -98,6 +104,7 @@ public class ElGamal {
     public static CipherText homomorphicAddition(CipherText c1, CipherText c2) {
         BigInteger c = c1.getC().multiply(c2.getC());
         BigInteger d = c1.getD().multiply(c2.getD());
+
         return new CipherText(c, d);
     }
 }

@@ -22,20 +22,20 @@ public class PublicKey {
         return h;
     }
 
-    public BigInteger getG() {
-        return g;
-    }
-
-    public BigInteger getQ() {
-        return q;
-    }
-
     public void setH(BigInteger h) {
         this.h = h;
     }
 
+    public BigInteger getG() {
+        return g;
+    }
+
     public void setG(BigInteger g) {
         this.g = g;
+    }
+
+    public BigInteger getQ() {
+        return q;
     }
 
     public void setQ(BigInteger q) {

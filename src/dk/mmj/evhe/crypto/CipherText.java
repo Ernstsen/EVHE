@@ -22,12 +22,12 @@ public class CipherText {
         return c;
     }
 
-    public BigInteger getD() {
-        return d;
-    }
-
     public void setC(BigInteger c) {
         this.c = c;
+    }
+
+    public BigInteger getD() {
+        return d;
     }
 
     public void setD(BigInteger d) {
