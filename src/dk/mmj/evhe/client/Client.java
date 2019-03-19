@@ -42,6 +42,11 @@ public class Client implements Application {
     private Boolean vote;
     private Integer multi;
 
+    /**
+     * Creates a client instance, that utilizes the SSL protocol to communicate with the public server.
+     *
+     * @param configuration the ClientConfiguration built in the same class.
+     */
     public Client(ClientConfiguration configuration) {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.register(VoteDTO.class);
@@ -50,6 +55,7 @@ public class Client implements Application {
         id = configuration.id;
         vote = configuration.vote;
         multi = configuration.multi;
+
         try {
 
             // The following is needed for localhost testing.
@@ -77,6 +83,11 @@ public class Client implements Application {
         }
     }
 
+    /**
+     * Fetches the public key from the public server, and votes.
+     * Can either call doMultiVote, which is used to cast a number of random votes, for testing purposes,
+     * or call doVote which just casts a single, specified vote.
+     */
     @Override
     public void run() {
         assertPublicServer();
@@ -90,6 +101,12 @@ public class Client implements Application {
         }
     }
 
+    /**
+     * Used to do multi voting, for testing purposes.
+     * For every client ID it casts a random vote by calling doVote.
+     *
+     * @param publicKey is the public key used to encrypt the vote.
+     */
     private void doMultiVote(PublicKey publicKey) {
         Random random = new Random();
         int trueVotes = 0;
@@ -113,11 +130,21 @@ public class Client implements Application {
         System.out.println("Dispatched " + multi + " votes with " + trueVotes + " for, and " + falseVotes + " against");
     }
 
+    /**
+     * Will encrypt the vote under the public key, and call postVote with the encrypted vote.
+     *
+     * @param publicKey is the public key used to encrypt the vote.
+     * @param vote is the desired vote to cast, either 0 or 1.
+     */
     private void doVote(PublicKey publicKey, int vote) {
         CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote));
         postVote(encryptedVote);
     }
 
+    /**
+     * Makes sure that we're talking to the correct server, and that it is live.
+     * Throws an error if this is not the case.
+     */
     private void assertPublicServer() {
         // Check that we are connected to PublicServer
         Response publicServerResp = target.path("type").request().buildGet().invoke();
@@ -134,6 +161,11 @@ public class Client implements Application {
         }
     }
 
+    /**
+     * Posts the encrypted vote to the public server, using the "/vote" path.
+     *
+     * @param encryptedVote the vote encrypted under the public key.
+     */
     private void postVote(CipherText encryptedVote) {
         try {
             VoteDTO payload = new VoteDTO(encryptedVote, id);
@@ -148,6 +180,12 @@ public class Client implements Application {
         }
     }
 
+    /**
+     * Reads the input to the terminal.
+     * Valid inputs for the vote is either "true" or "false".
+     *
+     * @return 1 or 0 according to input.
+     */
     private int getVote() {
         if (vote == null) {
             System.out.println("Please enter vote to be cast: true/false");
@@ -169,12 +207,21 @@ public class Client implements Application {
         }
     }
 
+    /**
+     * Fetches the public key by requesting it from the public servers "/publicKey" path.
+     *
+     * @return the response containing the Public Key.
+     */
     private PublicKey getPublicKey() {
         Response response = target.path("publicKey").request().buildGet().invoke();
-        
+
         return response.readEntity(PublicKey.class);
     }
 
+    /**
+     * The Client Configuration loaded by the client.
+     * Variables are set in the ClientConfigBuilder.
+     */
     public static class ClientConfiguration implements Configuration {
         private final String targetUrl;
         private final String id;

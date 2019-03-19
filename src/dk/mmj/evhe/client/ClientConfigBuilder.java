@@ -19,6 +19,12 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private Boolean vote = null;
     private Integer multi = null;
 
+    /**
+     * Sets the local variables by translating the input from the command line.
+     * The available commands are "server=", "id=", "vote=" or "multi=".
+     *
+     * @param command the command given as parameter.
+     */
     @Override
     public void applyCommand(CommandLineParser.Command command) {
         String cmd = command.getCommand();
@@ -35,11 +41,19 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
         }
     }
 
+    /**
+     * Returns the ClientConfiguration with the loaded variables.
+     *
+     * @return Client.ClientConfiguration.
+     */
     @Override
     public Configuration build() {
         return new Client.ClientConfiguration(targetUrl, id, vote, multi);
     }
 
+    /**
+     * @return Prints strings showing the user which options are available.
+     */
     @Override
     public String help() {
         return "\tMODE: keyServer\n" +
