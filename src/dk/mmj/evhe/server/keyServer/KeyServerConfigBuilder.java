@@ -13,13 +13,15 @@ import java.io.IOException;
 
 public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
+    private static final String SELF = "--keyServer";
 
-    private Integer port;
-    private KeyGenerationParameters keygenParams;
-
+    //Configuration options
     private static final String PORT = "port=";
     private static final String KEY_PARAMS = "keyParams=";
-    private static final String SELF = "--keyServer";
+
+    //State
+    private Integer port;
+    private KeyGenerationParameters keygenParams;
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
@@ -36,6 +38,11 @@ public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
         }
     }
 
+    /**
+     * Loads parameters for keygeneration from a file into a {@link PersistedKeyParameters} pbject
+     *
+     * @param pathString path to the file
+     */
     private void loadKeyGenParams(String pathString) {
         logger.info("Parsing parameters for key generation");
 
@@ -55,15 +62,7 @@ public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
 
     @Override
     public Configuration build() {
-        return new KeyServer.KeyServerConfiguration(this);
-    }
-
-    Integer getPort() {
-        return port;
-    }
-
-    KeyGenerationParameters getKeygenParams() {
-        return keygenParams;
+        return new KeyServer.KeyServerConfiguration(port, keygenParams);
     }
 
     @Override

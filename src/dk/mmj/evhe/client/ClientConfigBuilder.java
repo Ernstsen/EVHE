@@ -10,12 +10,16 @@ import java.util.UUID;
 public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(ClientConfigBuilder.class);
     private static final String SELF = "--client";
+
+    //Configuration options
     private static final String TARGET_URL = "server=";
     private static final String ID = "id=";
     private static final String VOTE = "vote=";
     private static final String MULTI = "multi=";
+
+    //State
     private String targetUrl = "https://localhost:8080";
-    private String id = "TESTID" + UUID.randomUUID().toString();
+    private String id = "TEST_ID" + UUID.randomUUID().toString();
     private Boolean vote = null;
     private Integer multi = null;
 
@@ -42,9 +46,9 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     }
 
     /**
-     * Returns the ClientConfiguration with the loaded variables.
+     * Returns the {@link Client.ClientConfiguration} with the loaded variables.
      *
-     * @return Client.ClientConfiguration.
+     * @return Configuration for client execution
      */
     @Override
     public Configuration build() {
@@ -52,7 +56,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     }
 
     /**
-     * @return Prints strings showing the user which options are available.
+     * @return String describing configuration options
      */
     @Override
     public String help() {

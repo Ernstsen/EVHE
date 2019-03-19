@@ -1,6 +1,7 @@
 package dk.mmj.evhe.server;
 
 import dk.mmj.evhe.Application;
+import dk.mmj.evhe.client.SSLHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.*;
@@ -8,11 +9,12 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
+import static dk.mmj.evhe.client.SSLHelper.CERTIFICATE_PASSWORD;
+import static dk.mmj.evhe.client.SSLHelper.CERTIFICATE_PATH;
+
 
 @SuppressWarnings("WeakerAccess")
 public abstract class AbstractServer implements Application {
-    public static final String CERTIFICATE_PATH = "certs/keystore.jks";
-    public static final String CERTIFICATE_PASSWORD = "password";
     private Logger logger = LogManager.getLogger(AbstractServer.class);
     private Server server;
 
@@ -81,11 +83,7 @@ public abstract class AbstractServer implements Application {
         HttpConfiguration https = new HttpConfiguration();
         https.addCustomizer(new SecureRequestCustomizer());
 
-        SslContextFactory sslContextFactory = new SslContextFactory();
-        sslContextFactory.setKeyStorePath(CERTIFICATE_PATH);
-        sslContextFactory.setKeyStorePassword(CERTIFICATE_PASSWORD);
-        sslContextFactory.setKeyManagerPassword(CERTIFICATE_PASSWORD);
-        sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
+        SslContextFactory sslContextFactory = SSLHelper.getSSLContextFactory();
 
         ServerConnector sslConnector = new ServerConnector(jettyServer,
                 new SslConnectionFactory(sslContextFactory, "http/1.1"),

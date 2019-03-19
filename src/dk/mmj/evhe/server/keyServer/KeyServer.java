@@ -14,14 +14,14 @@ public class KeyServer extends AbstractServer {
     private int port = 8081;
 
     public KeyServer(KeyServerConfiguration configuration) {
-        if (configuration.builder.getPort() != null) {
-            port = configuration.builder.getPort();
+        if (configuration.port != null) {
+            port = configuration.port;
         }
 
         KeyPair keyPair;
 
-        if (configuration.hasKeygenParameters()) {
-            KeyGenerationParameters params = configuration.builder.getKeygenParams();
+        if (configuration.keygenParams != null) {
+            KeyGenerationParameters params = configuration.keygenParams;
             keyPair = ElGamal.generateKeys(params);
         } else {
             KeyGenerationParametersImpl params = new KeyGenerationParametersImpl(1024, 50);
@@ -44,15 +44,17 @@ public class KeyServer extends AbstractServer {
         return port;
     }
 
+    /**
+     * Configuration for a KeyServer
+     */
     public static class KeyServerConfiguration implements Configuration {
-        private KeyServerConfigBuilder builder;
+        private final KeyGenerationParameters keygenParams;
+        private final Integer port;
 
-        KeyServerConfiguration(KeyServerConfigBuilder builder) {
-            this.builder = builder;
+        KeyServerConfiguration(Integer port, KeyGenerationParameters keygenParams) {
+            this.port = port;
+            this.keygenParams = keygenParams;
         }
 
-        private boolean hasKeygenParameters() {
-            return builder.getKeygenParams() != null;
-        }
     }
 }

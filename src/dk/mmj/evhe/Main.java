@@ -24,7 +24,7 @@ public class Main {
 
     public static void main(String[] args) {
         CommandLineParser parser = getParser();
-        Configuration parse;
+        Configuration configuration;
 
         if (args.length == 0 || "-h".equals(args[0]) || "-help".equals(args[0])) {
             System.out.println(parser.help());
@@ -32,7 +32,7 @@ public class Main {
         }
 
         try {
-            parse = parser.parse(args);
+            configuration = parser.parse(args);
         } catch (NoSuchBuilderException e) {
             System.out.println("Failed to match first parameter \"" + args[0] + "\" to a mode of configuration");
             return;
@@ -42,13 +42,17 @@ public class Main {
         }
 
 
-        Application app;
+        Application app = getApplication(configuration);
+        app.run();
+    }
+
+    private static Application getApplication(Configuration parse) {
         if (parse instanceof Client.ClientConfiguration) {
-            app = new Client((Client.ClientConfiguration) parse);
+            return new Client((Client.ClientConfiguration) parse);
         } else if (parse instanceof KeyServer.KeyServerConfiguration) {
-            app = new KeyServer((KeyServer.KeyServerConfiguration) parse);
+            return new KeyServer((KeyServer.KeyServerConfiguration) parse);
         } else if (parse instanceof PublicServer.PublicServerConfiguration) {
-            app = new PublicServer((PublicServer.PublicServerConfiguration) parse);
+            return new PublicServer((PublicServer.PublicServerConfiguration) parse);
         } else {
             System.out.println("" +
                     "====================\n" +
@@ -56,9 +60,9 @@ public class Main {
                     "This should NEVER happen\n" +
                     "Terminating.\n" +
                     "====================");
-            return;
+            System.exit(-1);
+            return null;
         }
-        app.run();
     }
 
     private static CommandLineParser getParser() {

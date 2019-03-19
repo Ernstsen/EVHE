@@ -10,7 +10,7 @@ import java.util.Map;
  * Singleton state for a server. Acts like a map
  */
 public class ServerState {
-    /* State */
+    // State
     private static ServerState instance = new ServerState();
     private static Logger logger = LogManager.getLogger(ServerState.class);
     private Map<String, Object> state = new HashMap<>();

@@ -1,7 +1,10 @@
 package dk.mmj.evhe.crypto;
 
+/**
+ * Exception thrown when unable to decrypt a given ciphertext
+ */
 public class UnableToDecryptException extends Exception {
-    public UnableToDecryptException(String message) {
+    UnableToDecryptException(String message) {
         super(message);
     }
 }

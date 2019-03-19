@@ -7,7 +7,7 @@ import java.util.Random;
 /**
  * Class used for methods not tied directly to ElGamal
  */
-public class Utils {
+class Utils {
     /**
      * Find a random number in the range [1;n)
      *

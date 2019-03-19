@@ -8,7 +8,7 @@ public class CipherText {
     private BigInteger d;
 
     /**
-     * Empty objectmapper constructor
+     * Empty {@link com.fasterxml.jackson.databind.ObjectMapper} constructor
      */
     public CipherText() {
     }

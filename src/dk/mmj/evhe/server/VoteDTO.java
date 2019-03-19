@@ -2,6 +2,9 @@ package dk.mmj.evhe.server;
 
 import dk.mmj.evhe.crypto.CipherText;
 
+/**
+ * Simple DTO object for casting votes
+ */
 @SuppressWarnings("JavaDocs, unused")
 public class VoteDTO {
     private CipherText cipherText;

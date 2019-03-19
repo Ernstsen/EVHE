@@ -2,6 +2,7 @@ package dk.mmj.evhe.server.publicServer;
 
 
 import dk.eSoftware.commandLineParser.Configuration;
+import dk.mmj.evhe.client.SSLHelper;
 import dk.mmj.evhe.crypto.CipherText;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.PublicKey;
@@ -14,16 +15,15 @@ import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,11 +31,11 @@ import java.util.HashSet;
 
 public class PublicServer extends AbstractServer {
     static final String PUBLIC_KEY = "publicKey";
-    static final String VOTES = "votes";
     static final String HAS_VOTED = "hasVoted";
-    static final String SERVER = "server";
     static final String IS_TEST = "isTesting";
+    static final String SERVER = "server";
     static final String RESULT = "finished";
+    static final String VOTES = "votes";
 
     private static final Logger logger = LogManager.getLogger(PublicServer.class);
     private JerseyWebTarget keyServer;
@@ -45,20 +45,22 @@ public class PublicServer extends AbstractServer {
     public PublicServer(PublicServerConfiguration configuration) {
         this.configuration = configuration;
 
+        tmp(configuration);
+    }
+
+    private void tmp(PublicServerConfiguration configuration) {
+        state.put(IS_TEST, configuration.test);
+
+        configureWebTarget(configuration);
+    }
+
+    private void configureWebTarget(PublicServerConfiguration configuration) {
         try {
-            // The following is needed for localhost testing.
-            HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
+            SSLContext ssl = SSLHelper.initializeSSL();
 
-            KeyStore keyStore = KeyStore.getInstance("jceks");
-            keyStore.load(new FileInputStream(CERTIFICATE_PATH), CERTIFICATE_PASSWORD.toCharArray());
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(keyStore);
-
-            SSLContext ssl = SSLContext.getInstance("SSL");
-            ssl.init(null, tmf.getTrustManagers(), new SecureRandom());
             JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().sslContext(ssl).build();
+
             keyServer = client.target(configuration.keyServer);
-            state.put(IS_TEST, configuration.test);
 
         } catch (NoSuchAlgorithmException e) {
             logger.error("Unrecognized SSL context algorithm:", e);

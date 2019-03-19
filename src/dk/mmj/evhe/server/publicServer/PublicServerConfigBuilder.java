@@ -7,9 +7,13 @@ import org.apache.logging.log4j.Logger;
 
 public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(PublicServerConfigBuilder.class);
-    private static final String SELF = "--publicServer";
     private static final String KEY_SERVER = "keyServer=";
+
+    //Configuration options
+    private static final String SELF = "--publicServer";
     private static final String TEST = "test=";
+
+    //State
     private boolean test = false;
     private String keyServer = "https://localhost:8081";
 

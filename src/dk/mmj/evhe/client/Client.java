@@ -16,24 +16,20 @@ import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Random;
 import java.util.UUID;
-
-import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PASSWORD;
-import static dk.mmj.evhe.server.AbstractServer.CERTIFICATE_PATH;
 
 public class Client implements Application {
     private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
@@ -48,45 +44,49 @@ public class Client implements Application {
      * @param configuration the ClientConfiguration built in the same class.
      */
     public Client(ClientConfiguration configuration) {
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.register(VoteDTO.class);
-        clientConfig.register(PublicKey.class);
 
         id = configuration.id;
         vote = configuration.vote;
         multi = configuration.multi;
 
+        configureWebTarget(configuration.targetUrl);
+    }
+
+    /**
+     * Sets up {@link javax.ws.rs.client.WebTarget} using SSL
+     *
+     * @param targetUrl baseUrl for the webTarget
+     */
+    private void configureWebTarget(String targetUrl) {
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(VoteDTO.class);
+        clientConfig.register(PublicKey.class);
+
         try {
-
-            // The following is needed for localhost testing.
-            HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
-
-            KeyStore keyStore = KeyStore.getInstance("jceks");
-            keyStore.load(new FileInputStream(CERTIFICATE_PATH), CERTIFICATE_PASSWORD.toCharArray());
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(keyStore);
-
-            SSLContext ssl = SSLContext.getInstance("SSL");
-            ssl.init(null, tmf.getTrustManagers(), new SecureRandom());
+            SSLContext ssl = SSLHelper.initializeSSL();
 
             JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().withConfig(clientConfig).sslContext(ssl).build();
 
-            target = client.target(configuration.targetUrl);
+            target = client.target(targetUrl);
 
         } catch (NoSuchAlgorithmException e) {
             logger.error("Unrecognized SSL context algorithm:", e);
             System.exit(-1);
         } catch (KeyManagementException e) {
             logger.error("Initializing SSL Context failed: ", e);
+            System.exit(-1);
         } catch (CertificateException | KeyStoreException | IOException e) {
             logger.error("Error Initializing the Certificate: ", e);
+            System.exit(-1);
         }
     }
 
     /**
-     * Fetches the public key from the public server, and votes.
-     * Can either call doMultiVote, which is used to cast a number of random votes, for testing purposes,
-     * or call doVote which just casts a single, specified vote.
+     * Fetches the public key from the public server, and casts vote.
+     * <br/>
+     * if <code>multi</code> is set it casts <code>multi</code> random votes, for testing purposes.
+     * <br/>
+     * Otherwise just casts a single, specified vote.
      */
     @Override
     public void run() {
@@ -102,8 +102,7 @@ public class Client implements Application {
     }
 
     /**
-     * Used to do multi voting, for testing purposes.
-     * For every client ID it casts a random vote by calling doVote.
+     * Casts <code>multi</code> random votes, for testing purposes.
      *
      * @param publicKey is the public key used to encrypt the vote.
      */
@@ -131,10 +130,10 @@ public class Client implements Application {
     }
 
     /**
-     * Will encrypt the vote under the public key, and call postVote with the encrypted vote.
+     * Encrypts the vote under the public key, and casts the encrypted vote.
      *
      * @param publicKey is the public key used to encrypt the vote.
-     * @param vote is the desired vote to cast, either 0 or 1.
+     * @param vote      is the vote to be cast, either 0 or 1.
      */
     private void doVote(PublicKey publicKey, int vote) {
         CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote));
@@ -142,8 +141,9 @@ public class Client implements Application {
     }
 
     /**
-     * Makes sure that we're talking to the correct server, and that it is live.
-     * Throws an error if this is not the case.
+     * Makes sure that the {@link javax.ws.rs.client.WebTarget} is a public-server, and that it is live.
+     * <br/>
+     * Throws a {@link RuntimeException} if this is not the case.
      */
     private void assertPublicServer() {
         // Check that we are connected to PublicServer
@@ -181,7 +181,10 @@ public class Client implements Application {
     }
 
     /**
-     * Reads the input to the terminal.
+     * Retrieves vote to be cast
+     * <br/>
+     * If none is defined, terminal is prompted for one
+     * <br/>
      * Valid inputs for the vote is either "true" or "false".
      *
      * @return 1 or 0 according to input.
@@ -196,7 +199,8 @@ public class Client implements Application {
                 vote = Boolean.parseBoolean(s);
                 System.out.println("voting: " + vote);
             } catch (IOException ignored) {
-                // Being ignored.
+                System.out.println("Unable to read vote - terminating");
+                System.exit(-1);
             }
         }
 
@@ -219,14 +223,15 @@ public class Client implements Application {
     }
 
     /**
-     * The Client Configuration loaded by the client.
-     * Variables are set in the ClientConfigBuilder.
+     * The Client Configuration.
+     * <br/>
+     * Created in the {@link ClientConfigBuilder}.
      */
     public static class ClientConfiguration implements Configuration {
         private final String targetUrl;
         private final String id;
-        private Boolean vote;
-        private Integer multi;
+        private final Boolean vote;
+        private final Integer multi;
 
         ClientConfiguration(String targetUrl, String id, Boolean vote, Integer multi) {
             this.targetUrl = targetUrl;
