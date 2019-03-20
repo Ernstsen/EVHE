@@ -45,10 +45,6 @@ public class PublicServer extends AbstractServer {
     public PublicServer(PublicServerConfiguration configuration) {
         this.configuration = configuration;
 
-        tmp(configuration);
-    }
-
-    private void tmp(PublicServerConfiguration configuration) {
         state.put(IS_TEST, configuration.test);
 
         configureWebTarget(configuration);

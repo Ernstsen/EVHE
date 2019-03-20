@@ -61,7 +61,7 @@ public class PublicServerResource {
             throw new NotAllowedException("Vote was attempted with unrecognized id=" + voterId);
         }
 
-        if (!isTest && hasVoted.contains(voterId)) {
+        if (hasVoted.contains(voterId)) {
             logger.warn("Voter with id=" + voterId + " attempted to vote more than once");
             throw new NotAllowedException("A vote has already been registered with this ID");
         }
