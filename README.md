@@ -15,6 +15,10 @@ In the first iteration the system assumes that all voters are honest and the sam
 
 The voters will send votes which is either 1 or 0, which the publicServer then adds up. By having the publicServer adding them up, there is no way for the keyServer, which is the only one to see the plain values, to know who voted what. After the votes has been added the, still encrypted, result is sent to the keyServer who then decrypts and publishes it
 
+### Iteration 2
+For the second iteration the main task will be to remove trust in voters.
+Iteration 1 assumed that all votes were either 0 or 1, meaning they could simply be summed. Removing trust in voters means moving away from this assumption. It still needs to hold, but will have to be verified for each vote
+
 ## Contributing
 Even though this was created as a bachelors project, which has been finished as this is made public, pull requests are welcome.
 They must adhere to the guidelines set forth i GUIDELINES.md
