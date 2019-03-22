@@ -52,7 +52,7 @@ public class ServerState {
             logger.debug("Retrieved null from state with key=" + key);
             return null;
         }
-        if (!object.getClass().isAssignableFrom(objectClass)) {
+        if (!objectClass.isAssignableFrom(object.getClass())) {
             logger.warn("Retrieved object from state where did not match expected. Class=" + object.getClass() + ", expected=" + objectClass);
             return null;
         }

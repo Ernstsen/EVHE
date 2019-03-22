@@ -38,7 +38,7 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
 
     @Override
     public String help() {
-        return "\tMODE: keyServer\n" +
+        return "\tMODE: publicServer\n" +
                 "\t  --" + KEY_SERVER + "keyServerUrl\t Specifies url for public server to connect to. Standard is: " + keyServer + "\n" +
                 "\t  --" + TEST + "{true,false}\t specifies whether ids is allowed to be testing ids - not pre-determined ones";
     }

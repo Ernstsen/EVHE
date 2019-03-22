@@ -9,9 +9,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import static dk.mmj.evhe.client.SSLHelper.CERTIFICATE_PASSWORD;
-import static dk.mmj.evhe.client.SSLHelper.CERTIFICATE_PATH;
-
 
 @SuppressWarnings("WeakerAccess")
 public abstract class AbstractServer implements Application {

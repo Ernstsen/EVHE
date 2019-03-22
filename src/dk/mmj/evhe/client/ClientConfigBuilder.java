@@ -60,7 +60,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
      */
     @Override
     public String help() {
-        return "\tMODE: keyServer\n" +
+        return "\tMODE: client\n" +
                 "\t  --" + TARGET_URL + "publicServerUrl\t Specifies url for public server to connect to. Standard is: "
                 + targetUrl + "\n" +
                 "\t  --" + ID + "idString\t id identifying this instance as a unique voter\n" +

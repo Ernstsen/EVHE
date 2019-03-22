@@ -99,6 +99,18 @@ public class PublicServerResource {
         return "<h3> Voting has finished </h3> <br/>" + result;
     }
 
+    @GET
+    @Path("getVotes")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List getVotes(){
+        List list = state.get(VOTES, List.class);
+        if(list == null){
+            throw new NotFoundException("Voting has not been initialized");
+        }
+
+        return list;
+    }
+
 
     @POST
     @Path("terminate")
