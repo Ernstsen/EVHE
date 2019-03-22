@@ -43,5 +43,6 @@
     <orderEntry type="library" name="snappy-java-1.1.1.7" level="project" />
     <orderEntry type="library" name="log4j-web-2.5" level="project" />
     <orderEntry type="library" name="jersey-media-json-jackson-2.22.1" level="project" />
+    <orderEntry type="library" name="bcprov-jdk15on-1.60" level="project" />
   </component>
 </module>

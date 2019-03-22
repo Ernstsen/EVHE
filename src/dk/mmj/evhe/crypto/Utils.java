@@ -1,5 +1,7 @@
 package dk.mmj.evhe.crypto;
 
+import org.bouncycastle.crypto.digests.SHA256Digest;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -23,5 +25,13 @@ class Utils {
         }
 
         return result;
+    }
+
+    public static byte[] hash(byte[] payload){
+        SHA256Digest sha256Digest = new SHA256Digest();
+        sha256Digest.update(payload, 0, payload.length);
+        byte[] hash = new byte[sha256Digest.getDigestSize()];
+        sha256Digest.doFinal(hash, 0);
+        return hash;
     }
 }

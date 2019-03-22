@@ -168,7 +168,7 @@ public class Client implements Application {
      */
     private void postVote(CipherText encryptedVote) {
         try {
-            VoteDTO payload = new VoteDTO(encryptedVote, id);
+            VoteDTO payload = new VoteDTO(encryptedVote, id, null);
             Entity<?> entity = Entity.entity(new ObjectMapper().writeValueAsString(payload), MediaType.APPLICATION_JSON_TYPE);
             Response response = target.path("vote").request().post(entity);
 

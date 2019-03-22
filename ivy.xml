@@ -27,6 +27,9 @@
         <dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.5"/>
         <dependency org="org.apache.logging.log4j" name="log4j-web" rev="2.5"/>
 
+        <!-- Bouncy Castle -->
+        <dependency org="org.bouncycastle" name="bcprov-jdk15on" rev="1.60"/>
+
         <!-- CommandLineTool -->
         <dependency org="dk.eSoftware" name="commandLineParser" rev="1.1.1"/>
     </dependencies>
