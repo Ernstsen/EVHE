@@ -57,8 +57,7 @@ public class ElGamal {
      * @param message   the message to encrypt
      * @return the cipher text
      */
-    public static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message) {
-        BigInteger r = Utils.getRandomNumModN(publicKey.getQ());
+    public static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message, BigInteger r) {
         BigInteger p = publicKey.getQ().multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
 
         BigInteger c = publicKey.getG().modPow(r, p);

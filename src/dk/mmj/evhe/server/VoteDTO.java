@@ -49,32 +49,52 @@ public class VoteDTO {
     /**
      * DTO class for proof that votes is either 0 or 1
      */
-    static class Proof {
-        private BigInteger a;
-        private BigInteger z;
+    public static class Proof {
+        private BigInteger e0;
+        private BigInteger e1;
+        private BigInteger z0;
+        private BigInteger z1;
 
         public Proof() {
         }
 
-        public Proof(BigInteger a, BigInteger z) {
-            this.a = a;
-            this.z = z;
+        public Proof(BigInteger e0, BigInteger e1, BigInteger z0, BigInteger z1) {
+            this.e0 = e0;
+            this.e1 = e1;
+            this.z0 = z0;
+            this.z1 = z1;
         }
 
-        public BigInteger getA() {
-            return a;
+        public BigInteger getE0() {
+            return e0;
         }
 
-        public void setA(BigInteger a) {
-            this.a = a;
+        public void setE0(BigInteger e0) {
+            this.e0 = e0;
         }
 
-        public BigInteger getZ() {
-            return z;
+        public BigInteger getE1() {
+            return e1;
         }
 
-        public void setZ(BigInteger z) {
-            this.z = z;
+        public void setE1(BigInteger e1) {
+            this.e1 = e1;
+        }
+
+        public BigInteger getZ0() {
+            return z0;
+        }
+
+        public void setZ0(BigInteger z0) {
+            this.z0 = z0;
+        }
+
+        public BigInteger getZ1() {
+            return z1;
+        }
+
+        public void setZ1(BigInteger z1) {
+            this.z1 = z1;
         }
     }
 }

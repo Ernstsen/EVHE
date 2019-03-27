@@ -7,6 +7,7 @@ import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.CipherText;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.PublicKey;
+import dk.mmj.evhe.crypto.Utils;
 import dk.mmj.evhe.server.VoteDTO;
 import dk.mmj.evhe.server.keyServer.KeyServerConfigBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -136,7 +137,8 @@ public class Client implements Application {
      * @param vote      is the vote to be cast, either 0 or 1.
      */
     private void doVote(PublicKey publicKey, int vote) {
-        CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote));
+        BigInteger r = Utils.getRandomNumModN(publicKey.getQ());
+        CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote), r);
         postVote(encryptedVote);
     }
 

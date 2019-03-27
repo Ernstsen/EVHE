@@ -9,14 +9,14 @@ import java.util.Random;
 /**
  * Class used for methods not tied directly to ElGamal
  */
-class Utils {
+public class Utils {
     /**
      * Find a random number in the range [1;n)
      *
      * @param n n-1 is upper limit in interval
      * @return random number in range [1;n)
      */
-    static BigInteger getRandomNumModN(BigInteger n) {
+    public static BigInteger getRandomNumModN(BigInteger n) {
         Random randomBits = new SecureRandom();
         BigInteger result = null;
 
