@@ -16,7 +16,7 @@ public class VoteProofUtils {
         BigInteger c = cipherText.getC();
         BigInteger d = cipherText.getD();
         BigInteger q = publicKey.getQ();
-        BigInteger p = q.multiply(BigInteger.valueOf(2)).add(BigInteger.valueOf(2));
+        BigInteger p = publicKey.getP();
         BigInteger y = Utils.getRandomNumModN(q);
         int fakeIndex = (1 - vote);
 
@@ -49,4 +49,36 @@ public class VoteProofUtils {
 
         return new VoteDTO.Proof(e[0], e[1], z[0], z[1]);
     }
+
+    static boolean verifyProof(VoteDTO vote, PublicKey publicKey) {
+        BigInteger e0 = vote.getProof().getE0();
+        BigInteger e1 = vote.getProof().getE1();
+        BigInteger z0 = vote.getProof().getZ0();
+        BigInteger z1 = vote.getProof().getZ1();
+        BigInteger g = publicKey.getG();
+        BigInteger h = publicKey.getH();
+        BigInteger q = publicKey.getQ();
+        BigInteger p = publicKey.getP();
+        BigInteger c = vote.getCipherText().getC();
+        BigInteger d = vote.getCipherText().getD();
+
+        BigInteger a0 = g.modPow(z0, p).divide(c.modPow(e0, p));
+        BigInteger b0 = h.modPow(z0, p).divide(d.modPow(e0, p));
+        BigInteger a1 = g.modPow(z1, p).divide(c.modPow(e1, p));
+        BigInteger b1 = h.modPow(z1, p).divide(d.divide(g).modPow(e1, p));
+
+        BigInteger test = new BigInteger(
+                Utils.hash(new byte[][]{
+                        a0.toByteArray(),
+                        b0.toByteArray(),
+                        a1.toByteArray(),
+                        b1.toByteArray(),
+                        c.toByteArray(),
+                        d.toByteArray(),
+                        vote.getId().getBytes()
+                }));
+
+        return e0.add(e1).equals(test);
+    }
 }
+

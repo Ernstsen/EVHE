@@ -42,4 +42,8 @@ public class PublicKey {
     public void setQ(BigInteger q) {
         this.q = q;
     }
+
+    public BigInteger getP() {
+        return q.multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
+    }
 }
