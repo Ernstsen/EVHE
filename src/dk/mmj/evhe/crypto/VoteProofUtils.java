@@ -17,17 +17,19 @@ public class VoteProofUtils {
         BigInteger d = cipherText.getD();
         BigInteger q = publicKey.getQ();
         BigInteger p = publicKey.getP();
-        BigInteger y = Utils.getRandomNumModN(q);
+
         int fakeIndex = (1 - vote);
 
+        BigInteger y = Utils.getRandomNumModN(q);
         e[fakeIndex] = Utils.getRandomNumModN(q);
         z[fakeIndex] = Utils.getRandomNumModN(q);
-        a[fakeIndex] = g.modPow(z[fakeIndex], p).divide(c.modPow(e[fakeIndex], p));
+
+        a[fakeIndex] = g.modPow(z[fakeIndex], p).multiply(c.modPow(e[fakeIndex], p)).mod(p);
 
         if (vote == 1) {
-            b[fakeIndex] = h.modPow(z[fakeIndex], p).divide(d.modPow(e[fakeIndex], p));
+            b[fakeIndex] = h.modPow(z[fakeIndex], p).multiply(d.modPow(e[fakeIndex], p)).mod(p);
         } else {
-            b[fakeIndex] = h.modPow(z[fakeIndex], p).divide(d.divide(g).modPow(e[fakeIndex], p));
+            b[fakeIndex] = h.modPow(z[fakeIndex], p).multiply(d.divide(g).modPow(e[fakeIndex], p)).mod(p);
         }
 
         a[vote] = g.modPow(y, p);
@@ -42,10 +44,10 @@ public class VoteProofUtils {
                         c.toByteArray(),
                         d.toByteArray(),
                         id.getBytes()
-                }));
+                })).mod(q);
 
-        e[vote] = s.subtract(e[fakeIndex]);
-        z[vote] = y.add(e[vote].multiply(witness)).mod(q);
+        e[vote] = s.subtract(e[fakeIndex]).mod(q);
+        z[vote] = y.subtract(e[vote].multiply(witness)).mod(q);
 
         return new VoteDTO.Proof(e[0], e[1], z[0], z[1]);
     }
@@ -62,12 +64,12 @@ public class VoteProofUtils {
         BigInteger c = vote.getCipherText().getC();
         BigInteger d = vote.getCipherText().getD();
 
-        BigInteger a0 = g.modPow(z0, p).divide(c.modPow(e0, p));
-        BigInteger b0 = h.modPow(z0, p).divide(d.modPow(e0, p));
-        BigInteger a1 = g.modPow(z1, p).divide(c.modPow(e1, p));
-        BigInteger b1 = h.modPow(z1, p).divide(d.divide(g).modPow(e1, p));
+        BigInteger a0 = g.modPow(z0, p).multiply(c.modPow(e0, p)).mod(p);
+        BigInteger b0 = h.modPow(z0, p).multiply(d.modPow(e0, p)).mod(p);
+        BigInteger a1 = g.modPow(z1, p).multiply(c.modPow(e1, p)).mod(p);
+        BigInteger b1 = h.modPow(z1, p).multiply(d.divide(g).modPow(e1, p)).mod(p);
 
-        BigInteger test = new BigInteger(
+        BigInteger s = new BigInteger(
                 Utils.hash(new byte[][]{
                         a0.toByteArray(),
                         b0.toByteArray(),
@@ -76,9 +78,9 @@ public class VoteProofUtils {
                         c.toByteArray(),
                         d.toByteArray(),
                         vote.getId().getBytes()
-                }));
+                })).mod(q);
 
-        return e0.add(e1).equals(test);
+        return e0.add(e1).mod(q).equals(s);
     }
 }
 

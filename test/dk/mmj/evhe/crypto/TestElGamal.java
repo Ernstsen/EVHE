@@ -100,11 +100,11 @@ public class TestElGamal {
         Assert.assertEquals(1, b);
     }
 
-    private static class SimpleKeyGenParams implements KeyGenerationParameters {
+    public static class SimpleKeyGenParams implements KeyGenerationParameters {
         private BigInteger g;
         private PrimePair pair;
 
-        private SimpleKeyGenParams(BigInteger g, PrimePair pair) {
+        public SimpleKeyGenParams(BigInteger g, PrimePair pair) {
             this.g = g;
             this.pair = pair;
         }
