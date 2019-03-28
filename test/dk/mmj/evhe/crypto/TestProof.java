@@ -35,6 +35,16 @@ public class TestProof {
 
     @Test
     public void shouldNotVerifyProof() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE, r);
 
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", 1);
+
+        VoteDTO vote = new VoteDTO(cipherText, "randomstring", proof);
+
+        boolean result = VoteProofUtils.verifyProof(vote, keyPair.getPublicKey());
+
+        Assert.assertFalse("Proof verification failed.", result);
     }
 }
