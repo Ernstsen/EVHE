@@ -6,7 +6,12 @@ import java.math.BigInteger;
 
 public class VoteProofUtils {
     @SuppressWarnings("DuplicateExpressions")
-    static VoteDTO.Proof generateProof(CipherText cipherText, PublicKey publicKey, BigInteger witness, String id, int vote) {
+    static VoteDTO.Proof generateProof(CipherText cipherText, PublicKey publicKey, BigInteger witness, String id, BigInteger vote) {
+        int v = 0;
+        if (vote.intValue() > v) {
+            v = 1;
+        }
+
         BigInteger[] e = new BigInteger[2];
         BigInteger[] z = new BigInteger[2];
         BigInteger[] a = new BigInteger[2];
@@ -18,7 +23,7 @@ public class VoteProofUtils {
         BigInteger q = publicKey.getQ();
         BigInteger p = publicKey.getP();
 
-        int fakeIndex = (1 - vote);
+        int fakeIndex = (1 - v);
 
         BigInteger y = Utils.getRandomNumModN(q);
         e[fakeIndex] = Utils.getRandomNumModN(q);
@@ -26,14 +31,14 @@ public class VoteProofUtils {
 
         a[fakeIndex] = g.modPow(z[fakeIndex], p).multiply(c.modPow(e[fakeIndex], p)).mod(p);
 
-        if (vote == 1) {
+        if (v == 1) {
             b[fakeIndex] = h.modPow(z[fakeIndex], p).multiply(d.modPow(e[fakeIndex], p)).mod(p);
         } else {
             b[fakeIndex] = h.modPow(z[fakeIndex], p).multiply(d.divide(g).modPow(e[fakeIndex], p)).mod(p);
         }
 
-        a[vote] = g.modPow(y, p);
-        b[vote] = h.modPow(y, p);
+        a[v] = g.modPow(y, p);
+        b[v] = h.modPow(y, p);
 
         BigInteger s = new BigInteger(
                 Utils.hash(new byte[][]{
@@ -46,8 +51,8 @@ public class VoteProofUtils {
                         id.getBytes()
                 })).mod(q);
 
-        e[vote] = s.subtract(e[fakeIndex]).mod(q);
-        z[vote] = y.subtract(e[vote].multiply(witness)).mod(q);
+        e[v] = s.subtract(e[fakeIndex]).mod(q);
+        z[v] = y.subtract(e[v].multiply(witness)).mod(q);
 
         return new VoteDTO.Proof(e[0], e[1], z[0], z[1]);
     }

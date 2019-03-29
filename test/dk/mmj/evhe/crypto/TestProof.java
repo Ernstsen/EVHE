@@ -22,13 +22,14 @@ public class TestProof {
     public void shouldVerifyProofWhenVoteIs1() {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
         BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
-        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE, r);
+        BigInteger vote = BigInteger.ONE;
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), vote, r);
 
-        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", 1);
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", vote);
 
-        VoteDTO vote = new VoteDTO(cipherText, "testid42", proof);
+        VoteDTO voteDTO = new VoteDTO(cipherText, "testid42", proof);
 
-        boolean result = VoteProofUtils.verifyProof(vote, keyPair.getPublicKey());
+        boolean result = VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
 
         Assert.assertTrue("Proof verification failed.", result);
     }
@@ -37,44 +38,64 @@ public class TestProof {
     public void shouldVerifyProofWhenVoteIs0() {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
         BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
-        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO, r);
+        BigInteger vote = BigInteger.ZERO;
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), vote, r);
 
-        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", 0);
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", vote);
 
-        VoteDTO vote = new VoteDTO(cipherText, "testid42", proof);
+        VoteDTO voteDTO = new VoteDTO(cipherText, "testid42", proof);
 
-        boolean result = VoteProofUtils.verifyProof(vote, keyPair.getPublicKey());
+        boolean result = VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
 
         Assert.assertTrue("Proof verification failed.", result);
     }
 
     @Test
-    public void shouldNotVerifyProoWhenVoteIs1AndIdIsWrong() {
+    public void shouldNotVerifyProofWhenVoteIs1AndIdIsWrong() {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
         BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
-        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE, r);
+        BigInteger vote = BigInteger.ONE;
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), vote, r);
 
-        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", 1);
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", vote);
 
-        VoteDTO vote = new VoteDTO(cipherText, "randomstring", proof);
+        VoteDTO voteDTO = new VoteDTO(cipherText, "testid43", proof);
 
-        boolean result = VoteProofUtils.verifyProof(vote, keyPair.getPublicKey());
+        boolean result = VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
 
         Assert.assertFalse("Proof verification failed.", result);
     }
 
     @Test
-    public void shouldNotVerifyProoWhenVoteIs0AndIdIsWrong() {
+    public void shouldNotVerifyProofWhenVoteIs0AndIdIsWrong() {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
         BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
-        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO, r);
+        BigInteger vote = BigInteger.ZERO;
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), vote, r);
 
-        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", 0);
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", vote);
 
-        VoteDTO vote = new VoteDTO(cipherText, "randomstring", proof);
+        VoteDTO voteDTO = new VoteDTO(cipherText, "randomstring", proof);
 
-        boolean result = VoteProofUtils.verifyProof(vote, keyPair.getPublicKey());
+        boolean result = VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
 
         Assert.assertFalse("Proof verification failed.", result);
     }
+
+    @Test
+    public void shouldNotVerifyProofWhenVoteIs3() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+        BigInteger vote = BigInteger.valueOf(3);
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), vote, r);
+
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", vote);
+
+        VoteDTO voteDTO = new VoteDTO(cipherText, "testid42", proof);
+
+        boolean result = VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
+
+        Assert.assertFalse("Proof verification succeeded.", result);
+    }
 }
+
