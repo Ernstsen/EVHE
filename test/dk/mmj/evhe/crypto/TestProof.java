@@ -95,7 +95,7 @@ public class TestProof {
 
         boolean result = VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
 
-        Assert.assertFalse("Proof verification succeeded.", result);
+        Assert.assertFalse("Proof verification succeeded, but should fail.", result);
     }
 }
 
