@@ -1,4 +1,6 @@
-package dk.mmj.evhe.crypto;
+package dk.mmj.evhe.crypto.keygeneration;
+
+import dk.mmj.evhe.crypto.entities.PrimePair;
 
 import java.math.BigInteger;
 
@@ -7,7 +9,7 @@ public interface KeyGenerationParameters {
     /**
      * Getter for the pair q,p used in ElGamal key-generation
      *
-     * @return a {@link dk.mmj.evhe.crypto.PrimePair} with (p,q)
+     * @return a {@link PrimePair} with (p,q)
      */
     PrimePair getPrimePair();
 

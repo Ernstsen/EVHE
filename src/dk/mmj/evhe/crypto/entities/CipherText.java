@@ -1,4 +1,4 @@
-package dk.mmj.evhe.crypto;
+package dk.mmj.evhe.crypto.entities;
 
 import java.math.BigInteger;
 
@@ -13,7 +13,7 @@ public class CipherText {
     public CipherText() {
     }
 
-    CipherText(BigInteger c, BigInteger d) {
+    public CipherText(BigInteger c, BigInteger d) {
         this.c = c;
         this.d = d;
     }

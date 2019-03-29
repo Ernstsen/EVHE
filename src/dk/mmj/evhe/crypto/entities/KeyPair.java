@@ -1,4 +1,4 @@
-package dk.mmj.evhe.crypto;
+package dk.mmj.evhe.crypto.entities;
 
 import java.math.BigInteger;
 
@@ -10,7 +10,7 @@ public class KeyPair {
     private BigInteger secretKey;
     private PublicKey publicKey;
 
-    KeyPair(BigInteger secretKey, PublicKey publicKey) {
+    public KeyPair(BigInteger secretKey, PublicKey publicKey) {
         this.secretKey = secretKey;
         this.publicKey = publicKey;
     }

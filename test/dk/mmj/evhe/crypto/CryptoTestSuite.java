@@ -1,5 +1,6 @@
 package dk.mmj.evhe.crypto;
 
+import dk.mmj.evhe.crypto.keygeneration.TestKeyGenerationsParametersImpl;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 

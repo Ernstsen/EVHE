@@ -2,8 +2,8 @@ package dk.mmj.evhe.server.keyServer;
 
 import dk.eSoftware.commandLineParser.CommandLineParser;
 import dk.eSoftware.commandLineParser.Configuration;
-import dk.mmj.evhe.crypto.KeyGenerationParameters;
-import dk.mmj.evhe.crypto.PersistedKeyParameters;
+import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
+import dk.mmj.evhe.crypto.keygeneration.PersistedKeyParameters;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

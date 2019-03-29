@@ -1,6 +1,7 @@
-package dk.mmj.evhe.crypto;
+package dk.mmj.evhe.crypto.keygeneration;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
+import dk.mmj.evhe.crypto.entities.PrimePair;
 
 import java.math.BigInteger;
 

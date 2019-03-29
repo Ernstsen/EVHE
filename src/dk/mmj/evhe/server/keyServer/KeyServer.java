@@ -2,9 +2,9 @@ package dk.mmj.evhe.server.keyServer;
 
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.crypto.ElGamal;
-import dk.mmj.evhe.crypto.KeyGenerationParameters;
-import dk.mmj.evhe.crypto.KeyGenerationParametersImpl;
-import dk.mmj.evhe.crypto.KeyPair;
+import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
+import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
+import dk.mmj.evhe.crypto.entities.KeyPair;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
 import org.eclipse.jetty.servlet.ServletHolder;

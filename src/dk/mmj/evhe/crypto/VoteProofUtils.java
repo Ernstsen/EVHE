@@ -1,10 +1,23 @@
 package dk.mmj.evhe.crypto;
 
+import dk.mmj.evhe.crypto.entities.CipherText;
+import dk.mmj.evhe.crypto.entities.PublicKey;
 import dk.mmj.evhe.server.VoteDTO;
 
 import java.math.BigInteger;
 
 public class VoteProofUtils {
+
+    /**
+     * Method for generating zero-knowledge proof for vote that is either 0 or 1
+     *
+     * @param cipherText ciphertext from encrypted vote
+     * @param publicKey  public key the vote is encrypted under
+     * @param witness    the r value from encryption
+     * @param id         voter id
+     * @param vote       what was voted - either 0 or 1
+     * @return the zero-knowledge proof
+     */
     @SuppressWarnings("DuplicateExpressions")
     static VoteDTO.Proof generateProof(CipherText cipherText, PublicKey publicKey, BigInteger witness, String id, BigInteger vote) {
         int v = (vote.intValue() > 0) ? 1 : 0; // For unit-test purposes.
@@ -22,9 +35,9 @@ public class VoteProofUtils {
 
         int fakeIndex = (1 - v);
 
-        BigInteger y = Utils.getRandomNumModN(q);
-        e[fakeIndex] = Utils.getRandomNumModN(q);
-        z[fakeIndex] = Utils.getRandomNumModN(q);
+        BigInteger y = SecurityUtils.getRandomNumModN(q);
+        e[fakeIndex] = SecurityUtils.getRandomNumModN(q);
+        z[fakeIndex] = SecurityUtils.getRandomNumModN(q);
 
         a[fakeIndex] = g.modPow(z[fakeIndex], p).multiply(c.modPow(e[fakeIndex], p)).mod(p);
 
@@ -38,7 +51,7 @@ public class VoteProofUtils {
         b[v] = h.modPow(y, p);
 
         BigInteger s = new BigInteger(
-                Utils.hash(new byte[][]{
+                SecurityUtils.hash(new byte[][]{
                         a[0].toByteArray(),
                         b[0].toByteArray(),
                         a[1].toByteArray(),
@@ -54,6 +67,14 @@ public class VoteProofUtils {
         return new VoteDTO.Proof(e[0], e[1], z[0], z[1]);
     }
 
+
+    /**
+     * Method for verifying that the zero-knowledge proof of a vote is correct
+     *
+     * @param vote      vote to be verified
+     * @param publicKey key the vote is encrypted under
+     * @return whether the ote could be verified
+     */
     public static boolean verifyProof(VoteDTO vote, PublicKey publicKey) {
         BigInteger e0 = vote.getProof().getE0();
         BigInteger e1 = vote.getProof().getE1();
@@ -61,7 +82,6 @@ public class VoteProofUtils {
         BigInteger z1 = vote.getProof().getZ1();
         BigInteger g = publicKey.getG();
         BigInteger h = publicKey.getH();
-        BigInteger q = publicKey.getQ();
         BigInteger p = publicKey.getP();
         BigInteger c = vote.getCipherText().getC();
         BigInteger d = vote.getCipherText().getD();
@@ -72,7 +92,7 @@ public class VoteProofUtils {
         BigInteger b1 = h.modPow(z1, p).multiply(d.multiply(g.modInverse(p)).modPow(e1, p)).mod(p);
 
         BigInteger s = new BigInteger(
-                Utils.hash(new byte[][]{
+                SecurityUtils.hash(new byte[][]{
                         a0.toByteArray(),
                         b0.toByteArray(),
                         a1.toByteArray(),
@@ -80,9 +100,10 @@ public class VoteProofUtils {
                         c.toByteArray(),
                         d.toByteArray(),
                         vote.getId().getBytes()
-                })).mod(q);
+                })).mod(publicKey.getQ());
 
-        return e0.add(e1).mod(q).equals(s);
+        BigInteger e = e0.add(e1);
+        return e.mod(publicKey.getQ()).equals(s);
     }
 }
 

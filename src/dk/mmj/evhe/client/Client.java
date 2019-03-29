@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.*;
+import dk.mmj.evhe.crypto.entities.PublicKey;
 import dk.mmj.evhe.server.VoteDTO;
 import dk.mmj.evhe.server.keyServer.KeyServerConfigBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +22,6 @@ import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -134,7 +134,7 @@ public class Client implements Application {
      * @param vote      is the vote to be cast, either 0 or 1.
      */
     private void doVote(int vote, PublicKey publicKey) {
-        VoteDTO voteDTO = Utils.generateVote(vote, id, publicKey);
+        VoteDTO voteDTO = SecurityUtils.generateVote(vote, id, publicKey);
         postVote(voteDTO);
     }
 

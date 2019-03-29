@@ -1,5 +1,9 @@
 package dk.mmj.evhe.crypto;
 
+import dk.mmj.evhe.crypto.entities.CipherText;
+import dk.mmj.evhe.crypto.entities.KeyPair;
+import dk.mmj.evhe.crypto.entities.PublicKey;
+import dk.mmj.evhe.crypto.keygeneration.PersistedKeyParameters;
 import dk.mmj.evhe.server.VoteDTO;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,15 +20,19 @@ public class TestProof {
 
     private boolean createCiphertextAndProof(int vote, String cipherTextId, String proofId) {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
-        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
-        BigInteger v = BigInteger.valueOf(vote);
-        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), v, r);
 
-        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, cipherTextId, v);
+        PublicKey publicKey = keyPair.getPublicKey();
+
+        BigInteger r = SecurityUtils.getRandomNumModN(publicKey.getQ());
+        BigInteger v = BigInteger.valueOf(vote);
+
+        CipherText cipherText = ElGamal.homomorphicEncryption(publicKey, v, r);
+
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, publicKey, r, cipherTextId, v);
 
         VoteDTO voteDTO = new VoteDTO(cipherText, proofId, proof);
 
-        return VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
+        return VoteProofUtils.verifyProof(voteDTO, publicKey);
     }
 
     @Test

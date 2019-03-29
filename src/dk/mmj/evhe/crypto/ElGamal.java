@@ -1,5 +1,12 @@
 package dk.mmj.evhe.crypto;
 
+import dk.mmj.evhe.crypto.entities.CipherText;
+import dk.mmj.evhe.crypto.entities.KeyPair;
+import dk.mmj.evhe.crypto.entities.PrimePair;
+import dk.mmj.evhe.crypto.entities.PublicKey;
+import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
+import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
+
 import java.math.BigInteger;
 
 /**
@@ -32,7 +39,7 @@ public class ElGamal {
      * @return the secret key
      */
     private static BigInteger generateSecretKey(BigInteger q) {
-        return Utils.getRandomNumModN(q);
+        return SecurityUtils.getRandomNumModN(q);
     }
 
     /**
@@ -66,8 +73,15 @@ public class ElGamal {
         return new CipherText(c, d);
     }
 
+    /**
+     * Encrypts the message under the given public key, with the El-Gamal homomorphic encryption scheme
+     *
+     * @param publicKey public key to be used
+     * @param message   message to be encrypted
+     * @return encrypted value
+     */
     public static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message) {
-        BigInteger r = Utils.getRandomNumModN(publicKey.getQ());
+        BigInteger r = SecurityUtils.getRandomNumModN(publicKey.getQ());
         return homomorphicEncryption(publicKey, message, r);
     }
 

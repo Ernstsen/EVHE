@@ -1,4 +1,4 @@
-package dk.mmj.evhe.crypto;
+package dk.mmj.evhe.crypto.entities;
 
 import java.math.BigInteger;
 
@@ -13,7 +13,7 @@ public class PublicKey {
     private PublicKey() {
     }
 
-    PublicKey(BigInteger h, BigInteger g, BigInteger q) {
+    public PublicKey(BigInteger h, BigInteger g, BigInteger q) {
         this.g = g;
         this.q = q;
         this.h = h;

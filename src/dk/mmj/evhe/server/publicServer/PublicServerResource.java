@@ -1,7 +1,7 @@
 package dk.mmj.evhe.server.publicServer;
 
 
-import dk.mmj.evhe.crypto.PublicKey;
+import dk.mmj.evhe.crypto.entities.PublicKey;
 import dk.mmj.evhe.server.ServerState;
 import dk.mmj.evhe.server.VoteDTO;
 import org.apache.logging.log4j.LogManager;

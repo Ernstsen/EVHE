@@ -1,10 +1,12 @@
-package dk.mmj.evhe.crypto;
+package dk.mmj.evhe.crypto.keygeneration;
+
+import dk.mmj.evhe.crypto.entities.PrimePair;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import static dk.mmj.evhe.crypto.Utils.getRandomNumModN;
+import static dk.mmj.evhe.crypto.SecurityUtils.getRandomNumModN;
 
 public class KeyGenerationParametersImpl implements KeyGenerationParameters {
     private BigInteger g;

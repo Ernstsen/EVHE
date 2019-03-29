@@ -1,5 +1,7 @@
-package dk.mmj.evhe.crypto;
+package dk.mmj.evhe.crypto.keygeneration;
 
+import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
+import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
