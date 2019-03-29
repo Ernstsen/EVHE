@@ -6,8 +6,10 @@ import dk.mmj.evhe.client.SSLHelper;
 import dk.mmj.evhe.crypto.CipherText;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.PublicKey;
+import dk.mmj.evhe.crypto.VoteProofUtils;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
+import dk.mmj.evhe.server.VoteDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -100,13 +102,14 @@ public class PublicServer extends AbstractServer {
 
     void terminateVoting() {
         ArrayList voteObjects = state.get(VOTES, ArrayList.class);
+        PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
         logger.info("Terminating voting - adding votes");
 
-        ArrayList<CipherText> votes = new ArrayList<>();
+        ArrayList<VoteDTO> votes = new ArrayList<>();
 
         for (Object vote : voteObjects) {
-            if (vote instanceof CipherText) {
-                votes.add((CipherText) vote);
+            if (vote instanceof VoteDTO) {
+                votes.add((VoteDTO) vote);
             } else {
                 logger.error("Found vote that was not ciphertext. Was " + vote.getClass() + ". Terminating server");
                 terminate();
@@ -118,8 +121,12 @@ public class PublicServer extends AbstractServer {
             terminate();
         }
 
-        CipherText first = votes.remove(0);
-        CipherText sum = votes.stream().reduce(first, ElGamal::homomorphicAddition);
+        CipherText acc = ElGamal.homomorphicEncryption(publicKey, BigInteger.ZERO);
+
+        CipherText sum = votes.stream()
+                .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+                .map(VoteDTO::getCipherText)
+                .reduce(acc, ElGamal::homomorphicAddition);
 
         logger.info("Dispatching decryption request");
 

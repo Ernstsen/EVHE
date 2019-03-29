@@ -54,7 +54,7 @@ public class VoteProofUtils {
         return new VoteDTO.Proof(e[0], e[1], z[0], z[1]);
     }
 
-    static boolean verifyProof(VoteDTO vote, PublicKey publicKey) {
+    public static boolean verifyProof(VoteDTO vote, PublicKey publicKey) {
         BigInteger e0 = vote.getProof().getE0();
         BigInteger e1 = vote.getProof().getE1();
         BigInteger z0 = vote.getProof().getZ0();

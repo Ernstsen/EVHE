@@ -67,7 +67,7 @@ public class PublicServerResource {
         }
 
         List votes = state.get(VOTES, ArrayList.class);
-        votes.add(vote.getCipherText());
+        votes.add(vote);
         hasVoted.add(voterId);
     }
 

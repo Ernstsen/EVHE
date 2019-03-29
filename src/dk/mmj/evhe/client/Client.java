@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
-import dk.mmj.evhe.crypto.CipherText;
-import dk.mmj.evhe.crypto.ElGamal;
-import dk.mmj.evhe.crypto.PublicKey;
-import dk.mmj.evhe.crypto.Utils;
+import dk.mmj.evhe.crypto.*;
 import dk.mmj.evhe.server.VoteDTO;
 import dk.mmj.evhe.server.keyServer.KeyServerConfigBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -98,7 +95,7 @@ public class Client implements Application {
             doMultiVote(publicKey);
         } else {
             int vote = getVote();
-            doVote(publicKey, vote);
+            doVote(vote, publicKey);
         }
     }
 
@@ -124,7 +121,7 @@ public class Client implements Application {
                 trueVotes++;
             }
 
-            doVote(publicKey, vote);
+            doVote(vote, publicKey);
         }
 
         System.out.println("Dispatched " + multi + " votes with " + trueVotes + " for, and " + falseVotes + " against");
@@ -136,10 +133,9 @@ public class Client implements Application {
      * @param publicKey is the public key used to encrypt the vote.
      * @param vote      is the vote to be cast, either 0 or 1.
      */
-    private void doVote(PublicKey publicKey, int vote) {
-        BigInteger r = Utils.getRandomNumModN(publicKey.getQ());
-        CipherText encryptedVote = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(vote), r);
-        postVote(encryptedVote);
+    private void doVote(int vote, PublicKey publicKey) {
+        VoteDTO voteDTO = Utils.generateVote(vote, id, publicKey);
+        postVote(voteDTO);
     }
 
     /**
@@ -166,12 +162,11 @@ public class Client implements Application {
     /**
      * Posts the encrypted vote to the public server, using the "/vote" path.
      *
-     * @param encryptedVote the vote encrypted under the public key.
+     * @param vote the VoteDTO with vote encrypted under the public key, and zero knowledge proof.
      */
-    private void postVote(CipherText encryptedVote) {
+    private void postVote(VoteDTO vote) {
         try {
-            VoteDTO payload = new VoteDTO(encryptedVote, id, null);
-            Entity<?> entity = Entity.entity(new ObjectMapper().writeValueAsString(payload), MediaType.APPLICATION_JSON_TYPE);
+            Entity<?> entity = Entity.entity(new ObjectMapper().writeValueAsString(vote), MediaType.APPLICATION_JSON_TYPE);
             Response response = target.path("vote").request().post(entity);
 
             if (response.getStatus() != 204) {
