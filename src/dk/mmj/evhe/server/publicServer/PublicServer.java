@@ -140,7 +140,7 @@ public class PublicServer extends AbstractServer {
 
         BigInteger result = response.readEntity(BigInteger.class);
 
-        String resultString = "Result was: " + result.toString() + " with " + (votes.size() + 1) + " votes";
+        String resultString = "Result was: " + result.toString() + " with " + votes.size() + " votes";
         logger.info(resultString);
         state.put(RESULT, resultString);
     }
