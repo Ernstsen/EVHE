@@ -7,10 +7,7 @@ import java.math.BigInteger;
 public class VoteProofUtils {
     @SuppressWarnings("DuplicateExpressions")
     static VoteDTO.Proof generateProof(CipherText cipherText, PublicKey publicKey, BigInteger witness, String id, BigInteger vote) {
-        int v = 0;
-        if (vote.intValue() > v) {
-            v = 1;
-        }
+        int v = (vote.intValue() > 0) ? 1 : 0;
 
         BigInteger[] e = new BigInteger[2];
         BigInteger[] z = new BigInteger[2];
