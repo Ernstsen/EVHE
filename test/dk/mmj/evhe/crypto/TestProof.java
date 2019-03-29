@@ -19,7 +19,7 @@ public class TestProof {
     }
 
     @Test
-    public void shouldVerifyProof() {
+    public void shouldVerifyProofWhenVoteIs1() {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
         BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
         CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE, r);
@@ -34,12 +34,42 @@ public class TestProof {
     }
 
     @Test
-    public void shouldNotVerifyProof() {
+    public void shouldVerifyProofWhenVoteIs0() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO, r);
+
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", 0);
+
+        VoteDTO vote = new VoteDTO(cipherText, "testid42", proof);
+
+        boolean result = VoteProofUtils.verifyProof(vote, keyPair.getPublicKey());
+
+        Assert.assertTrue("Proof verification failed.", result);
+    }
+
+    @Test
+    public void shouldNotVerifyProoWhenVoteIs1AndIdIsWrong() {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
         BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
         CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ONE, r);
 
         VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", 1);
+
+        VoteDTO vote = new VoteDTO(cipherText, "randomstring", proof);
+
+        boolean result = VoteProofUtils.verifyProof(vote, keyPair.getPublicKey());
+
+        Assert.assertFalse("Proof verification failed.", result);
+    }
+
+    @Test
+    public void shouldNotVerifyProoWhenVoteIs0AndIdIsWrong() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.ZERO, r);
+
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r, "testid42", 0);
 
         VoteDTO vote = new VoteDTO(cipherText, "randomstring", proof);
 

@@ -17,11 +17,11 @@ public class Utils {
      * @return random number in range [1;n)
      */
     public static BigInteger getRandomNumModN(BigInteger n) {
-        Random randomBits = new SecureRandom();
+        Random random = new SecureRandom();
         BigInteger result = null;
 
         while (result == null || result.compareTo(new BigInteger("0")) == 0) {
-            result = new BigInteger(n.bitLength(), randomBits).mod(n);
+            result = new BigInteger(n.bitLength(), random).mod(n);
         }
 
         return result;
