@@ -65,12 +65,12 @@ public class TestProof {
     @Test
     public void shouldFailFromDifferentRValues() {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
-        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+        BigInteger r = SecurityUtils.getRandomNumModN(keyPair.getPublicKey().getQ());
 
         BigInteger r2;
 
         do {
-            r2 = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+            r2 = SecurityUtils.getRandomNumModN(keyPair.getPublicKey().getQ());
         } while (r2.equals(r));//Make sure r2 is not equals to r
 
 
@@ -89,12 +89,12 @@ public class TestProof {
     @Test
     public void shouldFailIncorrectCiphertext() {
         KeyPair keyPair = generateKeysFromP2048bitsG2();
-        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+        BigInteger r = SecurityUtils.getRandomNumModN(keyPair.getPublicKey().getQ());
 
         BigInteger r2;
 
         do {
-            r2 = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+            r2 = SecurityUtils.getRandomNumModN(keyPair.getPublicKey().getQ());
         } while (r2.equals(r));//Make sure r2 is not equals to r
 
 
