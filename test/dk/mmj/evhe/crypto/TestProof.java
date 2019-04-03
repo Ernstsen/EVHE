@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 
+import static org.junit.Assert.assertFalse;
+
 public class TestProof {
     private static String id = "testid42";
 
@@ -47,17 +49,66 @@ public class TestProof {
 
     @Test
     public void shouldNotVerifyProofWhenVoteIs1AndIdIsWrong() {
-        Assert.assertFalse("Proof verification failed.", createCiphertextAndProof(1, id, "testid43"));
+        assertFalse("Proof verification failed.", createCiphertextAndProof(1, id, "testid43"));
     }
 
     @Test
     public void shouldNotVerifyProofWhenVoteIs0AndIdIsWrong() {
-        Assert.assertFalse("Proof verification failed.", createCiphertextAndProof(0, id, "randomstring"));
+        assertFalse("Proof verification failed.", createCiphertextAndProof(0, id, "randomstring"));
     }
 
     @Test
     public void shouldNotVerifyProofWhenVoteIs3() {
-        Assert.assertFalse("Proof verification succeeded, but should fail.", createCiphertextAndProof(3, id, id));
+        assertFalse("Proof verification succeeded, but should fail.", createCiphertextAndProof(3, id, id));
+    }
+
+    @Test
+    public void shouldFailFromDifferentRValues() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+
+        BigInteger r2;
+
+        do {
+            r2 = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+        } while (r2.equals(r));//Make sure r2 is not equals to r
+
+
+        BigInteger v = BigInteger.valueOf(1);
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), v, r);
+
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r2, "ID", v);
+
+        VoteDTO voteDTO = new VoteDTO(cipherText, "ID", proof);
+
+        boolean verify = VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
+
+        assertFalse("Verified proof where r was different from ciphertext", verify);
+    }
+
+    @Test
+    public void shouldFailIncorrectCiphertext() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        BigInteger r = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+
+        BigInteger r2;
+
+        do {
+            r2 = Utils.getRandomNumModN(keyPair.getPublicKey().getQ());
+        } while (r2.equals(r));//Make sure r2 is not equals to r
+
+
+        BigInteger v = BigInteger.valueOf(1);
+        CipherText cipherText = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), v, r);
+        CipherText cipherText2 = ElGamal.homomorphicEncryption(keyPair.getPublicKey(), BigInteger.valueOf(0), r);
+
+        VoteDTO.Proof proof = VoteProofUtils.generateProof(cipherText, keyPair.getPublicKey(), r2, "ID", v);
+
+        VoteDTO voteDTO = new VoteDTO(cipherText2, "ID", proof);
+
+        boolean verify = VoteProofUtils.verifyProof(voteDTO, keyPair.getPublicKey());
+
+        assertFalse("Verified proof where ciphertext had been replaced", verify);
     }
 }
 
