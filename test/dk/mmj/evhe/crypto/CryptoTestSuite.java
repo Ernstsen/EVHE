@@ -9,7 +9,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         TestKeyGenerationsParametersImpl.class,
         TestElGamal.class,
-        TestProof.class,
+        TestVoteProofUtils.class,
         TestSecurityUtils.class
 })
 public class CryptoTestSuite {

@@ -74,7 +74,7 @@ public class VoteProofUtils {
      *
      * @param vote      vote to be verified
      * @param publicKey key the vote is encrypted under
-     * @return whether the ote could be verified
+     * @return whether the vote could be verified
      */
     public static boolean verifyProof(VoteDTO vote, PublicKey publicKey) {
         BigInteger e0 = vote.getProof().getE0();

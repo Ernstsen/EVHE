@@ -13,7 +13,7 @@ import java.math.BigInteger;
 import static dk.mmj.evhe.crypto.TestUtils.generateKeysFromP2048bitsG2;
 import static org.junit.Assert.assertFalse;
 
-public class TestProof {
+public class TestVoteProofUtils {
     private static String id = "testid42";
 
     private boolean createCiphertextAndProof(int vote, String cipherTextId, String proofId) {
