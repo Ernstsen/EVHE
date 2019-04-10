@@ -6,7 +6,7 @@ import dk.mmj.evhe.client.SSLHelper;
 import dk.mmj.evhe.crypto.entities.CipherText;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.entities.PublicKey;
-import dk.mmj.evhe.crypto.VoteProofUtils;
+import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
 import dk.mmj.evhe.server.VoteDTO;

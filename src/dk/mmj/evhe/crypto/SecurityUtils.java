@@ -2,6 +2,7 @@ package dk.mmj.evhe.crypto;
 
 import dk.mmj.evhe.crypto.entities.CipherText;
 import dk.mmj.evhe.crypto.entities.PublicKey;
+import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.server.VoteDTO;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 
@@ -36,7 +37,7 @@ public class SecurityUtils {
      * @param payloads is an array of byte-arrays, containing values to be hashed.
      * @return SHA256 hash of the given payloads.
      */
-    static byte[] hash(byte[][] payloads) {
+    public static byte[] hash(byte[][] payloads) {
         SHA256Digest sha256Digest = new SHA256Digest();
 
         for (byte[] payload : payloads) {
@@ -62,5 +63,56 @@ public class SecurityUtils {
         VoteDTO.Proof proof = VoteProofUtils.generateProof(ciphertext, publicKey, r, id, BigInteger.valueOf(vote));
 
         return new VoteDTO(ciphertext, id, proof);
+    }
+
+    /**
+     * Generates a polynomial
+     *
+     * @param degree the degree of the polynomial
+     * @param q q-1 specifies the maximum value of coefficients in the polynomial
+     * @return a BigInteger array representing the polynomial
+     */
+    public static BigInteger[] generatePolynomial(int degree, BigInteger q) {
+        BigInteger[] polynomial = new BigInteger[degree + 1];
+        for (int i = 0; i <= degree; i++) {
+            polynomial[i] = getRandomNumModN(q);
+        }
+        return polynomial;
+    }
+
+    /**
+     * Generates the secret values for each authority using Shamir's secret sharing scheme
+     *
+     * @param polynomial the polynomial used for the scheme
+     * @param authorities the amount of authorities
+     * @return a BigInteger array containing the secret values where index i is the secret for authority i+1
+     */
+    public static BigInteger[] generateSecretValues(BigInteger[] polynomial, int authorities) {
+        BigInteger[] secretValues = new BigInteger[authorities];
+        for (int i = 0; i < authorities; i++) {
+            int authorityIndex = i + 1;
+            BigInteger acc = BigInteger.ZERO;
+            for (int j = 0; j < polynomial.length; j++) {
+                acc = acc.add(BigInteger.valueOf(authorityIndex).pow(j).multiply(polynomial[j]));
+            }
+            secretValues[i] = acc;
+        }
+        return secretValues;
+    }
+
+    /**
+     * Generates the public values for each authority
+     *
+     * @param secretValues The secret values
+     * @param g generator for group Gq where p = 2q + 1
+     * @param p the p value mentioned above
+     * @return a BigInteger array containing the public values where index i is the public value for authority i+1
+     */
+    public static BigInteger[] generatePublicValues(BigInteger[] secretValues, BigInteger g, BigInteger p) {
+        BigInteger[] publicValues = new BigInteger[secretValues.length];
+        for (int i = 0; i < secretValues.length; i++) {
+            publicValues[i] = g.modPow(secretValues[i], p);
+        }
+        return publicValues;
     }
 }

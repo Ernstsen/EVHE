@@ -2,6 +2,7 @@ package dk.mmj.evhe.crypto;
 
 import dk.mmj.evhe.crypto.entities.KeyPair;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
+import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.server.VoteDTO;
 import org.junit.Test;
 

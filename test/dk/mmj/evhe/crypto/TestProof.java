@@ -3,7 +3,7 @@ package dk.mmj.evhe.crypto;
 import dk.mmj.evhe.crypto.entities.CipherText;
 import dk.mmj.evhe.crypto.entities.KeyPair;
 import dk.mmj.evhe.crypto.entities.PublicKey;
-import dk.mmj.evhe.crypto.keygeneration.PersistedKeyParameters;
+import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.server.VoteDTO;
 import org.junit.Assert;
 import org.junit.Test;

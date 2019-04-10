@@ -1,5 +1,6 @@
-package dk.mmj.evhe.crypto;
+package dk.mmj.evhe.crypto.zeroknowledge;
 
+import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.entities.CipherText;
 import dk.mmj.evhe.crypto.entities.PublicKey;
 import dk.mmj.evhe.server.VoteDTO;
@@ -19,7 +20,7 @@ public class VoteProofUtils {
      * @return the zero-knowledge proof
      */
     @SuppressWarnings("DuplicateExpressions")
-    static VoteDTO.Proof generateProof(CipherText cipherText, PublicKey publicKey, BigInteger witness, String id, BigInteger vote) {
+    public static VoteDTO.Proof generateProof(CipherText cipherText, PublicKey publicKey, BigInteger witness, String id, BigInteger vote) {
         int v = (vote.intValue() > 0) ? 1 : 0; // For unit-test purposes.
 
         BigInteger[] e = new BigInteger[2];
