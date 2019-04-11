@@ -1,4 +1,4 @@
-package dk.mmj.evhe.server.publicServer;
+package dk.mmj.evhe.server.bulletinBoard;
 
 
 import dk.mmj.evhe.crypto.entities.PublicKey;
@@ -11,12 +11,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.*;
 
-import static dk.mmj.evhe.server.publicServer.PublicServer.*;
+import static dk.mmj.evhe.server.bulletinBoard.BulletinBoard.*;
 
 @Path("/")
-public class PublicServerResource {
+public class BulletinBoardResource {
     private static final String ID_LIST = "idList";
-    private static Logger logger = LogManager.getLogger(PublicServerResource.class);
+    private static Logger logger = LogManager.getLogger(BulletinBoardResource.class);
     private ServerState state = ServerState.getInstance();
 
     @GET
@@ -42,6 +42,19 @@ public class PublicServerResource {
     }
 
     @POST
+    @Path("publicKey")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void setPublicKey(PublicKey publicKey) {
+        if (publicKey == null) {//TODO: Only once?
+            logger.warn("A submitted key CANNOT be null");
+            throw new NotAllowedException("Key was null");
+
+        }
+
+        state.put(PUBLIC_KEY, publicKey);
+    }
+
+    @POST
     @Path("vote")
     @Consumes(MediaType.APPLICATION_JSON)
     @SuppressWarnings("unchecked")
@@ -61,7 +74,7 @@ public class PublicServerResource {
             throw new NotAllowedException("Vote was attempted with unrecognized id=" + voterId);
         }
 
-        if (hasVoted.contains(voterId)) {
+        if (hasVoted.contains(voterId)) {//TODO: Incompatible with BB?
             logger.warn("Voter with id=" + voterId + " attempted to vote more than once");
             throw new NotAllowedException("A vote has already been registered with this ID");
         }
@@ -74,7 +87,7 @@ public class PublicServerResource {
     @SuppressWarnings("unchecked")
     @GET
     @Path("generateVoters")
-    @Produces(MediaType.TEXT_HTML)
+    @Produces(MediaType.TEXT_HTML)//TODO: REMOVE?
     public String getOrCreateVoters() {
         ArrayList idList = state.get(ID_LIST, ArrayList.class);
 
@@ -102,21 +115,12 @@ public class PublicServerResource {
     @GET
     @Path("getVotes")
     @Produces(MediaType.APPLICATION_JSON)
-    public List getVotes(){
+    public List getVotes() {
         List list = state.get(VOTES, List.class);
-        if(list == null){
+        if (list == null) {
             throw new NotFoundException("Voting has not been initialized");
         }
 
         return list;
-    }
-
-
-    @POST
-    @Path("terminate")
-    public void terminate() {
-        PublicServer server = state.get(SERVER, PublicServer.class);
-        logger.info("Terminating voting");
-        server.terminateVoting();
     }
 }

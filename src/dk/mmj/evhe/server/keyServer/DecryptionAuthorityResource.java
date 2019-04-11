@@ -16,11 +16,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.math.BigInteger;
 
-import static dk.mmj.evhe.server.keyServer.KeyServer.KEY_PAIR;
+import static dk.mmj.evhe.server.keyServer.DecryptionAuthority.KEY_PAIR;
+import static dk.mmj.evhe.server.keyServer.DecryptionAuthority.SERVER;
 
 @Path("/")
-public class KeyServerResource {
-    private static Logger logger = LogManager.getLogger(KeyServerResource.class);
+public class DecryptionAuthorityResource {
+    private static Logger logger = LogManager.getLogger(DecryptionAuthorityResource.class);
     private ServerState state = ServerState.getInstance();
 
     @GET
@@ -47,5 +48,13 @@ public class KeyServerResource {
         int result = ElGamal.homomorphicDecryption(keyPair, cipherText, 1000);
 
         return BigInteger.valueOf(result);
+    }
+
+    @POST
+    @Path("terminate")
+    public void terminate() {
+        DecryptionAuthority server = state.get(SERVER, DecryptionAuthority.class);
+        logger.info("Terminating voting");
+        server.terminateVoting();
     }
 }

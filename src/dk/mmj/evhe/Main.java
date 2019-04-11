@@ -6,10 +6,10 @@ import dk.eSoftware.commandLineParser.NoSuchBuilderException;
 import dk.eSoftware.commandLineParser.WrongFormatException;
 import dk.mmj.evhe.client.Client;
 import dk.mmj.evhe.client.ClientConfigBuilder;
-import dk.mmj.evhe.server.keyServer.KeyServer;
-import dk.mmj.evhe.server.keyServer.KeyServerConfigBuilder;
-import dk.mmj.evhe.server.publicServer.PublicServer;
-import dk.mmj.evhe.server.publicServer.PublicServerConfigBuilder;
+import dk.mmj.evhe.server.keyServer.DecryptionAuthority;
+import dk.mmj.evhe.server.keyServer.DecryptionAuthorityConfigBuilder;
+import dk.mmj.evhe.server.bulletinBoard.BulletinBoard;
+import dk.mmj.evhe.server.bulletinBoard.BulletinBoardConfigBuilder;
 
 import java.util.HashMap;
 
@@ -49,10 +49,10 @@ public class Main {
     private static Application getApplication(Configuration parse) {
         if (parse instanceof Client.ClientConfiguration) {
             return new Client((Client.ClientConfiguration) parse);
-        } else if (parse instanceof KeyServer.KeyServerConfiguration) {
-            return new KeyServer((KeyServer.KeyServerConfiguration) parse);
-        } else if (parse instanceof PublicServer.PublicServerConfiguration) {
-            return new PublicServer((PublicServer.PublicServerConfiguration) parse);
+        } else if (parse instanceof DecryptionAuthority.KeyServerConfiguration) {
+            return new DecryptionAuthority((DecryptionAuthority.KeyServerConfiguration) parse);
+        } else if (parse instanceof BulletinBoard.PublicServerConfiguration) {
+            return new BulletinBoard((BulletinBoard.PublicServerConfiguration) parse);
         } else {
             System.out.println("" +
                     "====================\n" +
@@ -68,8 +68,8 @@ public class Main {
     private static CommandLineParser getParser() {
         HashMap<String, CommandLineParser.ConfigBuilder> mapping = new HashMap<>();
         mapping.put("--client", new ClientConfigBuilder());
-        mapping.put("--keyServer", new KeyServerConfigBuilder());
-        mapping.put("--publicServer", new PublicServerConfigBuilder());
+        mapping.put("--keyServer", new DecryptionAuthorityConfigBuilder());
+        mapping.put("--bulletinBoard", new BulletinBoardConfigBuilder());
         return new CommandLineParser(mapping);
     }
 }

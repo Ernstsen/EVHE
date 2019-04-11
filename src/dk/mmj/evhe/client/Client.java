@@ -7,7 +7,7 @@ import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.*;
 import dk.mmj.evhe.crypto.entities.PublicKey;
 import dk.mmj.evhe.server.VoteDTO;
-import dk.mmj.evhe.server.keyServer.KeyServerConfigBuilder;
+import dk.mmj.evhe.server.keyServer.DecryptionAuthorityConfigBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;
@@ -30,7 +30,7 @@ import java.util.Random;
 import java.util.UUID;
 
 public class Client implements Application {
-    private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
+    private static final Logger logger = LogManager.getLogger(DecryptionAuthorityConfigBuilder.class);
     private JerseyWebTarget target;
     private String id;
     private Boolean vote;
@@ -144,18 +144,18 @@ public class Client implements Application {
      * Throws a {@link RuntimeException} if this is not the case.
      */
     private void assertPublicServer() {
-        // Check that we are connected to PublicServer
+        // Check that we are connected to BulletinBoard
         Response publicServerResp = target.path("type").request().buildGet().invoke();
 
         if (publicServerResp.getStatus() != 200) {
-            logger.error("Couldn't connect to the publicServer.");
+            logger.error("Couldn't connect to the bulletinBoard.");
             throw new RuntimeException("Failed : HTTP error code : " + publicServerResp.getStatus());
         }
 
         String responseEntity = publicServerResp.readEntity(String.class);
 
         if (!responseEntity.contains("Public Server")) {
-            throw new RuntimeException("Server was not of type publicServer");
+            throw new RuntimeException("Server was not of type bulletinBoard");
         }
     }
 

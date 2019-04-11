@@ -11,17 +11,20 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
-    private static final Logger logger = LogManager.getLogger(KeyServerConfigBuilder.class);
+public class DecryptionAuthorityConfigBuilder implements CommandLineParser.ConfigBuilder {
+    private static final Logger logger = LogManager.getLogger(DecryptionAuthorityConfigBuilder.class);
     private static final String SELF = "--keyServer";
 
     //Configuration options
     private static final String PORT = "port=";
     private static final String KEY_PARAMS = "keyParams=";
+    private static final String BULLETIN_BOARD_1 = "bb=";
+    private static final String BULLETIN_BOARD_2 = "bulletinBoard=";
 
     //State
     private Integer port;
     private KeyGenerationParameters keygenParams;
+    private String bulletinBoard = "127.0.0.1:8081";
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
@@ -33,6 +36,10 @@ public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
         } else if (cmd.startsWith(KEY_PARAMS)) {
             String pathString = cmd.substring(KEY_PARAMS.length());
             loadKeyGenParams(pathString);
+        } else if (cmd.startsWith(BULLETIN_BOARD_1)) {
+            bulletinBoard = cmd.substring(BULLETIN_BOARD_1.length());
+        } else if (cmd.startsWith(BULLETIN_BOARD_2)) {
+            bulletinBoard = cmd.substring(BULLETIN_BOARD_2.length());
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -62,7 +69,7 @@ public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
 
     @Override
     public Configuration build() {
-        return new KeyServer.KeyServerConfiguration(port, keygenParams);
+        return new DecryptionAuthority.KeyServerConfiguration(port, keygenParams, bulletinBoard);
     }
 
     @Override
@@ -72,6 +79,7 @@ public class KeyServerConfigBuilder implements CommandLineParser.ConfigBuilder {
                 "\t  --port=portNr\tSpecifies port to be used. Standard=8081\n" +
                 "\t  --keyParams=relative/path/to/file\tSpecifies a file with parameters for key-generation\n" +
                 "\t\t Only two first lines of file is read. First line must be HEX representation of prime p " +
-                " second be integer representing generator g";
+                " second be integer representing generator g\n" +
+                "\t  --bulletinBoard/bb=ip:port location bulletin board to be used";
     }
 }

@@ -1,16 +1,16 @@
-package dk.mmj.evhe.server.publicServer;
+package dk.mmj.evhe.server.bulletinBoard;
 
 import dk.eSoftware.commandLineParser.CommandLineParser;
 import dk.eSoftware.commandLineParser.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilder {
-    private static final Logger logger = LogManager.getLogger(PublicServerConfigBuilder.class);
+public class BulletinBoardConfigBuilder implements CommandLineParser.ConfigBuilder {
+    private static final Logger logger = LogManager.getLogger(BulletinBoardConfigBuilder.class);
     private static final String KEY_SERVER = "keyServer=";
 
     //Configuration options
-    private static final String SELF = "--publicServer";
+    private static final String SELF = "--bulletinBoard";
     private static final String TEST = "test=";
 
     //State
@@ -33,13 +33,12 @@ public class PublicServerConfigBuilder implements CommandLineParser.ConfigBuilde
 
     @Override
     public Configuration build() {
-        return new PublicServer.PublicServerConfiguration(8080, keyServer, test);
+        return new BulletinBoard.PublicServerConfiguration(8080, test);
     }
 
     @Override
     public String help() {
-        return "\tMODE: publicServer\n" +
-                "\t  --" + KEY_SERVER + "keyServerUrl\t Specifies url for public server to connect to. Standard is: " + keyServer + "\n" +
+        return "\tMODE: bulletinBoard\n" +
                 "\t  --" + TEST + "{true,false}\t specifies whether ids is allowed to be testing ids - not pre-determined ones";
     }
 }
