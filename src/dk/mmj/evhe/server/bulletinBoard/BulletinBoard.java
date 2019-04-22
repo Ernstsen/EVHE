@@ -18,9 +18,9 @@ public class BulletinBoard extends AbstractServer {
     static final String RESULT = "finished";
     static final String VOTES = "votes";
 
-    private PublicServerConfiguration configuration;
+    private BulletinBoardConfiguration configuration;
 
-    public BulletinBoard(PublicServerConfiguration configuration) {
+    public BulletinBoard(BulletinBoardConfiguration configuration) {
         this.configuration = configuration;
 
         ServerState state = ServerState.getInstance();
@@ -46,11 +46,11 @@ public class BulletinBoard extends AbstractServer {
         return configuration.port;
     }
 
-    public static class PublicServerConfiguration implements Configuration {
+    public static class BulletinBoardConfiguration implements Configuration {
         private Integer port;
         private boolean test;
 
-        PublicServerConfiguration(Integer port, boolean test) {
+        BulletinBoardConfiguration(Integer port, boolean test) {
             this.port = port;
             this.test = test;
         }

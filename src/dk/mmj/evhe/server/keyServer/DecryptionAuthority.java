@@ -6,12 +6,14 @@ import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.entities.CipherText;
 import dk.mmj.evhe.crypto.entities.KeyPair;
 import dk.mmj.evhe.crypto.entities.PublicKey;
+import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
 import dk.mmj.evhe.server.VoteDTO;
+import dk.mmj.evhe.server.VoteList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -30,7 +32,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class DecryptionAuthority extends AbstractServer {
     static final String KEY_PAIR = "keypair";
@@ -55,6 +56,19 @@ public class DecryptionAuthority extends AbstractServer {
             keyPair = ElGamal.generateKeys(params);
         }
 
+        try {
+            SSLContext ssl = SSLHelper.initializeSSL();
+
+            JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().sslContext(ssl).build();
+
+            client.register(ArrayList.class);
+
+            bulletinBoard = client.target(configuration.bulletinBoard);
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | KeyManagementException e) {
+            logger.error("Unable to connect to bulletin Board", e);
+            terminate();
+        }
+
         state.put(KEY_PAIR, keyPair);
         configureWebTarget(configuration);
 
@@ -75,14 +89,14 @@ public class DecryptionAuthority extends AbstractServer {
 
     void terminateVoting() {
         Response getVotes = bulletinBoard.path("getVotes").request().get();
-        List voteObjects = getVotes.readEntity(List.class);
+        VoteList voteObjects = getVotes.readEntity(VoteList.class);
 
         PublicKey publicKey = state.get(KEY_PAIR, KeyPair.class).getPublicKey();
         logger.info("Terminating voting - adding votes");
 
         ArrayList<VoteDTO> votes = new ArrayList<>();
 
-        for (Object vote : voteObjects) {
+        for (Object vote : voteObjects.getVotes()) {
             if (vote instanceof VoteDTO) {
                 votes.add((VoteDTO) vote);
             } else {
@@ -105,24 +119,23 @@ public class DecryptionAuthority extends AbstractServer {
 
         logger.info("Dispatching decryption request");
 
-        Entity<CipherText> entity = Entity.entity(sum, MediaType.APPLICATION_JSON);
-        Response response = bulletinBoard.path("result").request().post(entity);
-
-        if (response.getStatus() != 200) {
-            logger.error("Failed to decrypt result. Response status was " + response.getStatus() + ". Terminating.");
-            terminate();
+        KeyPair keyPair = state.get(KEY_PAIR, KeyPair.class);
+        int result = 0;
+        try {
+            result = ElGamal.homomorphicDecryption(keyPair, sum, 1000);
+        } catch (UnableToDecryptException e) {
+            logger.error("Failed to decrypt result. Terminating");
+            System.exit(-1);
         }
 
-        BigInteger result = response.readEntity(BigInteger.class);
-
-        String resultString = "Result was: " + result.toString() + " with " + votes.size() + " votes";
+        String resultString = "Result was: " + result + " with " + votes.size() + " votes";
         logger.info(resultString);
 
         Entity<String> resultEntity = Entity.entity(resultString, MediaType.APPLICATION_JSON);
-        Response post = bulletinBoard.request().post(resultEntity);
+        Response post = bulletinBoard.path("result").request().post(resultEntity);
 
         if (post.getStatus() < 200 || post.getStatus() > 300) {
-            logger.error("Unable to post publickey to bulletinBoard, got response:" + post);
+            logger.error("Unable to post result to bulletinBoard, got response:" + post);
             System.exit(-1);
         }
 

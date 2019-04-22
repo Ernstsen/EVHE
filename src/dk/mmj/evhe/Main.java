@@ -51,8 +51,8 @@ public class Main {
             return new Client((Client.ClientConfiguration) parse);
         } else if (parse instanceof DecryptionAuthority.KeyServerConfiguration) {
             return new DecryptionAuthority((DecryptionAuthority.KeyServerConfiguration) parse);
-        } else if (parse instanceof BulletinBoard.PublicServerConfiguration) {
-            return new BulletinBoard((BulletinBoard.PublicServerConfiguration) parse);
+        } else if (parse instanceof BulletinBoard.BulletinBoardConfiguration) {
+            return new BulletinBoard((BulletinBoard.BulletinBoardConfiguration) parse);
         } else {
             System.out.println("" +
                     "====================\n" +

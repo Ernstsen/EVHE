@@ -24,7 +24,7 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
     //State
     private Integer port;
     private KeyGenerationParameters keygenParams;
-    private String bulletinBoard = "127.0.0.1:8081";
+    private String bulletinBoard = "https://localhost:8080";
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {

@@ -33,7 +33,7 @@ public class BulletinBoardConfigBuilder implements CommandLineParser.ConfigBuild
 
     @Override
     public Configuration build() {
-        return new BulletinBoard.PublicServerConfiguration(8080, test);
+        return new BulletinBoard.BulletinBoardConfiguration(8080, test);
     }
 
     @Override

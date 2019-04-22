@@ -4,6 +4,7 @@ package dk.mmj.evhe.server.bulletinBoard;
 import dk.mmj.evhe.crypto.entities.PublicKey;
 import dk.mmj.evhe.server.ServerState;
 import dk.mmj.evhe.server.VoteDTO;
+import dk.mmj.evhe.server.VoteList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -112,15 +113,23 @@ public class BulletinBoardResource {
         return "<h3> Voting has finished </h3> <br/>" + result;
     }
 
+    @POST
+    @Path("result")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void postResult(String result) {
+        state.put(RESULT, result);
+    }
+
+    @SuppressWarnings("unchecked")
     @GET
     @Path("getVotes")
     @Produces(MediaType.APPLICATION_JSON)
-    public List getVotes() {
-        List list = state.get(VOTES, List.class);
+    public VoteList getVotes() {
+        List<VoteDTO> list = state.get(VOTES, List.class);
         if (list == null) {
             throw new NotFoundException("Voting has not been initialized");
         }
 
-        return list;
+        return new VoteList(list);
     }
 }
