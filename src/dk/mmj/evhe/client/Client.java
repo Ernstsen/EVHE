@@ -4,30 +4,25 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
-import dk.mmj.evhe.crypto.*;
+import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.entities.PublicKey;
 import dk.mmj.evhe.server.VoteDTO;
 import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.JerseyClient;
-import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
-import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.UUID;
+
+import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class Client implements Application {
     private static final Logger logger = LogManager.getLogger(DecryptionAuthorityConfigBuilder.class);
@@ -47,37 +42,9 @@ public class Client implements Application {
         vote = configuration.vote;
         multi = configuration.multi;
 
-        configureWebTarget(configuration.targetUrl);
+        target = configureWebTarget(logger, configuration.targetUrl, Arrays.asList(VoteDTO.class, PublicKey.class));
     }
 
-    /**
-     * Sets up {@link javax.ws.rs.client.WebTarget} using SSL
-     *
-     * @param targetUrl baseUrl for the webTarget
-     */
-    private void configureWebTarget(String targetUrl) {
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.register(VoteDTO.class);
-        clientConfig.register(PublicKey.class);
-
-        try {
-            SSLContext ssl = SSLHelper.initializeSSL();
-
-            JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().withConfig(clientConfig).sslContext(ssl).build();
-
-            target = client.target(targetUrl);
-
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Unrecognized SSL context algorithm:", e);
-            System.exit(-1);
-        } catch (KeyManagementException e) {
-            logger.error("Initializing SSL Context failed: ", e);
-            System.exit(-1);
-        } catch (CertificateException | KeyStoreException | IOException e) {
-            logger.error("Error Initializing the Certificate: ", e);
-            System.exit(-1);
-        }
-    }
 
     /**
      * Fetches the public key from the public server, and casts vote.

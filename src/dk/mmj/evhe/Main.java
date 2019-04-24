@@ -55,9 +55,9 @@ public class Main {
             return new DecryptionAuthority((DecryptionAuthority.KeyServerConfiguration) parse);
         } else if (parse instanceof BulletinBoard.BulletinBoardConfiguration) {
             return new BulletinBoard((BulletinBoard.BulletinBoardConfiguration) parse);
-        } else if (parse instanceof TrustedDealer){
-            return (TrustedDealer) parse;
-        }else {
+        } else if (parse instanceof TrustedDealer.TrustedDealerConfiguration) {
+            return new TrustedDealer((TrustedDealer.TrustedDealerConfiguration) parse);
+        } else {
             System.out.println("" +
                     "====================\n" +
                     "Mapped first parameter to configuration but configuration was not registered. \n" +

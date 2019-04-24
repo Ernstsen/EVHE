@@ -1,6 +1,11 @@
 package dk.mmj.evhe.client;
 
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.JerseyClient;
+import org.glassfish.jersey.client.JerseyClientBuilder;
+import org.glassfish.jersey.client.JerseyWebTarget;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -9,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.List;
 
 
 public class SSLHelper {
@@ -52,4 +58,40 @@ public class SSLHelper {
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
         return sslContextFactory;
     }
+
+    /**
+     * Sets up {@link javax.ws.rs.client.WebTarget} using SSL
+     *
+     * @param logger    logger used for reporting potential errors
+     * @param targetUrl baseUrl for the webTarget
+     * @param classes   list of classes to be registered
+     */
+    public static JerseyWebTarget configureWebTarget(Logger logger, String targetUrl, List<Class> classes) {
+        ClientConfig clientConfig = new ClientConfig();
+
+        classes.forEach(clientConfig::register);
+
+        try {
+            SSLContext ssl = SSLHelper.initializeSSL();
+
+            JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder()
+                    .withConfig(clientConfig)
+                    .sslContext(ssl)
+                    .build();
+
+            return client.target(targetUrl);
+
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Unrecognized SSL context algorithm:", e);
+            System.exit(-1);
+        } catch (KeyManagementException e) {
+            logger.error("Initializing SSL Context failed: ", e);
+            System.exit(-1);
+        } catch (CertificateException | KeyStoreException | IOException e) {
+            logger.error("Error Initializing the Certificate: ", e);
+            System.exit(-1);
+        }
+        return null;
+    }
+
 }
