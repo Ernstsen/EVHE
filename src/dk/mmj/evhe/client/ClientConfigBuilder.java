@@ -61,10 +61,10 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     @Override
     public String help() {
         return "\tMODE: client\n" +
-                "\t  --" + TARGET_URL + "publicServerUrl\t Specifies url for public server to connect to. Standard is: "
+                "\t  --" + TARGET_URL + "url\t\t Specifies url for public server to connect to. Standard is: "
                 + targetUrl + "\n" +
-                "\t  --" + ID + "idString\t id identifying this instance as a unique voter\n" +
+                "\t  --" + ID + "idString\t\t id identifying this instance as a unique voter\n" +
                 "\t  --" + VOTE + "{true,false}\t the vote to be cast. If not supplied program will prompt for it\n" +
-                "\t  --" + MULTI + "int\t How many random votes should be cast. If set, id and vote is ignored as it is test.";
+                "\t  --" + MULTI + "int\t\t How many random votes should be cast. If set, id and vote is ignored as it is test.";
     }
 }

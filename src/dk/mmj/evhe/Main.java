@@ -6,10 +6,12 @@ import dk.eSoftware.commandLineParser.NoSuchBuilderException;
 import dk.eSoftware.commandLineParser.WrongFormatException;
 import dk.mmj.evhe.client.Client;
 import dk.mmj.evhe.client.ClientConfigBuilder;
-import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthority;
-import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
+import dk.mmj.evhe.initialization.TrustedDealer;
+import dk.mmj.evhe.initialization.TrustedDealerConfigBuilder;
 import dk.mmj.evhe.server.bulletinboard.BulletinBoard;
 import dk.mmj.evhe.server.bulletinboard.BulletinBoardConfigBuilder;
+import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthority;
+import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
 
 import java.util.HashMap;
 
@@ -53,7 +55,9 @@ public class Main {
             return new DecryptionAuthority((DecryptionAuthority.KeyServerConfiguration) parse);
         } else if (parse instanceof BulletinBoard.BulletinBoardConfiguration) {
             return new BulletinBoard((BulletinBoard.BulletinBoardConfiguration) parse);
-        } else {
+        } else if (parse instanceof TrustedDealer){
+            return (TrustedDealer) parse;
+        }else {
             System.out.println("" +
                     "====================\n" +
                     "Mapped first parameter to configuration but configuration was not registered. \n" +
@@ -70,6 +74,7 @@ public class Main {
         mapping.put("--client", new ClientConfigBuilder());
         mapping.put("--keyServer", new DecryptionAuthorityConfigBuilder());
         mapping.put("--bulletinBoard", new BulletinBoardConfigBuilder());
+        mapping.put("--dealer", new TrustedDealerConfigBuilder());
         return new CommandLineParser(mapping);
     }
 }

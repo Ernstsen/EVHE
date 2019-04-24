@@ -76,10 +76,10 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
     public String help() {
         return "" +
                 "\tMODE: keyServer\n" +
-                "\t  --port=portNr\tSpecifies port to be used. Standard=8081\n" +
-                "\t  --keyParams=relative/path/to/file\tSpecifies a file with parameters for key-generation\n" +
+                "\t  --port=int\t\tSpecifies port to be used. Standard=8081\n" +
+                "\t  --keyParams=rPath\tSpecifies a file with parameters for key-generation. Path is relative to current dir\n" +
                 "\t\t Only two first lines of file is read. First line must be HEX representation of prime p " +
                 " second must be integer representing generator g\n" +
-                "\t  --bulletinBoard/bb=ip:port location bulletin board to be used";
+                "\t  --bulletinBoard/bb=ip:port location bulletin board to be used\n";
     }
 }

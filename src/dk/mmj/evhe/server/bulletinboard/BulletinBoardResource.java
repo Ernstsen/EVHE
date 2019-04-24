@@ -85,23 +85,6 @@ public class BulletinBoardResource {
         hasVoted.add(voterId);
     }
 
-    @SuppressWarnings("unchecked")
-    @GET
-    @Path("generateVoters")
-    @Produces(MediaType.TEXT_HTML)//TODO: REMOVE?
-    public String getOrCreateVoters() {
-        ArrayList idList = state.get(ID_LIST, ArrayList.class);
-
-        if (idList == null) {
-            idList = new ArrayList<String>();
-            for (int i = 0; i < 20; i++) {
-                idList.add(UUID.randomUUID().toString());
-            }
-            state.put(ID_LIST, idList);
-        }
-        return String.join("<br/>", idList);
-    }
-
     @GET
     @Path("result")
     @Produces(MediaType.TEXT_HTML)

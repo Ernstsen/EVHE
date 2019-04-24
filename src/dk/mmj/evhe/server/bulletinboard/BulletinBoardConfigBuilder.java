@@ -39,6 +39,6 @@ public class BulletinBoardConfigBuilder implements CommandLineParser.ConfigBuild
     @Override
     public String help() {
         return "\tMODE: bulletinBoard\n" +
-                "\t  --" + TEST + "{true,false}\t specifies whether ids is allowed to be testing ids - not pre-determined ones";
+                "\t  --" + TEST + "{true,false}\t specifies whether ids is allowed to be testing ids - not pre-determined ones\n";
     }
 }
