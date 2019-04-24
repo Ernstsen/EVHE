@@ -1,4 +1,4 @@
-package dk.mmj.evhe.server.bulletinBoard;
+package dk.mmj.evhe.server.bulletinboard;
 
 import dk.eSoftware.commandLineParser.CommandLineParser;
 import dk.eSoftware.commandLineParser.Configuration;

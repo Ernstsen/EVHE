@@ -8,8 +8,8 @@ import dk.mmj.evhe.client.Client;
 import dk.mmj.evhe.client.ClientConfigBuilder;
 import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthority;
 import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
-import dk.mmj.evhe.server.bulletinBoard.BulletinBoard;
-import dk.mmj.evhe.server.bulletinBoard.BulletinBoardConfigBuilder;
+import dk.mmj.evhe.server.bulletinboard.BulletinBoard;
+import dk.mmj.evhe.server.bulletinboard.BulletinBoardConfigBuilder;
 
 import java.util.HashMap;
 

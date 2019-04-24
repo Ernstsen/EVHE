@@ -1,4 +1,4 @@
-package dk.mmj.evhe.server.bulletinBoard;
+package dk.mmj.evhe.server.bulletinboard;
 
 
 import dk.mmj.evhe.crypto.entities.PublicKey;
@@ -12,7 +12,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.*;
 
-import static dk.mmj.evhe.server.bulletinBoard.BulletinBoard.*;
+import static dk.mmj.evhe.server.bulletinboard.BulletinBoard.*;
 
 @Path("/")
 public class BulletinBoardResource {
