@@ -6,6 +6,8 @@ import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.server.VoteDTO;
 import org.junit.Test;
 
+import java.math.BigInteger;
+
 import static dk.mmj.evhe.crypto.TestUtils.generateKeysFromP2048bitsG2;
 import static org.junit.Assert.*;
 
@@ -43,5 +45,16 @@ public class TestSecurityUtils {
         } catch (UnableToDecryptException e) {
             fail("Unable to decrypt generated ciphertext");
         }
+    }
+
+    @Test
+    public void shouldReturn3AsLagrangeCoefficient() {
+        int[] authorityIndexes = new int[]{1, 2, 3};
+        int currentIndex = 1;
+        BigInteger p = BigInteger.valueOf(13);
+
+        BigInteger lagrangeCoefficient = SecurityUtils.generateLagrangeCoefficient(authorityIndexes, currentIndex, p);
+
+        assertEquals(lagrangeCoefficient, BigInteger.valueOf(3));
     }
 }

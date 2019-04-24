@@ -123,13 +123,13 @@ public class SecurityUtils {
                 ));
     }
 
-    public static BigInteger generateLagrangeCoefficient(int[] authorityIndexes, int currentIndex, BigInteger p) {
+    public static BigInteger generateLagrangeCoefficient(int[] authorityIndexes, int currentIndexValue, BigInteger p) {
         BigInteger lagrangeCoefficient = BigInteger.ONE;
-        BigInteger currentIndexBig = BigInteger.valueOf(currentIndex);
+        BigInteger currentIndexBig = BigInteger.valueOf(currentIndexValue);
 
         for (int i = 0; i < authorityIndexes.length; i++) {
-            if (authorityIndexes[i] != currentIndex) {
-                BigInteger iBig = BigInteger.valueOf(i);
+            if (authorityIndexes[i] != currentIndexValue) {
+                BigInteger iBig = BigInteger.valueOf(authorityIndexes[i]);
 
                 lagrangeCoefficient = lagrangeCoefficient.multiply(iBig.multiply(iBig.subtract(currentIndexBig).modInverse(p))).mod(p);
             }
