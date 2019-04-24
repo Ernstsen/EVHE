@@ -8,7 +8,10 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Class used for methods not tied directly to ElGamal
@@ -69,7 +72,7 @@ public class SecurityUtils {
      * Generates a polynomial
      *
      * @param degree the degree of the polynomial
-     * @param q q-1 specifies the maximum value of coefficients in the polynomial
+     * @param q      q-1 specifies the maximum value of coefficients in the polynomial
      * @return a BigInteger array representing the polynomial
      */
     public static BigInteger[] generatePolynomial(int degree, BigInteger q) {
@@ -83,36 +86,55 @@ public class SecurityUtils {
     /**
      * Generates the secret values for each authority using Shamir's secret sharing scheme
      *
-     * @param polynomial the polynomial used for the scheme
+     * @param polynomial  the polynomial used for the scheme
      * @param authorities the amount of authorities
-     * @return a BigInteger array containing the secret values where index i is the secret for authority i+1
+     * @return a Map where the key is AuthorityIndex and value is the corresponding secret value
      */
-    public static BigInteger[] generateSecretValues(BigInteger[] polynomial, int authorities) {
-        BigInteger[] secretValues = new BigInteger[authorities];
+    public static Map<Integer, BigInteger> generateSecretValues(BigInteger[] polynomial, int authorities) {
+        Map<Integer, BigInteger> secretValuesMap = new HashMap<>();
+
         for (int i = 0; i < authorities; i++) {
             int authorityIndex = i + 1;
             BigInteger acc = BigInteger.ZERO;
+
             for (int j = 0; j < polynomial.length; j++) {
                 acc = acc.add(BigInteger.valueOf(authorityIndex).pow(j).multiply(polynomial[j]));
             }
-            secretValues[i] = acc;
+
+            secretValuesMap.put(authorityIndex, acc);
         }
-        return secretValues;
+
+        return secretValuesMap;
     }
 
     /**
      * Generates the public values for each authority
      *
-     * @param secretValues The secret values
-     * @param g generator for group Gq where p = 2q + 1
-     * @param p the p value mentioned above
-     * @return a BigInteger array containing the public values where index i is the public value for authority i+1
+     * @param secretValuesMap The secret values
+     * @param g               generator for group Gq where p = 2q + 1
+     * @param p               the p value mentioned above
+     * @return a Map where the key is AuthorityIndex and value is the corresponding public value
      */
-    public static BigInteger[] generatePublicValues(BigInteger[] secretValues, BigInteger g, BigInteger p) {
-        BigInteger[] publicValues = new BigInteger[secretValues.length];
-        for (int i = 0; i < secretValues.length; i++) {
-            publicValues[i] = g.modPow(secretValues[i], p);
+    public static Map<Integer, BigInteger> generatePublicValues(Map<Integer, BigInteger> secretValuesMap, BigInteger g, BigInteger p) {
+        return secretValuesMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> g.modPow(e.getValue(), p)
+                ));
+    }
+
+    public static BigInteger generateLagrangeCoefficient(int[] authorityIndexes, int currentIndexValue, BigInteger p) {
+        BigInteger lagrangeCoefficient = BigInteger.ONE;
+        BigInteger currentIndexBig = BigInteger.valueOf(currentIndexValue);
+
+        for (int i = 0; i < authorityIndexes.length; i++) {
+            if (authorityIndexes[i] != currentIndexValue) {
+                BigInteger iBig = BigInteger.valueOf(authorityIndexes[i]);
+
+                lagrangeCoefficient = lagrangeCoefficient.multiply(iBig.multiply(iBig.subtract(currentIndexBig).modInverse(p))).mod(p);
+            }
         }
-        return publicValues;
+
+        return lagrangeCoefficient;
     }
 }
