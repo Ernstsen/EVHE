@@ -1,4 +1,4 @@
-package dk.mmj.evhe.server.keyServer;
+package dk.mmj.evhe.server.decryptionauthority;
 
 import dk.mmj.evhe.server.ServerState;
 import org.apache.logging.log4j.LogManager;
@@ -10,7 +10,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import static dk.mmj.evhe.server.keyServer.DecryptionAuthority.SERVER;
+import static dk.mmj.evhe.server.decryptionauthority.DecryptionAuthority.SERVER;
 
 @Path("/")
 public class DecryptionAuthorityResource {

@@ -7,7 +7,7 @@ import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.*;
 import dk.mmj.evhe.crypto.entities.PublicKey;
 import dk.mmj.evhe.server.VoteDTO;
-import dk.mmj.evhe.server.keyServer.DecryptionAuthorityConfigBuilder;
+import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;

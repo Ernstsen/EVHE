@@ -6,8 +6,8 @@ import dk.eSoftware.commandLineParser.NoSuchBuilderException;
 import dk.eSoftware.commandLineParser.WrongFormatException;
 import dk.mmj.evhe.client.Client;
 import dk.mmj.evhe.client.ClientConfigBuilder;
-import dk.mmj.evhe.server.keyServer.DecryptionAuthority;
-import dk.mmj.evhe.server.keyServer.DecryptionAuthorityConfigBuilder;
+import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthority;
+import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
 import dk.mmj.evhe.server.bulletinBoard.BulletinBoard;
 import dk.mmj.evhe.server.bulletinBoard.BulletinBoardConfigBuilder;
 

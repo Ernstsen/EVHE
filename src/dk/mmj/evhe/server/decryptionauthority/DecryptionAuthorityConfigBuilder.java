@@ -1,4 +1,4 @@
-package dk.mmj.evhe.server.keyServer;
+package dk.mmj.evhe.server.decryptionauthority;
 
 import dk.eSoftware.commandLineParser.CommandLineParser;
 import dk.eSoftware.commandLineParser.Configuration;
