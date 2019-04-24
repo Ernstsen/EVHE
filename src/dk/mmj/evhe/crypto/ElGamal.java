@@ -1,13 +1,11 @@
 package dk.mmj.evhe.crypto;
 
-import dk.mmj.evhe.crypto.entities.CipherText;
-import dk.mmj.evhe.crypto.entities.KeyPair;
-import dk.mmj.evhe.crypto.entities.PrimePair;
-import dk.mmj.evhe.crypto.entities.PublicKey;
+import dk.mmj.evhe.crypto.entities.*;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 
 import java.math.BigInteger;
+import java.util.Map;
 
 /**
  * Class for handling encryption, decryption and key-generation for the Elgamal encryption scheme
@@ -30,6 +28,25 @@ public class ElGamal {
         PublicKey publicKey = generatePublicKey(secretKey, g, primePair.getQ());
 
         return new KeyPair(secretKey, publicKey);
+    }
+
+    /**
+     * Generates distributed secret and public values
+     *
+     * @param params the pair of primes (p,q) and the generator for G_q
+     * @param polynomialDegree the degree of the polynomial
+     * @param authorities array of decryption authorities' ids
+     * @return a DistKeyGenResult containing all information the TD needs to distribute to decryption authorities
+     */
+    public static DistKeyGenResult generateDistributedKeys(KeyGenerationParameters params, int polynomialDegree, int[] authorities) {
+        BigInteger g = params.getGenerator();
+        PrimePair primePair = params.getPrimePair();
+
+        BigInteger[] polynomial = SecurityUtils.generatePolynomial(polynomialDegree, primePair.getQ());
+        Map<Integer, BigInteger> secretValues = SecurityUtils.generateSecretValues(polynomial, authorities.length);
+        Map<Integer, BigInteger> publicValues = SecurityUtils.generatePublicValues(secretValues, g, primePair.getQ());
+
+        return new DistKeyGenResult(g, primePair.getQ(), secretValues, publicValues);
     }
 
     /**
