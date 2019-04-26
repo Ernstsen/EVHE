@@ -1,10 +1,13 @@
 package dk.mmj.evhe.initialization;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.ElGamal;
-import dk.mmj.evhe.crypto.entities.DistKeyGenResult;
+import dk.mmj.evhe.entities.DistKeyGenResult;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
+import dk.mmj.evhe.entities.PublicInformationEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.JerseyWebTarget;
@@ -17,9 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
@@ -31,7 +32,13 @@ public class TrustedDealer implements Configuration, Application {
     private Path rootPath;
 
     public TrustedDealer(TrustedDealerConfiguration config) {
-        bulletinBoard = configureWebTarget(logger, config.bulletinBoardPath, new ArrayList<>());
+        bulletinBoard = configureWebTarget(logger, config.bulletinBoardPath, Arrays.asList(
+                PublicInformationEntity.class,
+                Map.class,
+                HashMap.class,
+                List.class,
+                ArrayList.class
+        ));
         this.polynomialDegree = config.polynomialDegree;
         this.servers = config.servers;
         this.rootPath = config.rootPath;
@@ -40,9 +47,12 @@ public class TrustedDealer implements Configuration, Application {
 
     @Override
     public void run() {
+        logger.info("Beginning Keygeneration");
         KeyGenerationParametersImpl params = new KeyGenerationParametersImpl(1024, 50);
 
         DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(params, polynomialDegree, servers);
+
+        logger.info("Compiling key information to files");
 
         Map<Integer, BigInteger> secretValues = distKeyGenResult.getSecretValues();
         Map<Integer, BigInteger> publicValues = distKeyGenResult.getPublicValues();
@@ -58,6 +68,10 @@ public class TrustedDealer implements Configuration, Application {
                         distKeyGenResult.getP() + "\n")
                 .forEach(output::add);
 
+        logger.info("Asserting existence of root dir");
+        createIfNotExists();
+
+        logger.info("Writing files");
         for (int i = 0; i < output.size(); i++) {
             File dest = rootPath.resolve(Integer.toString(i)).toFile();
             writeOutput(dest, output.get(i));
@@ -72,16 +86,33 @@ public class TrustedDealer implements Configuration, Application {
 
         //TODO: SIGN
 
-        Entity<PublicInformationEntity> entity = Entity.entity(publicInformation, MediaType.APPLICATION_JSON);
-        Response response = bulletinBoard.request().post(entity);
-        if (response.getStatus() <= 200 || response.getStatus() >= 300) {
-            logger.error("Unable to post information to bulletin board, response code was " + response.getStatus());
-        }
+        logger.info("Posting to Bulletin Board");
+        post(publicInformation);
+        logger.info("Finished.");
 
     }
 
+    private void post(PublicInformationEntity publicInformation) {
+
+        try {
+            Entity entity = Entity.entity(new ObjectMapper().writeValueAsString(publicInformation), MediaType.APPLICATION_JSON);
+            Response response = bulletinBoard.path("postPublicInfo").request().post(entity);
+            if (response.getStatus() <= 200 || response.getStatus() >= 300) {
+                logger.error("Unable to post information to bulletin board, response code was " + response.getStatus());
+            }
+        } catch (JsonProcessingException e) {
+            logger.error("Unable to serialize");
+        }
+    }
+
+    private void createIfNotExists() {
+        boolean mkdirs = rootPath.toFile().mkdirs();
+        if (!mkdirs) {
+            logger.warn("Unable to create dir " + rootPath.toAbsolutePath().toString());
+        }
+    }
+
     private void writeOutput(File dest, String value) {
-        dest.mkdirs();
         try (FileOutputStream ous = new FileOutputStream(dest)) {
             ous.write(value.getBytes());
             ous.flush();

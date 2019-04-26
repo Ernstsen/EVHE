@@ -74,3 +74,6 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests2
+
+# EVHE
+initFiles/*

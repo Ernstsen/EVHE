@@ -2,7 +2,7 @@ package dk.mmj.evhe.server.bulletinboard;
 
 
 import dk.eSoftware.commandLineParser.Configuration;
-import dk.mmj.evhe.crypto.entities.CipherText;
+import dk.mmj.evhe.entities.CipherText;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
 import org.eclipse.jetty.servlet.ServletHolder;

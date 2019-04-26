@@ -1,4 +1,4 @@
-package dk.mmj.evhe.initialization;
+package dk.mmj.evhe.entities;
 
 import java.math.BigInteger;
 import java.util.List;

@@ -1,12 +1,11 @@
 package dk.mmj.evhe.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.SecurityUtils;
-import dk.mmj.evhe.crypto.entities.PublicKey;
-import dk.mmj.evhe.server.VoteDTO;
+import dk.mmj.evhe.entities.CipherText;
+import dk.mmj.evhe.entities.PublicKey;
+import dk.mmj.evhe.entities.VoteDTO;
 import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -42,7 +42,8 @@ public class Client implements Application {
         vote = configuration.vote;
         multi = configuration.multi;
 
-        target = configureWebTarget(logger, configuration.targetUrl, Arrays.asList(VoteDTO.class, PublicKey.class));
+        List<Class> classes = Arrays.asList(VoteDTO.class, PublicKey.class, CipherText.class, VoteDTO.Proof.class);
+        target = configureWebTarget(logger, configuration.targetUrl, classes);
     }
 
 
@@ -55,7 +56,7 @@ public class Client implements Application {
      */
     @Override
     public void run() {
-        assertPublicServer();
+        assertBulletinBoard();
 
         PublicKey publicKey = getPublicKey();
         if (multi != null) {
@@ -110,7 +111,7 @@ public class Client implements Application {
      * <br/>
      * Throws a {@link RuntimeException} if this is not the case.
      */
-    private void assertPublicServer() {
+    private void assertBulletinBoard() {
         // Check that we are connected to BulletinBoard
         Response publicServerResp = target.path("type").request().buildGet().invoke();
 
@@ -121,7 +122,7 @@ public class Client implements Application {
 
         String responseEntity = publicServerResp.readEntity(String.class);
 
-        if (!responseEntity.contains("Public Server")) {
+        if (!responseEntity.contains("Bulletin Board")) {
             throw new RuntimeException("Server was not of type bulletinBoard");
         }
     }
@@ -132,15 +133,11 @@ public class Client implements Application {
      * @param vote the VoteDTO with vote encrypted under the public key, and zero knowledge proof.
      */
     private void postVote(VoteDTO vote) {
-        try {
-            Entity<?> entity = Entity.entity(new ObjectMapper().writeValueAsString(vote), MediaType.APPLICATION_JSON_TYPE);
-            Response response = target.path("vote").request().post(entity);
+        Entity<?> entity = Entity.entity(vote, MediaType.APPLICATION_JSON_TYPE);
+        Response response = target.path("vote").request().post(entity);
 
-            if (response.getStatus() != 204) {
-                logger.warn("Failed to post vote to server: Error code was " + response.getStatus());
-            }
-        } catch (JsonProcessingException e) {
-            logger.error("Unable write VoteDTO as JSON", e);
+        if (response.getStatus() != 204) {
+            logger.warn("Failed to post vote to server: Error code was " + response.getStatus());
         }
     }
 

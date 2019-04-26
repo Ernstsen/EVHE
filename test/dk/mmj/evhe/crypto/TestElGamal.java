@@ -1,6 +1,6 @@
 package dk.mmj.evhe.crypto;
 
-import dk.mmj.evhe.crypto.entities.*;
+import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import org.junit.Assert;
@@ -178,7 +178,7 @@ public class TestElGamal {
 
             BigInteger combinedPartialDecryptions = SecurityUtils.combinePartials(partialDecryptions, distKeyGenResult.getP());
 
-            int b = ElGamal.homomorphicDecryptionFromPartials(cipherText, combinedPartialDecryptions, distKeyGenResult.getG(), distKeyGenResult.getQ(), 1000);
+            int b = ElGamal.homomorphicDecryptionFromPartials(cipherText, combinedPartialDecryptions, distKeyGenResult.getG(), distKeyGenResult.getQ(), maxIterations);
             Assert.assertEquals(533, b);
         } catch (UnableToDecryptException e) {
             fail("Was unable to decrypt encrypted value, with message: " + e.getMessage());

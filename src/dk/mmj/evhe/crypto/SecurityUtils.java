@@ -1,9 +1,9 @@
 package dk.mmj.evhe.crypto;
 
-import dk.mmj.evhe.crypto.entities.CipherText;
-import dk.mmj.evhe.crypto.entities.PublicKey;
+import dk.mmj.evhe.entities.CipherText;
+import dk.mmj.evhe.entities.PublicKey;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
-import dk.mmj.evhe.server.VoteDTO;
+import dk.mmj.evhe.entities.VoteDTO;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 
 import java.math.BigInteger;

@@ -1,4 +1,4 @@
-package dk.mmj.evhe.crypto.entities;
+package dk.mmj.evhe.entities;
 
 import java.math.BigInteger;
 

@@ -1,4 +1,4 @@
-package dk.mmj.evhe.server;
+package dk.mmj.evhe.entities;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package dk.mmj.evhe.crypto.keygeneration;
 
-import dk.mmj.evhe.crypto.entities.PrimePair;
+import dk.mmj.evhe.entities.PrimePair;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;

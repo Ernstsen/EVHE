@@ -1,6 +1,6 @@
-package dk.mmj.evhe.server;
+package dk.mmj.evhe.entities;
 
-import dk.mmj.evhe.crypto.entities.CipherText;
+import dk.mmj.evhe.entities.CipherText;
 
 import java.math.BigInteger;
 
