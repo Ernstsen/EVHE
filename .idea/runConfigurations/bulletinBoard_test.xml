@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="bulletinBoard test" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="dk.mmj.evhe.Main" />
+    <module name="EVHE" />
+    <option name="PROGRAM_PARAMETERS" value="--bulletinBoard --test=true" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
