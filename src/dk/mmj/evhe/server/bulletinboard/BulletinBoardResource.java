@@ -1,10 +1,12 @@
 package dk.mmj.evhe.server.bulletinboard;
 
 
-import dk.mmj.evhe.crypto.entities.PublicKey;
+import dk.mmj.evhe.entities.PublicInfoList;
+import dk.mmj.evhe.entities.PublicKey;
+import dk.mmj.evhe.entities.PublicInformationEntity;
 import dk.mmj.evhe.server.ServerState;
-import dk.mmj.evhe.server.VoteDTO;
-import dk.mmj.evhe.server.VoteList;
+import dk.mmj.evhe.entities.VoteDTO;
+import dk.mmj.evhe.entities.VoteList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,6 +19,7 @@ import static dk.mmj.evhe.server.bulletinboard.BulletinBoard.*;
 @Path("/")
 public class BulletinBoardResource {
     private static final String ID_LIST = "idList";
+    private static final String PUBLIC_INFO = "publicInfo";
     private static Logger logger = LogManager.getLogger(BulletinBoardResource.class);
     private ServerState state = ServerState.getInstance();
 
@@ -25,7 +28,7 @@ public class BulletinBoardResource {
     @Produces(MediaType.TEXT_HTML)
     public String getType() {
         logger.info("Received request for server type");
-        return "<b>ServerType:</b> Public Server";
+        return "<b>ServerType:</b> Bulletin Board";
     }
 
     @GET
@@ -53,6 +56,32 @@ public class BulletinBoardResource {
         }
 
         state.put(PUBLIC_KEY, publicKey);
+    }
+
+    @POST
+    @Path("postPublicInfo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @SuppressWarnings("unchecked")
+    public void initialize(PublicInformationEntity info) {
+        List<PublicInformationEntity> list = state.get(PUBLIC_INFO, List.class);
+        if (list == null) {
+            list = new ArrayList<>();
+            state.put(PUBLIC_INFO, list);
+        }
+        list.add(info);
+    }
+
+    @GET
+    @Path("getPublicInfo")
+    @Produces(MediaType.APPLICATION_JSON)
+    @SuppressWarnings("unchecked")
+    public PublicInfoList getPublicInfos() {
+        List<PublicInformationEntity> list = state.get(PUBLIC_INFO, List.class);
+        if (list == null) {
+            logger.warn("Attempt to fetch public infos before they were created");
+            throw new NotFoundException();
+        }
+        return new PublicInfoList(list);
     }
 
     @POST

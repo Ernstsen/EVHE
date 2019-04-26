@@ -1,7 +1,7 @@
 package dk.mmj.evhe.crypto;
 
-import dk.mmj.evhe.crypto.entities.KeyPair;
-import dk.mmj.evhe.crypto.entities.PrimePair;
+import dk.mmj.evhe.entities.KeyPair;
+import dk.mmj.evhe.entities.PrimePair;
 import dk.mmj.evhe.crypto.keygeneration.PersistedKeyParameters;
 
 import java.math.BigInteger;

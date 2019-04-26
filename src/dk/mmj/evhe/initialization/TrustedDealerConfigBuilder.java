@@ -11,7 +11,7 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
     private static final Logger logger = LogManager.getLogger(TrustedDealerConfigBuilder.class);
 
     //Configuration options
-    private static final String SELF = "dealer";
+    private static final String SELF = "--dealer";
     private static final String ROOT_PATH = "root=";
     private static final String KEY_PATH = "key=";
     private static final String SERVERS = "servers=";

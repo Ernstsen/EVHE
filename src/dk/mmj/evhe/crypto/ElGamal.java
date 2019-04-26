@@ -1,6 +1,6 @@
 package dk.mmj.evhe.crypto;
 
-import dk.mmj.evhe.crypto.entities.*;
+import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 

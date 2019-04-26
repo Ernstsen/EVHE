@@ -1,8 +1,8 @@
 package dk.mmj.evhe.crypto.zeroknowledge;
 
 import dk.mmj.evhe.crypto.SecurityUtils;
-import dk.mmj.evhe.crypto.entities.CipherText;
-import dk.mmj.evhe.crypto.entities.PublicKey;
+import dk.mmj.evhe.entities.CipherText;
+import dk.mmj.evhe.entities.PublicKey;
 
 import java.math.BigInteger;
 
