@@ -148,22 +148,34 @@ public class SecurityUtils {
     }
 
     /**
-     * Combines partial decryptions
+     * Computes partial
      *
-     * @param partialDecryptionMap a map where the key is an authority index and value is the corresponding partial decryption for a specific cipher text
+     * @param a is the base value
+     * @param secretValue the secret value only known by the specific decryption authorities
      * @param p the modulus prime
-     * @return the combination of the partial decryptions (the c value of cipher text)
+     * @return the partial value
      */
-    public static BigInteger combinePartialDecryptions(Map<Integer, BigInteger> partialDecryptionMap, BigInteger p) {
+    public static BigInteger computePartial(BigInteger a, BigInteger secretValue, BigInteger p) {
+        return a.modPow(secretValue, p);
+    }
+
+    /**
+     * Combines partials
+     *
+     * @param partialsMap a map where the key is an authority index and value is a corresponding partial
+     * @param p the modulus prime
+     * @return the combination of the partials
+     */
+    public static BigInteger combinePartials(Map<Integer, BigInteger> partialsMap, BigInteger p) {
         BigInteger acc = BigInteger.ONE;
 
-        Integer[] authorityIndexesInteger = partialDecryptionMap.keySet().toArray(new Integer[partialDecryptionMap.keySet().size()]);
+        Integer[] authorityIndexesInteger = partialsMap.keySet().toArray(new Integer[partialsMap.keySet().size()]);
         int[] authorityIndexes = new int[authorityIndexesInteger.length];
         for (int i = 0; i < authorityIndexesInteger.length; i++) {
             authorityIndexes[i] = authorityIndexesInteger[i].intValue();
         }
 
-        partialDecryptionMap.forEach((x, partialDecryption) ->
+        partialsMap.forEach((x, partialDecryption) ->
                 acc.multiply(partialDecryption.modPow(generateLagrangeCoefficient(authorityIndexes, x, p), p))
         );
 
