@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Trusted Dealer" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="dk.mmj.evhe.Main" />
+    <module name="EVHE" />
+    <option name="PROGRAM_PARAMETERS" value="--dealer --servers=3 --degree=2" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="dk.mmj.evhe.crypto.keygeneration.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

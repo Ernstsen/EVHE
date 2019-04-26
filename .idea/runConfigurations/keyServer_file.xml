@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="keyServer file" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="dk.mmj.evhe.Main" />
+    <module name="EVHE" />
+    <option name="PROGRAM_PARAMETERS" value="--keyServer --keyParams=testKey.params" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
