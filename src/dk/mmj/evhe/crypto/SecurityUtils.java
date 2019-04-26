@@ -175,8 +175,8 @@ public class SecurityUtils {
             authorityIndexes[i] = authorityIndexesInteger[i].intValue();
         }
 
-        partialsMap.forEach((x, partialDecryption) ->
-                acc.multiply(partialDecryption.modPow(generateLagrangeCoefficient(authorityIndexes, x, p), p))
+        partialsMap.forEach((x, partial) ->
+                acc.multiply(partial.modPow(generateLagrangeCoefficient(authorityIndexes, x, p), p))
         );
 
         return acc;
