@@ -3,6 +3,7 @@ package dk.mmj.evhe.server.bulletinboard;
 
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.entities.CipherText;
+import dk.mmj.evhe.entities.PersistedVote;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -37,7 +38,7 @@ public class BulletinBoard extends AbstractServer {
     }
 
     private void initializeVoting() {
-        ServerState.getInstance().put(VOTES, new ArrayList<CipherText>());
+        ServerState.getInstance().put(VOTES, new ArrayList<PersistedVote>());
         ServerState.getInstance().put(HAS_VOTED, new HashSet<String>());
     }
 
