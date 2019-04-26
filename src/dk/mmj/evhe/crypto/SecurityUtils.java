@@ -5,6 +5,7 @@ import dk.mmj.evhe.entities.PublicKey;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.VoteDTO;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.omg.CosNaming.BindingIteratorHolder;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -127,9 +128,9 @@ public class SecurityUtils {
     /**
      * Generates a lagrange coefficient
      *
-     * @param authorityIndexes array of decryption authority's indexes, corresponding to x-values
+     * @param authorityIndexes  array of decryption authority's indexes, corresponding to x-values
      * @param currentIndexValue current decryption authority's index
-     * @param p p the modulus prime
+     * @param p                 p the modulus prime
      * @return the lagrange coefficient
      */
     public static BigInteger generateLagrangeCoefficient(int[] authorityIndexes, int currentIndexValue, BigInteger p) {
@@ -150,9 +151,9 @@ public class SecurityUtils {
     /**
      * Computes partial
      *
-     * @param a is the base value
+     * @param a           is the base value
      * @param secretValue the secret value only known by the specific decryption authorities
-     * @param p the modulus prime
+     * @param p           the modulus prime
      * @return the partial value
      */
     public static BigInteger computePartial(BigInteger a, BigInteger secretValue, BigInteger p) {
@@ -163,22 +164,18 @@ public class SecurityUtils {
      * Combines partials
      *
      * @param partialsMap a map where the key is an authority index and value is a corresponding partial
-     * @param p the modulus prime
+     * @param p           the modulus prime
      * @return the combination of the partials
      */
     public static BigInteger combinePartials(Map<Integer, BigInteger> partialsMap, BigInteger p) {
-        BigInteger acc = BigInteger.ONE;
-
-        Integer[] authorityIndexesInteger = partialsMap.keySet().toArray(new Integer[partialsMap.keySet().size()]);
+        Integer[] authorityIndexesInteger = partialsMap.keySet().toArray(new Integer[0]);
         int[] authorityIndexes = new int[authorityIndexesInteger.length];
         for (int i = 0; i < authorityIndexesInteger.length; i++) {
-            authorityIndexes[i] = authorityIndexesInteger[i].intValue();
+            authorityIndexes[i] = authorityIndexesInteger[i];
         }
 
-        partialsMap.forEach((x, partial) ->
-                acc.multiply(partial.modPow(generateLagrangeCoefficient(authorityIndexes, x, p), p))
-        );
-
-        return acc;
+        return partialsMap.keySet().stream()
+                .map(key -> partialsMap.get(key).modPow(generateLagrangeCoefficient(authorityIndexes, key, p), p))
+                .reduce(BigInteger.ONE, BigInteger::multiply);
     }
 }
