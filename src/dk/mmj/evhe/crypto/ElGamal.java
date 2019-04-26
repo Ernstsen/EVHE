@@ -142,4 +142,18 @@ public class ElGamal {
 
         return new CipherText(c, d);
     }
+
+    /**
+     * Partial decryption
+     * <br/>
+     * Is used by decryption authorities to make a partial decryption of a cipher text
+     *
+     * @param c the c value from the cipher text
+     * @param secretValue the secret value only known by the specific decryption authorities
+     * @param p the modulus prime
+     * @return the partial decryption
+     */
+    public static BigInteger partialDecryption(BigInteger c, BigInteger secretValue, BigInteger p) {
+        return c.modPow(secretValue, p);
+    }
 }
