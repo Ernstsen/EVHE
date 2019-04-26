@@ -90,9 +90,10 @@ public class SecurityUtils {
      *
      * @param polynomial  the polynomial used for the scheme
      * @param authorities the amount of authorities
+     * @param p                 p the modulus prime
      * @return a map where the key is authority index and value is the corresponding secret value
      */
-    public static Map<Integer, BigInteger> generateSecretValues(BigInteger[] polynomial, int authorities) {
+    public static Map<Integer, BigInteger> generateSecretValues(BigInteger[] polynomial, int authorities, BigInteger p) {
         Map<Integer, BigInteger> secretValuesMap = new HashMap<>();
 
         for (int i = 0; i < authorities; i++) {
@@ -103,7 +104,7 @@ public class SecurityUtils {
                 acc = acc.add(BigInteger.valueOf(authorityIndex).pow(j).multiply(polynomial[j]));
             }
 
-            secretValuesMap.put(authorityIndex, acc);
+            secretValuesMap.put(authorityIndex, acc.mod(p));
         }
 
         return secretValuesMap;
@@ -114,7 +115,7 @@ public class SecurityUtils {
      *
      * @param secretValuesMap The secret values
      * @param g               generator for group Gq where p = 2q + 1
-     * @param p               the p value mentioned above
+     * @param p                 p the modulus prime
      * @return a map where the key is an authority index and value is the corresponding public value
      */
     public static Map<Integer, BigInteger> generatePublicValues(Map<Integer, BigInteger> secretValuesMap, BigInteger g, BigInteger p) {
@@ -176,6 +177,6 @@ public class SecurityUtils {
 
         return partialsMap.keySet().stream()
                 .map(key -> partialsMap.get(key).modPow(generateLagrangeCoefficient(authorityIndexes, key, p), p))
-                .reduce(BigInteger.ONE, BigInteger::multiply);
+                .reduce(BigInteger.ONE, BigInteger::multiply).mod(p);
     }
 }

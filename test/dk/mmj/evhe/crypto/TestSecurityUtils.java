@@ -1,16 +1,14 @@
 package dk.mmj.evhe.crypto;
 
-import dk.mmj.evhe.entities.KeyPair;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
-import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
+import dk.mmj.evhe.entities.KeyPair;
 import dk.mmj.evhe.entities.VoteDTO;
 import org.junit.Test;
 
 import java.math.BigInteger;
 
 import static dk.mmj.evhe.crypto.TestUtils.generateKeysFromP2048bitsG2;
-import static dk.mmj.evhe.crypto.TestUtils.getKeyGenParamsFromP2048bitsG2;
 import static org.junit.Assert.*;
 
 public class TestSecurityUtils {
