@@ -11,6 +11,7 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -88,7 +89,7 @@ public class SecurityUtils {
      *
      * @param polynomial  the polynomial used for the scheme
      * @param authorities the amount of authorities
-     * @return a Map where the key is AuthorityIndex and value is the corresponding secret value
+     * @return a map where the key is authority index and value is the corresponding secret value
      */
     public static Map<Integer, BigInteger> generateSecretValues(BigInteger[] polynomial, int authorities) {
         Map<Integer, BigInteger> secretValuesMap = new HashMap<>();
@@ -113,7 +114,7 @@ public class SecurityUtils {
      * @param secretValuesMap The secret values
      * @param g               generator for group Gq where p = 2q + 1
      * @param p               the p value mentioned above
-     * @return a Map where the key is AuthorityIndex and value is the corresponding public value
+     * @return a map where the key is an authority index and value is the corresponding public value
      */
     public static Map<Integer, BigInteger> generatePublicValues(Map<Integer, BigInteger> secretValuesMap, BigInteger g, BigInteger p) {
         return secretValuesMap.entrySet().stream()
@@ -123,7 +124,15 @@ public class SecurityUtils {
                 ));
     }
 
-    static BigInteger generateLagrangeCoefficient(int[] authorityIndexes, int currentIndexValue, BigInteger p) {
+    /**
+     * Generates a lagrange coefficient
+     *
+     * @param authorityIndexes array of decryption authority's indexes, corresponding to x-values
+     * @param currentIndexValue current decryption authority's index
+     * @param p p the modulus prime
+     * @return the lagrange coefficient
+     */
+    public static BigInteger generateLagrangeCoefficient(int[] authorityIndexes, int currentIndexValue, BigInteger p) {
         BigInteger lagrangeCoefficient = BigInteger.ONE;
         BigInteger currentIndexBig = BigInteger.valueOf(currentIndexValue);
 
@@ -136,5 +145,40 @@ public class SecurityUtils {
         }
 
         return lagrangeCoefficient;
+    }
+
+    /**
+     * Computes partial
+     *
+     * @param a is the base value
+     * @param secretValue the secret value only known by the specific decryption authorities
+     * @param p the modulus prime
+     * @return the partial value
+     */
+    public static BigInteger computePartial(BigInteger a, BigInteger secretValue, BigInteger p) {
+        return a.modPow(secretValue, p);
+    }
+
+    /**
+     * Combines partials
+     *
+     * @param partialsMap a map where the key is an authority index and value is a corresponding partial
+     * @param p the modulus prime
+     * @return the combination of the partials
+     */
+    public static BigInteger combinePartials(Map<Integer, BigInteger> partialsMap, BigInteger p) {
+        BigInteger acc = BigInteger.ONE;
+
+        Integer[] authorityIndexesInteger = partialsMap.keySet().toArray(new Integer[partialsMap.keySet().size()]);
+        int[] authorityIndexes = new int[authorityIndexesInteger.length];
+        for (int i = 0; i < authorityIndexesInteger.length; i++) {
+            authorityIndexes[i] = authorityIndexesInteger[i].intValue();
+        }
+
+        partialsMap.forEach((x, partialDecryption) ->
+                acc.multiply(partialDecryption.modPow(generateLagrangeCoefficient(authorityIndexes, x, p), p))
+        );
+
+        return acc;
     }
 }

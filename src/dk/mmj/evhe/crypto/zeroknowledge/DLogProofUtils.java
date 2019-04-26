@@ -43,7 +43,7 @@ public class DLogProofUtils {
      * @param cipherText the cipher text computed using homomorphic addition
      * @param partialDecryption partial decryption of cipherText using the secret value s_i
      * @param publicKey the public key containing g, q, p and h_i which is specific for authority i
-     * @param proof the proof of discrete logarithm equality for partialDecryption
+     * @param proof the proof of discrete logarithm equality for computePartial
      * @return whether the partial decryption could be verified
      */
     public static boolean verifyProof(CipherText cipherText, CipherText partialDecryption, PublicKey publicKey, Proof proof) {

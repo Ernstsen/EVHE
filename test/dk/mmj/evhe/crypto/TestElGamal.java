@@ -1,17 +1,16 @@
 package dk.mmj.evhe.crypto;
 
-import dk.mmj.evhe.entities.CipherText;
-import dk.mmj.evhe.entities.KeyPair;
-import dk.mmj.evhe.entities.PrimePair;
+import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import static dk.mmj.evhe.crypto.TestUtils.generateKeysFromP11G2;
-import static dk.mmj.evhe.crypto.TestUtils.generateKeysFromP2048bitsG2;
+import static dk.mmj.evhe.crypto.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -158,6 +157,32 @@ public class TestElGamal {
         }
         fail("Did not throw exception when unable to decrypt");
 
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptWith2WhenNIs3() {
+        try {
+            KeyGenerationParameters keyGenerationParameters = getKeyGenParamsFromP2048bitsG2();
+            DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(keyGenerationParameters, 2, 3);
+
+            BigInteger publicKey = SecurityUtils.combinePartials(distKeyGenResult.getPublicValues(), distKeyGenResult.getP());
+            BigInteger r = SecurityUtils.getRandomNumModN(distKeyGenResult.getQ());
+            CipherText cipherText = ElGamal.homomorphicEncryption(new PublicKey(publicKey, distKeyGenResult.getG(), distKeyGenResult.getQ()), BigInteger.valueOf(533), r);
+
+            Map<Integer, BigInteger> partialDecryptions = distKeyGenResult.getSecretValues().entrySet().stream()
+                    .filter(e -> e.getKey() != 1)
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> SecurityUtils.computePartial(cipherText.getC(), e.getValue(), distKeyGenResult.getP())
+                    ));
+
+            BigInteger combinedPartialDecryptions = SecurityUtils.combinePartials(partialDecryptions, distKeyGenResult.getP());
+
+            int b = ElGamal.homomorphicDecryptionFromPartials(cipherText, combinedPartialDecryptions, distKeyGenResult.getG(), distKeyGenResult.getQ(), maxIterations);
+            Assert.assertEquals(533, b);
+        } catch (UnableToDecryptException e) {
+            fail("Was unable to decrypt encrypted value, with message: " + e.getMessage());
+        }
     }
 
     public static class SimpleKeyGenParams implements KeyGenerationParameters {

@@ -7,6 +7,8 @@ import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import java.math.BigInteger;
 import java.util.Map;
 
+import static dk.mmj.evhe.crypto.SecurityUtils.generateLagrangeCoefficient;
+
 /**
  * Class for handling encryption, decryption and key-generation for the Elgamal encryption scheme
  */
@@ -114,17 +116,7 @@ public class ElGamal {
         BigInteger hr = cipherText.getC().modPow(keyPair.getSecretKey(), p);
         BigInteger gPowMessage = cipherText.getD().multiply(hr.modInverse(p)).mod(p);
 
-        int b = 0;
-
-        while (b < max) {
-            if (gPowMessage.equals(keyPair.getPublicKey().getG().modPow(BigInteger.valueOf(b), p))) {
-                return b;
-            }
-
-            b++;
-        }
-
-        throw new UnableToDecryptException("Could not decrypt message");
+        return findDecryptionValue(gPowMessage, keyPair.getPublicKey().getG(), keyPair.getPublicKey().getP(), max);
     }
 
     /**
@@ -141,5 +133,25 @@ public class ElGamal {
         BigInteger d = c1.getD().multiply(c2.getD());
 
         return new CipherText(c, d);
+    }
+
+    public static int homomorphicDecryptionFromPartials(CipherText cipherText, BigInteger combinedPartials, BigInteger g, BigInteger p, int max) throws UnableToDecryptException {
+        BigInteger gPowMessage = cipherText.getD().multiply(combinedPartials.modInverse(p)).mod(p);
+
+        return findDecryptionValue(gPowMessage, g, p, max);
+    }
+
+    private static int findDecryptionValue(BigInteger gPowMessage, BigInteger g, BigInteger p, int max) throws UnableToDecryptException {
+        int b = 0;
+
+        while (b < max) {
+            if (gPowMessage.equals(g.modPow(BigInteger.valueOf(b), p))) {
+                return b;
+            }
+
+            b++;
+        }
+
+        throw new UnableToDecryptException("Could not decrypt message");
     }
 }
