@@ -1,18 +1,17 @@
 package dk.mmj.evhe.server.bulletinboard;
 
 
-import dk.mmj.evhe.entities.PublicInfoList;
-import dk.mmj.evhe.entities.PublicKey;
-import dk.mmj.evhe.entities.PublicInformationEntity;
+import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.server.ServerState;
-import dk.mmj.evhe.entities.VoteDTO;
-import dk.mmj.evhe.entities.VoteList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static dk.mmj.evhe.server.bulletinboard.BulletinBoard.*;
 
@@ -110,7 +109,7 @@ public class BulletinBoardResource {
         }
 
         List votes = state.get(VOTES, ArrayList.class);
-        votes.add(vote);
+        votes.add(new PersistedVote(vote));
         hasVoted.add(voterId);
     }
 
@@ -137,7 +136,7 @@ public class BulletinBoardResource {
     @Path("getVotes")
     @Produces(MediaType.APPLICATION_JSON)
     public VoteList getVotes() {
-        List<VoteDTO> list = state.get(VOTES, List.class);
+        List<PersistedVote> list = state.get(VOTES, List.class);
         if (list == null) {
             throw new NotFoundException("Voting has not been initialized");
         }

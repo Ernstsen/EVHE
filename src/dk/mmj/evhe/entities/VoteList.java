@@ -5,20 +5,20 @@ import java.util.List;
 @SuppressWarnings("JavaDocs, unused")
 public class VoteList {
 
-    private List<VoteDTO> votes;
+    private List<PersistedVote> votes;
 
-    public VoteList(List<VoteDTO> votes) {
+    public VoteList(List<PersistedVote> votes) {
         this.votes = votes;
     }
 
     public VoteList() {
     }
 
-    public List<VoteDTO> getVotes() {
+    public List<PersistedVote> getVotes() {
         return votes;
     }
 
-    public void setVotes(List<VoteDTO> votes) {
+    public void setVotes(List<PersistedVote> votes) {
         this.votes = votes;
     }
 }
