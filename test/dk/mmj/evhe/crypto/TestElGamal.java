@@ -160,7 +160,7 @@ public class TestElGamal {
     }
 
     @Test
-    public void shouldBeAbleToDecryptWith2WhenNIs3() {
+    public void shouldBeAbleToDecryptPartialsWith2DAsWhenNIs3() {
         try {
             KeyGenerationParameters keyGenerationParameters = getKeyGenParamsFromP2048bitsG2();
             DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(keyGenerationParameters, 2, 3);
