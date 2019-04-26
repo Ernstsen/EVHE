@@ -1,6 +1,7 @@
 package dk.mmj.evhe.crypto.entities;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,7 +10,7 @@ public class DistKeyGenResult {
     private BigInteger g;
     private BigInteger q;
     private BigInteger p;
-    private List<String> authorityIds;
+    private List<Integer> authorityIds;
     private Map<Integer, BigInteger> secretValues;
     private Map<Integer, BigInteger> publicValues;
 
@@ -25,9 +26,7 @@ public class DistKeyGenResult {
         this.p = q.multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
         this.secretValues = secretValues;
         this.publicValues = publicValues;
-        authorityIds = secretValues.keySet().stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
+        authorityIds = new ArrayList<>(secretValues.keySet());
     }
 
     public BigInteger getG() {
@@ -42,7 +41,7 @@ public class DistKeyGenResult {
         return p;
     }
 
-    public List<String> getAuthorityIds() {
+    public List<Integer> getAuthorityIds() {
         return authorityIds;
     }
 
