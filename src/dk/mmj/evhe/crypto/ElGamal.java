@@ -35,15 +35,15 @@ public class ElGamal {
      *
      * @param params the pair of primes (p,q) and the generator for G_q
      * @param polynomialDegree the degree of the polynomial
-     * @param authorities array of decryption authorities' ids
+     * @param authorities number of decryption authorities
      * @return a DistKeyGenResult containing all information the TD needs to distribute to decryption authorities
      */
-    public static DistKeyGenResult generateDistributedKeys(KeyGenerationParameters params, int polynomialDegree, int[] authorities) {
+    public static DistKeyGenResult generateDistributedKeys(KeyGenerationParameters params, int polynomialDegree, int authorities) {
         BigInteger g = params.getGenerator();
         PrimePair primePair = params.getPrimePair();
 
         BigInteger[] polynomial = SecurityUtils.generatePolynomial(polynomialDegree, primePair.getQ());
-        Map<Integer, BigInteger> secretValues = SecurityUtils.generateSecretValues(polynomial, authorities.length);
+        Map<Integer, BigInteger> secretValues = SecurityUtils.generateSecretValues(polynomial, authorities);
         Map<Integer, BigInteger> publicValues = SecurityUtils.generatePublicValues(secretValues, g, primePair.getQ());
 
         return new DistKeyGenResult(g, primePair.getQ(), secretValues, publicValues);

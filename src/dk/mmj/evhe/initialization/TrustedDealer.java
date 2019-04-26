@@ -2,13 +2,19 @@ package dk.mmj.evhe.initialization;
 
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
-import dk.mmj.evhe.crypto.SecurityUtils;
-import dk.mmj.evhe.crypto.entities.PrimePair;
+import dk.mmj.evhe.crypto.ElGamal;
+import dk.mmj.evhe.crypto.entities.DistKeyGenResult;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -22,36 +28,66 @@ public class TrustedDealer implements Configuration, Application {
     private JerseyWebTarget bulletinBoard;
     private int polynomialDegree;
     private int servers;
+    private Path rootPath;
 
     public TrustedDealer(TrustedDealerConfiguration config) {
         bulletinBoard = configureWebTarget(logger, config.bulletinBoardPath, new ArrayList<>());
         this.polynomialDegree = config.polynomialDegree;
         this.servers = config.servers;
-
+        this.rootPath = config.rootPath;
     }
 
 
     @Override
     public void run() {
         KeyGenerationParametersImpl params = new KeyGenerationParametersImpl(1024, 50);
-        PrimePair primePair = params.getPrimePair();
 
-        BigInteger[] pol = SecurityUtils.generatePolynomial(polynomialDegree, primePair.getQ());
-        Map<Integer, BigInteger> secretValues = SecurityUtils.generateSecretValues(pol, servers);
-        Map<Integer, BigInteger> publicValues = SecurityUtils.generatePublicValues(secretValues, params.getGenerator(), primePair.getP());
+        DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(params, polynomialDegree, servers);
+
+        Map<Integer, BigInteger> secretValues = distKeyGenResult.getSecretValues();
+        Map<Integer, BigInteger> publicValues = distKeyGenResult.getPublicValues();
 
         List<String> output = new ArrayList<>();
 
-        publicValues.keySet().stream()
+        distKeyGenResult.getAuthorityIds().stream()
                 .map(id -> id + "\n" +
                         publicValues.get(id) + "\n" +
                         secretValues.get(id) + "\n" +
-                        params.getGenerator() + "\n" +
-                        primePair.getQ() + "\n" +
-                        primePair.getP() + "\n")
+                        distKeyGenResult.getG() + "\n" +
+                        distKeyGenResult.getQ() + "\n" +
+                        distKeyGenResult.getP() + "\n")
                 .forEach(output::add);
-        //TODO: Do something with output
 
+        for (int i = 0; i < output.size(); i++) {
+            File dest = rootPath.resolve(Integer.toString(i)).toFile();
+            writeOutput(dest, output.get(i));
+        }
+
+        PublicInformationEntity publicInformation = new PublicInformationEntity(
+                distKeyGenResult.getAuthorityIds(),
+                publicValues,
+                distKeyGenResult.getG(),
+                distKeyGenResult.getQ(),
+                distKeyGenResult.getP());
+
+        //TODO: SIGN
+
+        Entity<PublicInformationEntity> entity = Entity.entity(publicInformation, MediaType.APPLICATION_JSON);
+        Response response = bulletinBoard.request().post(entity);
+        if (response.getStatus() <= 200 || response.getStatus() >= 300) {
+            logger.error("Unable to post information to bulletin board, response code was " + response.getStatus());
+        }
+
+    }
+
+    private void writeOutput(File dest, String value) {
+        dest.mkdirs();
+        try (FileOutputStream ous = new FileOutputStream(dest)) {
+            ous.write(value.getBytes());
+            ous.flush();
+        } catch (IOException e) {
+            logger.error("Failed to write to file: " + dest.getAbsolutePath(), e);
+        }
     }
 
 
