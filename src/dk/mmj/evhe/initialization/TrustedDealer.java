@@ -2,34 +2,51 @@ package dk.mmj.evhe.initialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.entities.DistKeyGenResult;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
 import dk.mmj.evhe.entities.PublicInformationEntity;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.CipherParameters;
+import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.RSAKeyParameters;
+import org.bouncycastle.crypto.signers.RSADigestSigner;
+import org.bouncycastle.crypto.util.PrivateKeyFactory;
+import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Path;
+import java.security.*;
 import java.util.*;
 
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
-public class TrustedDealer implements Configuration, Application {
+public class TrustedDealer implements Application {
     private static Logger logger = LogManager.getLogger(TrustedDealer.class);
     private JerseyWebTarget bulletinBoard;
     private int polynomialDegree;
     private int servers;
     private Path rootPath;
+    private Path keyPath;
+    private static final String PRIVATE_KEY_NAME = "rsa.pub";
+    private static final String PUBLIC_KEY_NAME = "rsa";
 
     public TrustedDealer(TrustedDealerConfiguration config) {
         bulletinBoard = configureWebTarget(logger, config.bulletinBoardPath, Arrays.asList(
@@ -42,12 +59,36 @@ public class TrustedDealer implements Configuration, Application {
         this.polynomialDegree = config.polynomialDegree;
         this.servers = config.servers;
         this.rootPath = config.rootPath;
+        this.keyPath = config.keyPath;
+
+        createIfNotExists(rootPath);
+        createIfNotExists(keyPath);
+
+        if (config.newKey) {
+            try {
+                KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA", "BC");
+                gen.initialize(2048, new SecureRandom());
+
+                KeyPair keyPair = gen.generateKeyPair();
+                PublicKey pk = keyPair.getPublic();
+                PrivateKey sk = keyPair.getPrivate();
+
+                writeFile(keyPath.resolve(PUBLIC_KEY_NAME).toFile(), Base64.encode(pk.getEncoded()));
+                writeFile(keyPath.resolve(PRIVATE_KEY_NAME).toFile(), Base64.encode(sk.getEncoded()));
+            } catch (NoSuchAlgorithmException e) {
+                logger.error("Unable to find RSA KeyGen algorithm. Terminating", e);
+                System.exit(-1);
+            } catch (NoSuchProviderException e) {
+                logger.error("Unable to find bouncycastle provider. Terminating", e);
+                System.exit(-1);
+            }
+        }
     }
 
 
     @Override
     public void run() {
-        logger.info("Beginning Keygeneration");
+        logger.info("Starting Keygeneration");
         KeyGenerationParametersImpl params = new KeyGenerationParametersImpl(1024, 50);
 
         DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(params, polynomialDegree, servers);
@@ -69,12 +110,11 @@ public class TrustedDealer implements Configuration, Application {
                 .forEach(output::add);
 
         logger.info("Asserting existence of root dir");
-        createIfNotExists();
 
         logger.info("Writing files");
         for (int i = 0; i < output.size(); i++) {
             File dest = rootPath.resolve(Integer.toString(i)).toFile();
-            writeOutput(dest, output.get(i));
+            writeFile(dest, output.get(i).getBytes());
         }
 
         PublicInformationEntity publicInformation = new PublicInformationEntity(
@@ -85,11 +125,38 @@ public class TrustedDealer implements Configuration, Application {
                 distKeyGenResult.getP());
 
         //TODO: SIGN
+        File privateFile = keyPath.resolve(PRIVATE_KEY_NAME).toFile();
+
+
+        try {
+            AsymmetricKeyParameter privateKey = loadKey(privateFile);
+            RSADigestSigner signer = new RSADigestSigner(new SHA256Digest());
+            signer.init(true, privateKey);
+            publicInformation.updateSigner(signer);
+            byte[] sigArray = signer.generateSignature();
+            String signature = new String(Base64.encode(sigArray));
+            publicInformation.setSignature(signature);
+        } catch (CryptoException e) {
+            logger.error("Failed to create RSA signature", e);
+        }
 
         logger.info("Posting to Bulletin Board");
         post(publicInformation);
         logger.info("Finished.");
 
+    }
+
+    private AsymmetricKeyParameter loadKey(File keyFile) {
+        try {
+            byte[] bytes = new byte[2048];
+            int len = IOUtils.readFully(new FileInputStream(keyFile), bytes);
+            byte[] actualBytes = Arrays.copyOfRange(bytes, 0, len);
+            return PrivateKeyFactory.createKey(Base64.decode(actualBytes));
+        } catch (IOException e) {
+            logger.error("Unable to read privateKey from file. Terminating", e);
+            System.exit(-1);
+        }
+        return null;
     }
 
     private void post(PublicInformationEntity publicInformation) {
@@ -105,16 +172,22 @@ public class TrustedDealer implements Configuration, Application {
         }
     }
 
-    private void createIfNotExists() {
-        boolean mkdirs = rootPath.toFile().mkdirs();
+    private void createIfNotExists(Path path) {
+        File file = path.toFile();
+
+        if(file.exists()){
+            return;
+        }
+
+        boolean mkdirs = file.mkdirs();
         if (!mkdirs) {
-            logger.warn("Unable to create dir " + rootPath.toAbsolutePath().toString());
+            logger.warn("Unable to create dir " + path.toAbsolutePath().toString());
         }
     }
 
-    private void writeOutput(File dest, String value) {
+    private void writeFile(File dest, byte[] value) {
         try (FileOutputStream ous = new FileOutputStream(dest)) {
-            ous.write(value.getBytes());
+            ous.write(value);
             ous.flush();
         } catch (IOException e) {
             logger.error("Failed to write to file: " + dest.getAbsolutePath(), e);
@@ -132,6 +205,7 @@ public class TrustedDealer implements Configuration, Application {
         private int servers;
         private int polynomialDegree;
         private String bulletinBoardPath;
+        private boolean newKey;
 
         /**
          * Constructor for the Trusted Dealer configuration
@@ -141,13 +215,15 @@ public class TrustedDealer implements Configuration, Application {
          * @param servers           number of servers to create files for
          * @param polynomialDegree  the degree of the polynomial used during key generation
          * @param bulletinBoardPath path to the bulletin board where public key should be posted
+         * @param newKey            whether new key should be generated in the root
          */
-        TrustedDealerConfiguration(Path rootPath, Path keyPath, int servers, int polynomialDegree, String bulletinBoardPath) {
+        TrustedDealerConfiguration(Path rootPath, Path keyPath, int servers, int polynomialDegree, String bulletinBoardPath, boolean newKey) {
             this.rootPath = rootPath;
             this.keyPath = keyPath;
             this.servers = servers;
             this.polynomialDegree = polynomialDegree;
             this.bulletinBoardPath = bulletinBoardPath;
+            this.newKey = newKey;
         }
     }
 }

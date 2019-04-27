@@ -1,5 +1,7 @@
 package dk.mmj.evhe.entities;
 
+import org.bouncycastle.crypto.Signer;
+
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ public class PublicInformationEntity {
     private BigInteger g;
     private BigInteger q;
     private BigInteger p;
+    private String signature;
 
     public PublicInformationEntity() {
     }
@@ -62,5 +65,30 @@ public class PublicInformationEntity {
 
     public void setP(BigInteger p) {
         this.p = p;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    /**
+     * Method for reading all public values into a signer, for signature creation or cerification
+     *
+     * @param signer signer to read info into
+     */
+    public void updateSigner(Signer signer) {
+        for (Integer id : ids) {
+            signer.update(id.byteValue());
+            byte[] pk = publicKeys.get(id).toByteArray();
+            signer.update(pk, 0, pk.length);
+        }
+
+        signer.update(g.toByteArray(), 0, g.toByteArray().length);
+        signer.update(q.toByteArray(), 0, q.toByteArray().length);
+        signer.update(p.toByteArray(), 0, p.toByteArray().length);
     }
 }

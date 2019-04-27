@@ -3,24 +3,25 @@ package dk.mmj.evhe.client;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.SecurityUtils;
-import dk.mmj.evhe.entities.CipherText;
-import dk.mmj.evhe.entities.PublicKey;
-import dk.mmj.evhe.entities.VoteDTO;
+import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.signers.RSADigestSigner;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.util.encoders.Base64;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.io.*;
+import java.math.BigInteger;
+import java.nio.file.Paths;
+import java.util.*;
 
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
@@ -30,6 +31,7 @@ public class Client implements Application {
     private String id;
     private Boolean vote;
     private Integer multi;
+    private static final String PUBLIC_KEY_NAME = "rsa";
 
     /**
      * Creates a client instance, that utilizes the SSL protocol to communicate with the public server.
@@ -42,7 +44,15 @@ public class Client implements Application {
         vote = configuration.vote;
         multi = configuration.multi;
 
-        List<Class> classes = Arrays.asList(VoteDTO.class, PublicKey.class, CipherText.class, VoteDTO.Proof.class);
+        List<Class> classes = Arrays.asList(
+                HashMap.class,
+                VoteDTO.class,
+                PublicKey.class,
+                CipherText.class,
+                VoteDTO.Proof.class,
+                PublicInfoList.class,
+                PublicInformationEntity.class);
+
         target = configureWebTarget(logger, configuration.targetUrl, classes);
     }
 
@@ -112,7 +122,6 @@ public class Client implements Application {
      * Throws a {@link RuntimeException} if this is not the case.
      */
     private void assertBulletinBoard() {
-        // Check that we are connected to BulletinBoard
         Response publicServerResp = target.path("type").request().buildGet().invoke();
 
         if (publicServerResp.getStatus() != 200) {
@@ -178,9 +187,49 @@ public class Client implements Application {
      * @return the response containing the Public Key.
      */
     private PublicKey getPublicKey() {
-        Response response = target.path("publicKey").request().buildGet().invoke();
+        Response response = target.path("getPublicInfo").request().buildGet().invoke();
+        PublicInfoList publicInfoList = response.readEntity(PublicInfoList.class);
 
-        return response.readEntity(PublicKey.class);
+        Optional<PublicInformationEntity> any = publicInfoList.getInformationEntities().stream()
+                .filter(this::verifyPublicInformation)
+                .findAny();
+
+        if (!any.isPresent()) {
+            logger.error("No public information retrieved from the server was signed by the trusted dealer. Terminating");
+            System.exit(-1);
+            return null;//Never happens
+        }
+
+        PublicInformationEntity info = any.get();
+
+        BigInteger h = SecurityUtils.combinePartials(info.getPublicKeys(), info.getP());
+
+        return new PublicKey(h, info.getG(), info.getQ());
+    }
+
+    private boolean verifyPublicInformation(PublicInformationEntity info) {
+        File keyFile = Paths.get("rsa").resolve(PUBLIC_KEY_NAME).toFile();
+        if (!keyFile.exists()) {
+            logger.error("Unable to locate RSA public key from TD");
+            return false;
+        }
+
+        try {
+            byte[] bytes = new byte[2048];
+            int len = IOUtils.readFully(new FileInputStream(keyFile), bytes);
+            byte[] actualBytes = Arrays.copyOfRange(bytes, 0, len);
+
+            AsymmetricKeyParameter key = PublicKeyFactory.createKey(Base64.decode(actualBytes));
+            RSADigestSigner dig = new RSADigestSigner(new SHA256Digest());
+            dig.init(false, key);
+            info.updateSigner(dig);
+
+            byte[] encodedSignature = info.getSignature().getBytes();
+            return dig.verifySignature(Base64.decode(encodedSignature));
+        } catch (IOException e) {
+            logger.error("Failed to verify signature", e);
+            return false;
+        }
     }
 
     /**

@@ -12,7 +12,9 @@ import dk.mmj.evhe.server.bulletinboard.BulletinBoard;
 import dk.mmj.evhe.server.bulletinboard.BulletinBoardConfigBuilder;
 import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthority;
 import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthorityConfigBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import java.security.Security;
 import java.util.HashMap;
 
 public class Main {
@@ -22,6 +24,8 @@ public class Main {
         System.setProperty("log4j2.disable.jmx", Boolean.TRUE.toString());
         //Set loggingManager to be one supplied by Log4J for proper logging
         System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+        //Register BouncyCastle as Securityprovider
+        Security.addProvider(new BouncyCastleProvider());
     }
 
     public static void main(String[] args) {

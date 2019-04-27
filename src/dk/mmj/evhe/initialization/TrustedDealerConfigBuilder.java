@@ -1,11 +1,14 @@
 package dk.mmj.evhe.initialization;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import dk.eSoftware.commandLineParser.CommandLineParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(TrustedDealerConfigBuilder.class);
@@ -13,18 +16,20 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
     //Configuration options
     private static final String SELF = "--dealer";
     private static final String ROOT_PATH = "root=";
-    private static final String KEY_PATH = "key=";
+    private static final String KEY_PATH = "keyPath=";
     private static final String SERVERS = "servers=";
     private static final String DEGREE = "degree=";
     private static final String BULLETIN_BOARD_PATH = "url=";
+    private static final String NEW_KEY = "newKey=";
 
 
     //state
     private Path rootPath = Paths.get("");
-    private Path keyPath = Paths.get("id_rsa");
+    private Path keyPath = Paths.get("");
     private int servers;
     private int polynomialDegree;
     private String bulletinBoardPath = "https://localhost:8080";
+    private boolean newKey = false;
 
 
     @Override
@@ -46,6 +51,8 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
             polynomialDegree = Integer.parseInt(cmd.substring(DEGREE.length()));
         } else if (cmd.startsWith(BULLETIN_BOARD_PATH)) {
             bulletinBoardPath = cmd.substring(BULLETIN_BOARD_PATH.length());
+        } else if (cmd.startsWith(NEW_KEY)) {
+            newKey = Boolean.parseBoolean(cmd.substring(NEW_KEY.length()));
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -54,7 +61,28 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
     }
 
     public TrustedDealer.TrustedDealerConfiguration build() {
-        return new TrustedDealer.TrustedDealerConfiguration(rootPath, keyPath, servers, polynomialDegree, bulletinBoardPath);
+        return new TrustedDealer.TrustedDealerConfiguration(rootPath, keyPath, servers, polynomialDegree, bulletinBoardPath, newKey || !keyPathHasKeys());
+    }
+
+    private boolean keyPathHasKeys() {
+        File keyFolder = keyPath.toFile();
+        if (!keyFolder.exists()) {
+            return false;
+        }
+
+        String[] list = keyFolder.list();
+        if (list == null) {
+            return false;
+        }
+
+        boolean pk = false, sk = false;
+
+        for (String s : list) {
+            pk |= "rsa.pub".equalsIgnoreCase(s);
+            sk |= "rsa".equalsIgnoreCase(s);
+        }
+
+        return pk && sk;
     }
 
     @Override
@@ -66,6 +94,8 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
                 "\t  --" + SERVERS + "int\t\t How many servers are going to participate\n" +
                 "\t  --" + DEGREE + "int\t\t Degree of polynomial for keygeneration. System is safe when #of corrupt is less or" +
                 "equals to degree\n" +
-                "\t  --" + BULLETIN_BOARD_PATH + "int\t\t Url pointing to the bulletin board where public keys should be posed\n";
+                "\t  --" + BULLETIN_BOARD_PATH + "int\t\t Url pointing to the bulletin board where public keys should be posed\n" +
+                "\t  --" + NEW_KEY + "boolean\t\t Whether new RSA keypair should be generated. If keyPath does not point dir with keys, " +
+                "it defaults to true. Otherwise false\n";
     }
 }
