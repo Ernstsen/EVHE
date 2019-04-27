@@ -163,14 +163,14 @@ public class TestElGamal {
     public void shouldBeAbleToDecryptPartialsWith2DAsWhenNIs3() {
         try {
             KeyGenerationParameters keyGenerationParameters = getKeyGenParamsFromP2048bitsG2();
-            DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(keyGenerationParameters, 2, 3);
+            DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(keyGenerationParameters, 1, 3);
 
             BigInteger publicKey = SecurityUtils.combinePartials(distKeyGenResult.getPublicValues(), distKeyGenResult.getP());
             BigInteger r = SecurityUtils.getRandomNumModN(distKeyGenResult.getQ());
             CipherText cipherText = ElGamal.homomorphicEncryption(new PublicKey(publicKey, distKeyGenResult.getG(), distKeyGenResult.getQ()), BigInteger.valueOf(533), r);
 
             Map<Integer, BigInteger> partialDecryptions = distKeyGenResult.getSecretValues().entrySet().stream()
-                    .filter(e -> e.getKey() != 1)
+//                    .filter(e -> e.getKey() != 1)
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
                             e -> SecurityUtils.computePartial(cipherText.getC(), e.getValue(), distKeyGenResult.getP())
@@ -178,7 +178,7 @@ public class TestElGamal {
 
             BigInteger combinedPartialDecryptions = SecurityUtils.combinePartials(partialDecryptions, distKeyGenResult.getP());
 
-            int b = ElGamal.homomorphicDecryptionFromPartials(cipherText, combinedPartialDecryptions, distKeyGenResult.getG(), distKeyGenResult.getQ(), maxIterations);
+            int b = ElGamal.homomorphicDecryptionFromPartials(cipherText, combinedPartialDecryptions, distKeyGenResult.getG(), distKeyGenResult.getP(), maxIterations);
             Assert.assertEquals(533, b);
         } catch (UnableToDecryptException e) {
             fail("Was unable to decrypt encrypted value, with message: " + e.getMessage());
