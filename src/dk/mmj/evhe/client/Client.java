@@ -1,5 +1,6 @@
 package dk.mmj.evhe.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.SecurityUtils;
@@ -46,6 +47,7 @@ public class Client implements Application {
 
         List<Class> classes = Arrays.asList(
                 HashMap.class,
+                Map.class,
                 VoteDTO.class,
                 PublicKey.class,
                 CipherText.class,
@@ -188,7 +190,16 @@ public class Client implements Application {
      */
     private PublicKey getPublicKey() {
         Response response = target.path("getPublicInfo").request().buildGet().invoke();
-        PublicInfoList publicInfoList = response.readEntity(PublicInfoList.class);
+        String responseString = response.readEntity(String.class);
+
+        PublicInfoList publicInfoList;
+        try {
+            publicInfoList = new ObjectMapper().readerFor(PublicInfoList.class).readValue(responseString);
+        } catch (IOException e) {
+            logger.error("Failed to deserialize public informations list retrieved from bulletin board", e);
+            System.exit(-1);
+            return null;//Never happens
+        }
 
         Optional<PublicInformationEntity> any = publicInfoList.getInformationEntities().stream()
                 .filter(this::verifyPublicInformation)
