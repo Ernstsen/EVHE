@@ -1,6 +1,5 @@
 package dk.mmj.evhe.initialization;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import dk.eSoftware.commandLineParser.CommandLineParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.Date;
 
 public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(TrustedDealerConfigBuilder.class);
@@ -21,6 +20,10 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
     private static final String DEGREE = "degree=";
     private static final String BULLETIN_BOARD_PATH = "url=";
     private static final String NEW_KEY = "newKey=";
+    private static final String TIME = "time";
+    private static final String TIME_DAY = "day=";
+    private static final String TIME_HR = "hour=";
+    private static final String TIME_MIN = "min=";
 
 
     //state
@@ -30,6 +33,7 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
     private int polynomialDegree;
     private String bulletinBoardPath = "https://localhost:8080";
     private boolean newKey = false;
+    private long time = 10_000 * 60;
 
 
     @Override
@@ -53,6 +57,21 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
             bulletinBoardPath = cmd.substring(BULLETIN_BOARD_PATH.length());
         } else if (cmd.startsWith(NEW_KEY)) {
             newKey = Boolean.parseBoolean(cmd.substring(NEW_KEY.length()));
+        } else if (cmd.equalsIgnoreCase(TIME)) {
+            for (String param : command.getParams()) {
+                int minute = 60 * 1_000;
+                int hour = minute * 60;
+                int day = hour * 24;
+
+                if (param.startsWith(TIME_DAY)) {
+                    time += Integer.parseInt(param.substring(TIME_DAY.length())) * day;
+                } else if (param.startsWith(TIME_HR)) {
+                    time += Integer.parseInt(param.substring(TIME_HR.length())) * hour;
+                } else if (param.startsWith(TIME_MIN)) {
+                    time += Integer.parseInt(param.substring(TIME_MIN.length())) * minute;
+                }
+            }
+
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -61,7 +80,14 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
     }
 
     public TrustedDealer.TrustedDealerConfiguration build() {
-        return new TrustedDealer.TrustedDealerConfiguration(rootPath, keyPath, servers, polynomialDegree, bulletinBoardPath, newKey || !keyPathHasKeys());
+        return new TrustedDealer.TrustedDealerConfiguration(
+                rootPath,
+                keyPath,
+                servers,
+                polynomialDegree,
+                bulletinBoardPath,
+                newKey || !keyPathHasKeys(),
+                new Date().getTime() + time);
     }
 
     private boolean keyPathHasKeys() {
@@ -96,6 +122,8 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
                 "equals to degree\n" +
                 "\t  --" + BULLETIN_BOARD_PATH + "int\t\t Url pointing to the bulletin board where public keys should be posed\n" +
                 "\t  --" + NEW_KEY + "boolean\t\t Whether new RSA keypair should be generated. If keyPath does not point dir with keys, " +
-                "it defaults to true. Otherwise false\n";
+                "it defaults to true. Otherwise false\n" +
+                "\t  --" + TIME + "\t\t Sets time. Vote ends at current time + time parameters. Standard value: 10 min\n" +
+                "\t\t -" + TIME_DAY + "days, -" + TIME_HR + "hours, -" + TIME_MIN + "minutes\n";
     }
 }

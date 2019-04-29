@@ -41,6 +41,7 @@ public class TrustedDealer implements Application {
     private int servers;
     private Path rootPath;
     private Path keyPath;
+    private long endTime;
     private static final String PRIVATE_KEY_NAME = "rsa.pub";
     private static final String PUBLIC_KEY_NAME = "rsa";
 
@@ -56,6 +57,7 @@ public class TrustedDealer implements Application {
         this.servers = config.servers;
         this.rootPath = config.rootPath;
         this.keyPath = config.keyPath;
+        this.endTime = config.endTime;
 
         createIfNotExists(rootPath);
         createIfNotExists(keyPath);
@@ -131,7 +133,8 @@ public class TrustedDealer implements Application {
                 publicValues,
                 distKeyGenResult.getG(),
                 distKeyGenResult.getQ(),
-                distKeyGenResult.getP());
+                distKeyGenResult.getP(),
+                endTime);
 
         File privateFile = keyPath.resolve(PRIVATE_KEY_NAME).toFile();
 
@@ -212,6 +215,7 @@ public class TrustedDealer implements Application {
         private int polynomialDegree;
         private String bulletinBoardPath;
         private boolean newKey;
+        private long endTime;
 
         /**
          * Constructor for the Trusted Dealer configuration
@@ -222,14 +226,16 @@ public class TrustedDealer implements Application {
          * @param polynomialDegree  the degree of the polynomial used during key generation
          * @param bulletinBoardPath path to the bulletin board where public key should be posted
          * @param newKey            whether new key should be generated in the root
+         * @param endTime           When the vote comes to an end. ms since January 1, 1970, 00:00:00 GMT
          */
-        TrustedDealerConfiguration(Path rootPath, Path keyPath, int servers, int polynomialDegree, String bulletinBoardPath, boolean newKey) {
+        TrustedDealerConfiguration(Path rootPath, Path keyPath, int servers, int polynomialDegree, String bulletinBoardPath, boolean newKey, long endTime) {
             this.rootPath = rootPath;
             this.keyPath = keyPath;
             this.servers = servers;
             this.polynomialDegree = polynomialDegree;
             this.bulletinBoardPath = bulletinBoardPath;
             this.newKey = newKey;
+            this.endTime = endTime;
         }
     }
 }
