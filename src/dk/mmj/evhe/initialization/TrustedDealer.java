@@ -124,9 +124,7 @@ public class TrustedDealer implements Application {
                 distKeyGenResult.getQ(),
                 distKeyGenResult.getP());
 
-        //TODO: SIGN
         File privateFile = keyPath.resolve(PRIVATE_KEY_NAME).toFile();
-
 
         try {
             AsymmetricKeyParameter privateKey = loadKey(privateFile);
@@ -160,7 +158,6 @@ public class TrustedDealer implements Application {
     }
 
     private void post(PublicInformationEntity publicInformation) {
-
         try {
             Entity entity = Entity.entity(new ObjectMapper().writeValueAsString(publicInformation), MediaType.APPLICATION_JSON);
             Response response = bulletinBoard.path("postPublicInfo").request().post(entity);
