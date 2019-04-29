@@ -1,40 +1,33 @@
 package dk.mmj.evhe.server.decryptionauthority;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
-import dk.mmj.evhe.client.SSLHelper;
 import dk.mmj.evhe.crypto.ElGamal;
-import dk.mmj.evhe.entities.CipherText;
-import dk.mmj.evhe.entities.KeyPair;
-import dk.mmj.evhe.entities.PublicKey;
-import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
+import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
-import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
+import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
-import dk.mmj.evhe.entities.VoteDTO;
-import dk.mmj.evhe.entities.VoteList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.jersey.client.JerseyClient;
-import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
-import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Collections;
+
+import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class DecryptionAuthority extends AbstractServer {
-    static final String KEY_PAIR = "keypair";
+    static final String SECRET_KEY = "secretKey";
+    static final String PUBLIC_KEY = "publicKey";
     static final String SERVER = "server";
     private static final Logger logger = LogManager.getLogger(DecryptionAuthority.class);
     private final ServerState state = ServerState.getInstance();
@@ -46,53 +39,52 @@ public class DecryptionAuthority extends AbstractServer {
             port = configuration.port;
         }
 
-        KeyPair keyPair;
+        bulletinBoard = configureWebTarget(logger, configuration.bulletinBoard, Collections.singletonList(ArrayList.class));
 
-        if (configuration.keygenParams != null) {
-            KeyGenerationParameters params = configuration.keygenParams;
-            keyPair = ElGamal.generateKeys(params);
-        } else {
-            KeyGenerationParametersImpl params = new KeyGenerationParametersImpl(1024, 50);
-            keyPair = ElGamal.generateKeys(params);
-        }
-
-        try {
-            SSLContext ssl = SSLHelper.initializeSSL();
-
-            JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().sslContext(ssl).build();
-
-            client.register(ArrayList.class);
-
-            bulletinBoard = client.target(configuration.bulletinBoard);
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | KeyManagementException e) {
-            logger.error("Unable to connect to bulletin Board", e);
-            terminate();
-        }
-
-        state.put(KEY_PAIR, keyPair);
-        configureWebTarget(configuration);
-
-        postPublicKey();
-        state.put(SERVER, this);
-    }
-
-    private void postPublicKey() {
-        KeyPair keyPair = ServerState.getInstance().get(KEY_PAIR, KeyPair.class);
-        Entity<PublicKey> entity = Entity.entity(keyPair.getPublicKey(), MediaType.APPLICATION_JSON);
-
-        Response resp = bulletinBoard.path("publicKey").request().post(entity);
-        if (resp.getStatus() < 200 || resp.getStatus() > 300) {
-            logger.error("Unable to post publickey to bulletinBoard, got response:" + resp);
+        File conf = new File(configuration.confPath);
+        if (!conf.exists() || !conf.isFile()) {
+            logger.error("Configuration file either did not exists or were not a file. Terminating");
             System.exit(-1);
         }
+
+
+        try (FileInputStream ous = new FileInputStream(conf)) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(ous));
+
+            BigInteger publicValue = new BigInteger(reader.readLine());
+            BigInteger secretValue = new BigInteger(reader.readLine());
+            BigInteger g = new BigInteger(reader.readLine());
+            BigInteger q = new BigInteger(reader.readLine());
+            BigInteger p = new BigInteger(reader.readLine());
+            String publicKeyString = reader.readLine();
+
+            PublicKey pk = new ObjectMapper().readerFor(PublicKey.class).readValue(publicKeyString);
+
+            PartialSecretKey sk = new PartialSecretKey(secretValue, p);
+
+            state.put(PUBLIC_KEY, pk);
+            state.put(SECRET_KEY, sk);
+        } catch (JsonProcessingException e) {
+            logger.error("Unable to deserialize public key. Terminating", e);
+            System.exit(-1);
+        } catch (FileNotFoundException e) {
+            logger.error("Configuration file not found. Terminating", e);
+            System.exit(-1);
+        } catch (IOException e) {
+            logger.error("Unable to read configuration file. Terminating", e);
+            System.exit(-1);
+        }
+
+        state.put(SERVER, this);
     }
 
     void terminateVoting() {
         Response getVotes = bulletinBoard.path("getVotes").request().get();
         VoteList voteObjects = getVotes.readEntity(VoteList.class);
 
-        PublicKey publicKey = state.get(KEY_PAIR, KeyPair.class).getPublicKey();
-        logger.info("Terminating voting - adding votes");
+        PartialSecretKey key = state.get(SECRET_KEY, PartialSecretKey.class);
+        PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
+        logger.info("Terminating voting - summing votes");
 
         ArrayList<VoteDTO> votes = new ArrayList<>();
 
@@ -119,14 +111,7 @@ public class DecryptionAuthority extends AbstractServer {
 
         logger.info("Dispatching decryption request");
 
-        KeyPair keyPair = state.get(KEY_PAIR, KeyPair.class);
-        int result = 0;
-        try {
-            result = ElGamal.homomorphicDecryption(keyPair, sum, 1000);
-        } catch (UnableToDecryptException e) {
-            logger.error("Failed to decrypt result. Terminating");
-            System.exit(-1);
-        }
+        int result = SecurityUtils.computePartial(key.getSecretValue(), sum.getC(), key.getP()).intValue();
 
         String resultString = "Result was: " + result + " with " + votes.size() + " votes";
         logger.info(resultString);
@@ -139,24 +124,6 @@ public class DecryptionAuthority extends AbstractServer {
             System.exit(-1);
         }
 
-    }
-
-    private void configureWebTarget(KeyServerConfiguration configuration) {
-        try {
-            SSLContext ssl = SSLHelper.initializeSSL();
-
-            JerseyClient client = (JerseyClient) JerseyClientBuilder.newBuilder().sslContext(ssl).build();
-
-            bulletinBoard = client.target(configuration.bulletinBoard);
-
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Unrecognized SSL context algorithm:", e);
-            System.exit(-1);
-        } catch (KeyManagementException e) {
-            logger.error("Initializing SSL Context failed: ", e);
-        } catch (CertificateException | KeyStoreException | IOException e) {
-            logger.error("Error Initializing the Certificate: ", e);
-        }
     }
 
     @Override
@@ -175,15 +142,14 @@ public class DecryptionAuthority extends AbstractServer {
      * Configuration for a DecryptionAuthority
      */
     public static class KeyServerConfiguration implements Configuration {
-        private final KeyGenerationParameters keygenParams;
         private final Integer port;
         private String bulletinBoard;
+        private String confPath;
 
-        KeyServerConfiguration(Integer port, KeyGenerationParameters keygenParams, String bulletinBoard) {
+        KeyServerConfiguration(Integer port, String bulletinBoard, String confPath) {
             this.port = port;
-            this.keygenParams = keygenParams;
             this.bulletinBoard = bulletinBoard;
+            this.confPath = confPath;
         }
-
     }
 }

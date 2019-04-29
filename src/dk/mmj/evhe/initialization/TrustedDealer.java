@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.ElGamal;
+import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.entities.DistKeyGenResult;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
 import dk.mmj.evhe.entities.PublicInformationEntity;
@@ -100,13 +101,29 @@ public class TrustedDealer implements Application {
 
         List<String> output = new ArrayList<>();
 
+        BigInteger h = SecurityUtils.combinePartials(publicValues, distKeyGenResult.getP());
+
+        dk.mmj.evhe.entities.PublicKey publicKey = new dk.mmj.evhe.entities.PublicKey(h, distKeyGenResult.getG(), distKeyGenResult.getQ());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        String publicKeyString;
+        try {
+            publicKeyString = mapper.writeValueAsString(publicKey);
+        } catch (JsonProcessingException e) {
+            logger.error("Failed to write public key as String. Terminating", e);
+            System.exit(-1);
+            return;
+        }
+
         distKeyGenResult.getAuthorityIds().stream()
                 .map(id -> id + "\n" +
                         publicValues.get(id) + "\n" +
                         secretValues.get(id) + "\n" +
                         distKeyGenResult.getG() + "\n" +
                         distKeyGenResult.getQ() + "\n" +
-                        distKeyGenResult.getP() + "\n")
+                        distKeyGenResult.getP() + "\n" +
+                        publicKeyString + "\n")
                 .forEach(output::add);
 
         logger.info("Asserting existence of root dir");
