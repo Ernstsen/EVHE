@@ -1,14 +1,17 @@
 package dk.mmj.evhe.crypto;
 
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
+import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.KeyPair;
 import dk.mmj.evhe.entities.VoteDTO;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import static dk.mmj.evhe.crypto.TestUtils.generateKeysFromP2048bitsG2;
+import static dk.mmj.evhe.crypto.TestUtils.*;
 import static org.junit.Assert.*;
 
 public class TestSecurityUtils {
@@ -48,13 +51,126 @@ public class TestSecurityUtils {
     }
 
     @Test
-    public void shouldReturn3AsLagrangeCoefficient() {
+    public void shouldReturn3AsLagrangeCoefficientForIndex1WithSParams() {
         int[] authorityIndexes = new int[]{1, 2, 3};
-        int currentIndex = 1;
-        BigInteger p = BigInteger.valueOf(13);
 
-        BigInteger lagrangeCoefficient = SecurityUtils.generateLagrangeCoefficient(authorityIndexes, currentIndex, p);
+        BigInteger lagrangeCoefficient = SecurityUtils.generateLagrangeCoefficient(authorityIndexes, 1, BigInteger.valueOf(5));
 
-        assertEquals(lagrangeCoefficient, BigInteger.valueOf(3));
+        assertEquals("Lagrange coefficient incorrect", BigInteger.valueOf(3), lagrangeCoefficient);
+    }
+
+    @Test
+    public void shouldReturn2AsLagrangeCoefficientForIndex2WithSParams() {
+        int[] authorityIndexes = new int[]{1, 2, 3};
+
+        BigInteger lagrangeCoefficient = SecurityUtils.generateLagrangeCoefficient(authorityIndexes, 2, BigInteger.valueOf(5));
+
+        assertEquals("Lagrange coefficient incorrect", BigInteger.valueOf(2), lagrangeCoefficient);
+    }
+
+    @Test
+    public void shouldReturn1AsLagrangeCoefficientForIndex3WithSParams() {
+        int[] authorityIndexes = new int[]{1, 2, 3};
+
+        BigInteger lagrangeCoefficient = SecurityUtils.generateLagrangeCoefficient(authorityIndexes, 3, BigInteger.valueOf(5));
+
+        assertEquals("Lagrange coefficient incorrect", BigInteger.valueOf(1), lagrangeCoefficient);
+    }
+
+    private void testRecoveringOfSecretKey(KeyGenerationParameters params, int[] authorityIndexes, int excludedIndex) {
+        BigInteger[] polynomial = SecurityUtils.generatePolynomial(1, params.getPrimePair().getQ());
+        Map<Integer, BigInteger> secretValues = SecurityUtils.generateSecretValues(polynomial, 3, params.getPrimePair().getQ());
+
+        BigInteger acc = BigInteger.ZERO;
+        for (Map.Entry<Integer, BigInteger> e : secretValues.entrySet()) {
+            if (e.getKey() != excludedIndex) {
+                BigInteger lagrangeCoefficient = SecurityUtils.generateLagrangeCoefficient(authorityIndexes, e.getKey(), params.getPrimePair().getQ());
+                acc = acc.add(e.getValue().multiply(lagrangeCoefficient));
+            }
+        }
+
+        assertEquals("Secret keys did not match", polynomial[0], acc.mod(params.getPrimePair().getQ()));
+    }
+
+    @Test
+    public void shouldRecoverSecretKeyWithSecrets123WhenNIs3WithSParams() {
+        // No index is excluded
+        testRecoveringOfSecretKey(getKeyGenParamsFromP11G2(), new int[]{1, 2, 3}, 0);
+    }
+
+    @Test
+    public void shouldRecoverSecretKeyWithSecrets12WhenNIs3WithSParams() {
+        testRecoveringOfSecretKey(getKeyGenParamsFromP11G2(), new int[]{1, 2}, 3);
+    }
+
+    @Test
+    public void shouldRecoverSecretKeyWithSecrets13WhenNIs3WithSParams() {
+        testRecoveringOfSecretKey(getKeyGenParamsFromP11G2(), new int[]{1, 3}, 2);
+    }
+
+    @Test
+    public void shouldRecoverSecretKeyWithSecrets23WhenNIs3WithSParams() {
+        testRecoveringOfSecretKey(getKeyGenParamsFromP11G2(), new int[]{2, 3}, 1);
+    }
+
+    @Test
+    public void shouldRecoverSecretKeyWithSecrets123WhenNIs3WithLParams() {
+        // No index is excluded
+        testRecoveringOfSecretKey(getKeyGenParamsFromP2048bitsG2(), new int[]{1, 2, 3}, 0);
+    }
+
+    @Test
+    public void shouldRecoverSecretKeyWithSecrets12WhenNIs3WithLParams() {
+        testRecoveringOfSecretKey(getKeyGenParamsFromP2048bitsG2(), new int[]{1, 2}, 3);
+    }
+
+    @Test
+    public void shouldRecoverSecretKeyWithSecrets13WhenNIs3WithLParams() {
+        testRecoveringOfSecretKey(getKeyGenParamsFromP2048bitsG2(), new int[]{1, 3}, 2);
+    }
+
+    @Test
+    public void shouldRecoverSecretKeyWithSecrets23WhenNIs3WithLParams() {
+        testRecoveringOfSecretKey(getKeyGenParamsFromP2048bitsG2(), new int[]{2, 3}, 1);
+    }
+
+    private void testRecoveringOfPublicKey(int excludedIndex) {
+        KeyGenerationParameters params = getKeyGenParamsFromP2048bitsG2();
+        BigInteger p = params.getPrimePair().getP();
+        BigInteger q = params.getPrimePair().getQ();
+        BigInteger g = params.getGenerator();
+        BigInteger[] polynomial = SecurityUtils.generatePolynomial(1, q);
+        BigInteger h = g.modPow(polynomial[0], p);
+
+        Map<Integer, BigInteger> secretValues = SecurityUtils.generateSecretValues(polynomial, 3, q).entrySet().stream()
+                .filter(e -> e.getKey() != excludedIndex).collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue
+                ));
+        Map<Integer, BigInteger> publicValues = SecurityUtils.generatePublicValues(secretValues, g, p);
+
+        BigInteger hFromPartials = SecurityUtils.combinePartials(publicValues, p);
+
+        assertEquals("Public keys did not match", h, hFromPartials);
+    }
+
+    @Test
+    public void shouldBeAbleToRecoverPublicKeyWithSecrets123WhenNIs3() {
+        testRecoveringOfPublicKey(0);
+    }
+
+    @Test
+    public void shouldBeAbleToRecoverPublicKeyWithSecrets12WhenNIs3() {
+        testRecoveringOfPublicKey(3);
+    }
+
+    @Test
+    public void shouldBeAbleToRecoverPublicKeyWithSecrets13WhenNIs3() {
+        testRecoveringOfPublicKey(2);
+    }
+
+    @Test
+    public void shouldBeAbleToRecoverPublicKeyWithSecrets23WhenNIs3() {
+        testRecoveringOfPublicKey(1);
     }
 }

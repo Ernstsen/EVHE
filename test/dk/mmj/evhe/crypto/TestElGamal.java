@@ -159,30 +159,69 @@ public class TestElGamal {
 
     }
 
-    @Test
-    public void shouldBeAbleToDecryptPartialsWith2DAsWhenNIs3() {
+    public void testPartialDecryption(int message, int excludedIndex) {
         try {
-            KeyGenerationParameters keyGenerationParameters = getKeyGenParamsFromP2048bitsG2();
-            DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(keyGenerationParameters, 1, 3);
+            KeyGenerationParameters params = getKeyGenParamsFromP2048bitsG2();
+            DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(params, 1, 3);
 
-            BigInteger publicKey = SecurityUtils.combinePartials(distKeyGenResult.getPublicValues(), distKeyGenResult.getP());
-            BigInteger r = SecurityUtils.getRandomNumModN(distKeyGenResult.getQ());
-            CipherText cipherText = ElGamal.homomorphicEncryption(new PublicKey(publicKey, distKeyGenResult.getG(), distKeyGenResult.getQ()), BigInteger.valueOf(533), r);
+            BigInteger h = SecurityUtils.combinePartials(distKeyGenResult.getPublicValues(), distKeyGenResult.getP());
+            PublicKey publicKey = new PublicKey(h, distKeyGenResult.getG(), distKeyGenResult.getQ());
+            CipherText cipherText = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(message));
 
             Map<Integer, BigInteger> partialDecryptions = distKeyGenResult.getSecretValues().entrySet().stream()
-//                    .filter(e -> e.getKey() != 1)
+                    .filter(e -> e.getKey() != excludedIndex)
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
-                            e -> SecurityUtils.computePartial(cipherText.getC(), e.getValue(), distKeyGenResult.getP())
+                            e -> cipherText.getC().modPow(e.getValue(), distKeyGenResult.getP())
                     ));
 
             BigInteger combinedPartialDecryptions = SecurityUtils.combinePartials(partialDecryptions, distKeyGenResult.getP());
 
             int b = ElGamal.homomorphicDecryptionFromPartials(cipherText, combinedPartialDecryptions, distKeyGenResult.getG(), distKeyGenResult.getP(), maxIterations);
-            Assert.assertEquals(533, b);
+            Assert.assertEquals(message, b);
         } catch (UnableToDecryptException e) {
             fail("Was unable to decrypt encrypted value, with message: " + e.getMessage());
         }
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptPartialsOf7WithDAs123WhenNIs3() {
+        testPartialDecryption(7, 0);
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptPartialsOf857WithDAs123WhenNIs3() {
+        testPartialDecryption(857, 0);
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptPartialsOf7WithDAs12WhenNIs3() {
+        testPartialDecryption(7, 3);
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptPartialsOf857WithDAs12WhenNIs3() {
+        testPartialDecryption(857, 3);
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptPartialsOf7WithDAs13WhenNIs3() {
+        testPartialDecryption(7, 2);
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptPartialsOf857WithDAs13WhenNIs3() {
+        testPartialDecryption(857, 2);
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptPartialsOf7WithDAs23WhenNIs3() {
+        testPartialDecryption(7, 1);
+    }
+
+    @Test
+    public void shouldBeAbleToDecryptPartialsOf857WithDAs23WhenNIs3() {
+        testPartialDecryption(857, 1);
     }
 
     public static class SimpleKeyGenParams implements KeyGenerationParameters {
