@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.SecurityUtils;
-import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.server.AbstractServer;
@@ -26,8 +25,8 @@ import java.util.Collections;
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class DecryptionAuthority extends AbstractServer {
-    static final String SECRET_KEY = "secretKey";
-    static final String PUBLIC_KEY = "publicKey";
+    private static final String SECRET_KEY = "secretKey";
+    private static final String PUBLIC_KEY = "publicKey";
     static final String SERVER = "server";
     private static final Logger logger = LogManager.getLogger(DecryptionAuthority.class);
     private final ServerState state = ServerState.getInstance();
@@ -51,10 +50,7 @@ public class DecryptionAuthority extends AbstractServer {
         try (FileInputStream ous = new FileInputStream(conf)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(ous));
 
-            BigInteger publicValue = new BigInteger(reader.readLine());
             BigInteger secretValue = new BigInteger(reader.readLine());
-            BigInteger g = new BigInteger(reader.readLine());
-            BigInteger q = new BigInteger(reader.readLine());
             BigInteger p = new BigInteger(reader.readLine());
             String publicKeyString = reader.readLine();
 

@@ -2,36 +2,31 @@ package dk.mmj.evhe.initialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.SecurityUtils;
-import dk.mmj.evhe.entities.DistKeyGenResult;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
+import dk.mmj.evhe.entities.DistKeyGenResult;
 import dk.mmj.evhe.entities.PublicInformationEntity;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.signers.RSADigestSigner;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.encoders.Hex;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.security.*;
@@ -118,10 +113,7 @@ public class TrustedDealer implements Application {
 
         distKeyGenResult.getAuthorityIds().stream()
                 .map(id -> id + "\n" +
-                        publicValues.get(id) + "\n" +
                         secretValues.get(id) + "\n" +
-                        distKeyGenResult.getG() + "\n" +
-                        distKeyGenResult.getQ() + "\n" +
                         distKeyGenResult.getP() + "\n" +
                         publicKeyString + "\n")
                 .forEach(output::add);
@@ -189,7 +181,7 @@ public class TrustedDealer implements Application {
     private void createIfNotExists(Path path) {
         File file = path.toFile();
 
-        if(file.exists()){
+        if (file.exists()) {
             return;
         }
 
