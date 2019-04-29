@@ -107,7 +107,7 @@ public class DecryptionAuthority extends AbstractServer {
 
         logger.info("Dispatching decryption request");
 
-        int result = SecurityUtils.computePartial(key.getSecretValue(), sum.getC(), key.getP()).intValue();
+        int result = key.getSecretValue().modPow(sum.getC(), key.getP()).intValue();
 
         String resultString = "Result was: " + result + " with " + votes.size() + " votes";
         logger.info(resultString);
