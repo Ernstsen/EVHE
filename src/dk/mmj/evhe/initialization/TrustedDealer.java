@@ -2,35 +2,31 @@ package dk.mmj.evhe.initialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.ElGamal;
-import dk.mmj.evhe.entities.DistKeyGenResult;
+import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
+import dk.mmj.evhe.entities.DistKeyGenResult;
 import dk.mmj.evhe.entities.PublicInformationEntity;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.signers.RSADigestSigner;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.encoders.Hex;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.security.*;
@@ -45,6 +41,7 @@ public class TrustedDealer implements Application {
     private int servers;
     private Path rootPath;
     private Path keyPath;
+    private long endTime;
     private static final String PRIVATE_KEY_NAME = "rsa.pub";
     private static final String PUBLIC_KEY_NAME = "rsa";
 
@@ -60,6 +57,7 @@ public class TrustedDealer implements Application {
         this.servers = config.servers;
         this.rootPath = config.rootPath;
         this.keyPath = config.keyPath;
+        this.endTime = config.endTime;
 
         createIfNotExists(rootPath);
         createIfNotExists(keyPath);
@@ -100,13 +98,26 @@ public class TrustedDealer implements Application {
 
         List<String> output = new ArrayList<>();
 
+        BigInteger h = SecurityUtils.combinePartials(publicValues, distKeyGenResult.getP());
+
+        dk.mmj.evhe.entities.PublicKey publicKey = new dk.mmj.evhe.entities.PublicKey(h, distKeyGenResult.getG(), distKeyGenResult.getQ());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        String publicKeyString;
+        try {
+            publicKeyString = mapper.writeValueAsString(publicKey);
+        } catch (JsonProcessingException e) {
+            logger.error("Failed to write public key as String. Terminating", e);
+            System.exit(-1);
+            return;
+        }
+
         distKeyGenResult.getAuthorityIds().stream()
                 .map(id -> id + "\n" +
-                        publicValues.get(id) + "\n" +
                         secretValues.get(id) + "\n" +
-                        distKeyGenResult.getG() + "\n" +
-                        distKeyGenResult.getQ() + "\n" +
-                        distKeyGenResult.getP() + "\n")
+                        distKeyGenResult.getP() + "\n" +
+                        publicKeyString + "\n")
                 .forEach(output::add);
 
         logger.info("Asserting existence of root dir");
@@ -122,11 +133,10 @@ public class TrustedDealer implements Application {
                 publicValues,
                 distKeyGenResult.getG(),
                 distKeyGenResult.getQ(),
-                distKeyGenResult.getP());
+                distKeyGenResult.getP(),
+                endTime);
 
-        //TODO: SIGN
         File privateFile = keyPath.resolve(PRIVATE_KEY_NAME).toFile();
-
 
         try {
             AsymmetricKeyParameter privateKey = loadKey(privateFile);
@@ -160,7 +170,6 @@ public class TrustedDealer implements Application {
     }
 
     private void post(PublicInformationEntity publicInformation) {
-
         try {
             Entity entity = Entity.entity(new ObjectMapper().writeValueAsString(publicInformation), MediaType.APPLICATION_JSON);
             Response response = bulletinBoard.path("postPublicInfo").request().post(entity);
@@ -175,7 +184,7 @@ public class TrustedDealer implements Application {
     private void createIfNotExists(Path path) {
         File file = path.toFile();
 
-        if(file.exists()){
+        if (file.exists()) {
             return;
         }
 
@@ -206,6 +215,7 @@ public class TrustedDealer implements Application {
         private int polynomialDegree;
         private String bulletinBoardPath;
         private boolean newKey;
+        private long endTime;
 
         /**
          * Constructor for the Trusted Dealer configuration
@@ -216,14 +226,16 @@ public class TrustedDealer implements Application {
          * @param polynomialDegree  the degree of the polynomial used during key generation
          * @param bulletinBoardPath path to the bulletin board where public key should be posted
          * @param newKey            whether new key should be generated in the root
+         * @param endTime           When the vote comes to an end. ms since January 1, 1970, 00:00:00 GMT
          */
-        TrustedDealerConfiguration(Path rootPath, Path keyPath, int servers, int polynomialDegree, String bulletinBoardPath, boolean newKey) {
+        TrustedDealerConfiguration(Path rootPath, Path keyPath, int servers, int polynomialDegree, String bulletinBoardPath, boolean newKey, long endTime) {
             this.rootPath = rootPath;
             this.keyPath = keyPath;
             this.servers = servers;
             this.polynomialDegree = polynomialDegree;
             this.bulletinBoardPath = bulletinBoardPath;
             this.newKey = newKey;
+            this.endTime = endTime;
         }
     }
 }
