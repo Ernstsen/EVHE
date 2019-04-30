@@ -8,6 +8,9 @@ import dk.mmj.evhe.entities.VoteDTO;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -134,7 +137,7 @@ public class TestSecurityUtils {
         testRecoveringOfSecretKey(getKeyGenParamsFromP2048bitsG2(), new int[]{2, 3}, 1);
     }
 
-    private void testRecoveringOfPublicKey(int excludedIndex) {
+    private void testRecoveringOfPublicKey(List<Integer> excludedIndexes, boolean positiveTest) {
         KeyGenerationParameters params = getKeyGenParamsFromP2048bitsG2();
         BigInteger p = params.getPrimePair().getP();
         BigInteger q = params.getPrimePair().getQ();
@@ -143,7 +146,7 @@ public class TestSecurityUtils {
         BigInteger h = g.modPow(polynomial[0], p);
 
         Map<Integer, BigInteger> secretValues = SecurityUtils.generateSecretValues(polynomial, 3, q).entrySet().stream()
-                .filter(e -> e.getKey() != excludedIndex).collect(Collectors.toMap(
+                .filter(e -> !excludedIndexes.contains(e.getKey())).collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue
                 ));
@@ -151,26 +154,45 @@ public class TestSecurityUtils {
 
         BigInteger hFromPartials = SecurityUtils.combinePartials(publicValues, p);
 
-        assertEquals("Public keys did not match", h, hFromPartials);
+        if (positiveTest) {
+            assertEquals("Public keys did not match", h, hFromPartials);
+        } else {
+            assertNotEquals("Public keys match; they should not match", h, hFromPartials);
+        }
     }
 
     @Test
     public void shouldBeAbleToRecoverPublicKeyWithSecrets123WhenNIs3() {
-        testRecoveringOfPublicKey(0);
+        testRecoveringOfPublicKey(Arrays.asList(0), true);
     }
 
     @Test
     public void shouldBeAbleToRecoverPublicKeyWithSecrets12WhenNIs3() {
-        testRecoveringOfPublicKey(3);
+        testRecoveringOfPublicKey(Arrays.asList(3), true);
     }
 
     @Test
     public void shouldBeAbleToRecoverPublicKeyWithSecrets13WhenNIs3() {
-        testRecoveringOfPublicKey(2);
+        testRecoveringOfPublicKey(Arrays.asList(2), true);
     }
 
     @Test
     public void shouldBeAbleToRecoverPublicKeyWithSecrets23WhenNIs3() {
-        testRecoveringOfPublicKey(1);
+        testRecoveringOfPublicKey(Arrays.asList(1), true);
+    }
+
+    @Test
+    public void shouldNotBeAbleToRecoverPublicKeyWithSecret1WhenNIs2() {
+        testRecoveringOfPublicKey(Arrays.asList(2,3), false);
+    }
+
+    @Test
+    public void shouldNotBeAbleToRecoverPublicKeyWithSecret2WhenNIs2() {
+        testRecoveringOfPublicKey(Arrays.asList(1,3), false);
+    }
+
+    @Test
+    public void shouldNotBeAbleToRecoverPublicKeyWithSecret3WhenNIs2() {
+        testRecoveringOfPublicKey(Arrays.asList(1,2), false);
     }
 }

@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -159,25 +161,29 @@ public class TestElGamal {
 
     }
 
-    public void testPartialDecryption(int message, int excludedIndex) {
+    private int testPartialDecryptionSetup(int message, List<Integer> excludedIndexes) throws UnableToDecryptException {
+        KeyGenerationParameters params = getKeyGenParamsFromP2048bitsG2();
+        DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(params, 1, 3);
+
+        BigInteger h = SecurityUtils.combinePartials(distKeyGenResult.getPublicValues(), distKeyGenResult.getP());
+        PublicKey publicKey = new PublicKey(h, distKeyGenResult.getG(), distKeyGenResult.getQ());
+        CipherText cipherText = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(message));
+
+        Map<Integer, BigInteger> partialDecryptions = distKeyGenResult.getSecretValues().entrySet().stream()
+                .filter(e -> !excludedIndexes.contains(e.getKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> cipherText.getC().modPow(e.getValue(), distKeyGenResult.getP())
+                ));
+
+        BigInteger combinedPartialDecryptions = SecurityUtils.combinePartials(partialDecryptions, distKeyGenResult.getP());
+
+        return ElGamal.homomorphicDecryptionFromPartials(cipherText, combinedPartialDecryptions, distKeyGenResult.getG(), distKeyGenResult.getP(), maxIterations);
+    }
+
+    private void testPartialDecryptionPositive(int message, List<Integer> excludedIndexes) {
         try {
-            KeyGenerationParameters params = getKeyGenParamsFromP2048bitsG2();
-            DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(params, 1, 3);
-
-            BigInteger h = SecurityUtils.combinePartials(distKeyGenResult.getPublicValues(), distKeyGenResult.getP());
-            PublicKey publicKey = new PublicKey(h, distKeyGenResult.getG(), distKeyGenResult.getQ());
-            CipherText cipherText = ElGamal.homomorphicEncryption(publicKey, BigInteger.valueOf(message));
-
-            Map<Integer, BigInteger> partialDecryptions = distKeyGenResult.getSecretValues().entrySet().stream()
-                    .filter(e -> e.getKey() != excludedIndex)
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            e -> cipherText.getC().modPow(e.getValue(), distKeyGenResult.getP())
-                    ));
-
-            BigInteger combinedPartialDecryptions = SecurityUtils.combinePartials(partialDecryptions, distKeyGenResult.getP());
-
-            int b = ElGamal.homomorphicDecryptionFromPartials(cipherText, combinedPartialDecryptions, distKeyGenResult.getG(), distKeyGenResult.getP(), maxIterations);
+            int b = testPartialDecryptionSetup(message, excludedIndexes);
             Assert.assertEquals(message, b);
         } catch (UnableToDecryptException e) {
             fail("Was unable to decrypt encrypted value, with message: " + e.getMessage());
@@ -186,42 +192,72 @@ public class TestElGamal {
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf7WithDAs123WhenNIs3() {
-        testPartialDecryption(7, 0);
+        testPartialDecryptionPositive(7, Arrays.asList(0));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf857WithDAs123WhenNIs3() {
-        testPartialDecryption(857, 0);
+        testPartialDecryptionPositive(857, Arrays.asList(0));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf7WithDAs12WhenNIs3() {
-        testPartialDecryption(7, 3);
+        testPartialDecryptionPositive(7, Arrays.asList(3));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf857WithDAs12WhenNIs3() {
-        testPartialDecryption(857, 3);
+        testPartialDecryptionPositive(857, Arrays.asList(3));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf7WithDAs13WhenNIs3() {
-        testPartialDecryption(7, 2);
+        testPartialDecryptionPositive(7, Arrays.asList(2));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf857WithDAs13WhenNIs3() {
-        testPartialDecryption(857, 2);
+        testPartialDecryptionPositive(857, Arrays.asList(2));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf7WithDAs23WhenNIs3() {
-        testPartialDecryption(7, 1);
+        testPartialDecryptionPositive(7, Arrays.asList(1));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf857WithDAs23WhenNIs3() {
-        testPartialDecryption(857, 1);
+        testPartialDecryptionPositive(857, Arrays.asList(1));
+    }
+
+    @Test(expected = UnableToDecryptException.class)
+    public void shouldNotBeAbleToDecryptPartialsOf7WithOnlyDA1WhenNIs3() throws UnableToDecryptException {
+        testPartialDecryptionSetup(7, Arrays.asList(2, 3));
+    }
+
+    @Test(expected = UnableToDecryptException.class)
+    public void shouldNotBeAbleToDecryptPartialsOf857WithOnlyDA1WhenNIs3() throws UnableToDecryptException {
+        testPartialDecryptionSetup(857, Arrays.asList(2, 3));
+    }
+
+    @Test(expected = UnableToDecryptException.class)
+    public void shouldNotBeAbleToDecryptPartialsOf7WithOnlyDA2WhenNIs3() throws UnableToDecryptException {
+        testPartialDecryptionSetup(7, Arrays.asList(1, 3));
+    }
+
+    @Test(expected = UnableToDecryptException.class)
+    public void shouldNotBeAbleToDecryptPartialsOf857WithOnlyDA2WhenNIs3() throws UnableToDecryptException {
+        testPartialDecryptionSetup(857, Arrays.asList(1, 3));
+    }
+
+    @Test(expected = UnableToDecryptException.class)
+    public void shouldNotBeAbleToDecryptPartialsOf7WithOnlyDA3WhenNIs3() throws UnableToDecryptException {
+        testPartialDecryptionSetup(7, Arrays.asList(1, 2));
+    }
+
+    @Test(expected = UnableToDecryptException.class)
+    public void shouldNotBeAbleToDecryptPartialsOf857WithOnlyDA3WhenNIs3() throws UnableToDecryptException {
+        testPartialDecryptionSetup(857, Arrays.asList(1, 2));
     }
 
     public static class SimpleKeyGenParams implements KeyGenerationParameters {
