@@ -8,10 +8,7 @@ import dk.mmj.evhe.entities.VoteDTO;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static dk.mmj.evhe.crypto.TestUtils.*;
@@ -163,22 +160,22 @@ public class TestSecurityUtils {
 
     @Test
     public void shouldBeAbleToRecoverPublicKeyWithSecrets123WhenNIs3() {
-        testRecoveringOfPublicKey(Arrays.asList(0), true);
+        testRecoveringOfPublicKey(Collections.singletonList(0), true);
     }
 
     @Test
     public void shouldBeAbleToRecoverPublicKeyWithSecrets12WhenNIs3() {
-        testRecoveringOfPublicKey(Arrays.asList(3), true);
+        testRecoveringOfPublicKey(Collections.singletonList(3), true);
     }
 
     @Test
     public void shouldBeAbleToRecoverPublicKeyWithSecrets13WhenNIs3() {
-        testRecoveringOfPublicKey(Arrays.asList(2), true);
+        testRecoveringOfPublicKey(Collections.singletonList(2), true);
     }
 
     @Test
     public void shouldBeAbleToRecoverPublicKeyWithSecrets23WhenNIs3() {
-        testRecoveringOfPublicKey(Arrays.asList(1), true);
+        testRecoveringOfPublicKey(Collections.singletonList(1), true);
     }
 
     @Test

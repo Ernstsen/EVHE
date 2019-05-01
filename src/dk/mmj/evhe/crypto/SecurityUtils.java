@@ -1,18 +1,16 @@
 package dk.mmj.evhe.crypto;
 
+import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.CipherText;
 import dk.mmj.evhe.entities.PublicKey;
-import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.VoteDTO;
 import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.omg.CosNaming.BindingIteratorHolder;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -115,7 +113,7 @@ public class SecurityUtils {
      *
      * @param secretValuesMap The secret values
      * @param g               generator for group Gq where p = 2q + 1
-     * @param p                 p the modulus prime
+     * @param p               p the modulus prime
      * @return a map where the key is an authority index and value is the corresponding public value
      */
     public static Map<Integer, BigInteger> generatePublicValues(Map<Integer, BigInteger> secretValuesMap, BigInteger g, BigInteger p) {
@@ -153,13 +151,13 @@ public class SecurityUtils {
     /**
      * Computes partial
      *
-     * @param a           is the base value
+     * @param c           is the base value
      * @param secretValue the secret value only known by the specific decryption authorities
      * @param p           the modulus prime
      * @return the partial value
      */
-    public static BigInteger computePartial(BigInteger a, BigInteger secretValue, BigInteger p) {
-        return a.modPow(secretValue, p);
+    public static BigInteger computePartial(BigInteger c, BigInteger secretValue, BigInteger p) {
+        return c.modPow(secretValue, p);
     }
 
     /**
