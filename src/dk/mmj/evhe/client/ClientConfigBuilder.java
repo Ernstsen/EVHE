@@ -16,12 +16,14 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final String ID = "id=";
     private static final String VOTE = "vote=";
     private static final String MULTI = "multi=";
+    private static final String READ = "read=";
 
     //State
     private String targetUrl = "https://localhost:8080";
     private String id = "TEST_ID" + UUID.randomUUID().toString();
     private Boolean vote = null;
     private Integer multi = null;
+    private boolean read = false;
 
     /**
      * Sets the local variables by translating the input from the command line.
@@ -40,19 +42,24 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
             vote = Boolean.parseBoolean(cmd.substring(VOTE.length()));
         } else if (cmd.startsWith(MULTI)) {
             multi = Integer.parseInt(cmd.substring(MULTI.length()));
+        } else if (cmd.startsWith(READ)) {
+            read = Boolean.parseBoolean(cmd.substring(READ.length()));
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
     }
 
     /**
-     * Returns the {@link Client.ClientConfiguration} with the loaded variables.
+     * Returns the {@link Voter.VoterConfiguration} with the loaded variables.
      *
      * @return Configuration for client execution
      */
     @Override
     public Configuration build() {
-        return new Client.ClientConfiguration(targetUrl, id, vote, multi);
+        if (read) {
+        }
+
+        return new Voter.VoterConfiguration(targetUrl, id, vote, multi);
     }
 
     /**
@@ -65,6 +72,8 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
                 + targetUrl + "\n" +
                 "\t  --" + ID + "idString\t\t id identifying this instance as a unique voter\n" +
                 "\t  --" + VOTE + "{true,false}\t the vote to be cast. If not supplied program will prompt for it\n" +
-                "\t  --" + MULTI + "int\t\t How many random votes should be cast. If set, id and vote is ignored as it is test.";
+                "\t  --" + MULTI + "int\t\t How many random votes should be cast. If set, id and vote is ignored as it is test.\n" +
+                "\t  --" + READ + "boolean\t Default=false. If true, all params except " + TARGET_URL.substring(0, TARGET_URL.length() - 1) +
+                "are ignored. Fetches poll results from bulletin board.\n";
     }
 }
