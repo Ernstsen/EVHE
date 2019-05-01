@@ -151,6 +151,18 @@ public class SecurityUtils {
     }
 
     /**
+     * Computes partial
+     *
+     * @param a           is the base value
+     * @param secretValue the secret value only known by the specific decryption authorities
+     * @param p           the modulus prime
+     * @return the partial value
+     */
+    public static BigInteger computePartial(BigInteger a, BigInteger secretValue, BigInteger p) {
+        return a.modPow(secretValue, p);
+    }
+
+    /**
      * Combines partials
      *
      * @param partialsMap a map where the key is an authority index and value is a corresponding partial
