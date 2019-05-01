@@ -27,7 +27,7 @@ public class ResultFetcher extends Client {
      */
     public static class ResultFetcherConfiguration extends ClientConfiguration {
 
-        ResultFetcherConfiguration(String targetUrl, String id) {
+        ResultFetcherConfiguration(String targetUrl) {
             super(targetUrl);
         }
     }

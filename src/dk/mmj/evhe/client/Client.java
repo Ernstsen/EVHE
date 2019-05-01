@@ -104,7 +104,7 @@ public abstract class Client implements Application {
         }
     }
 
-    static class ClientConfiguration implements Configuration {
+    public static class ClientConfiguration implements Configuration {
         private final String targetUrl;
 
         ClientConfiguration(String targetUrl) {

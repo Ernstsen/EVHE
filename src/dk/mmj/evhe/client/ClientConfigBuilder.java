@@ -57,9 +57,10 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     @Override
     public Configuration build() {
         if (read) {
+            return new ResultFetcher.ResultFetcherConfiguration(targetUrl);
+        } else {
+            return new Voter.VoterConfiguration(targetUrl, id, vote, multi);
         }
-
-        return new Voter.VoterConfiguration(targetUrl, id, vote, multi);
     }
 
     /**

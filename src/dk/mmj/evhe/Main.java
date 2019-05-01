@@ -4,8 +4,9 @@ import dk.eSoftware.commandLineParser.CommandLineParser;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.eSoftware.commandLineParser.NoSuchBuilderException;
 import dk.eSoftware.commandLineParser.WrongFormatException;
-import dk.mmj.evhe.client.Client;
 import dk.mmj.evhe.client.ClientConfigBuilder;
+import dk.mmj.evhe.client.ResultFetcher;
+import dk.mmj.evhe.client.Voter;
 import dk.mmj.evhe.initialization.TrustedDealer;
 import dk.mmj.evhe.initialization.TrustedDealerConfigBuilder;
 import dk.mmj.evhe.server.bulletinboard.BulletinBoard;
@@ -53,8 +54,10 @@ public class Main {
     }
 
     private static Application getApplication(Configuration parse) {
-        if (parse instanceof Client.ClientConfiguration) {
-            return new Client((Client.ClientConfiguration) parse);
+        if (parse instanceof Voter.VoterConfiguration) {
+            return new Voter((Voter.VoterConfiguration) parse);
+        } else if (parse instanceof ResultFetcher.ResultFetcherConfiguration) {
+            return new ResultFetcher((ResultFetcher.ResultFetcherConfiguration) parse);
         } else if (parse instanceof DecryptionAuthority.KeyServerConfiguration) {
             return new DecryptionAuthority((DecryptionAuthority.KeyServerConfiguration) parse);
         } else if (parse instanceof BulletinBoard.BulletinBoardConfiguration) {
@@ -76,7 +79,7 @@ public class Main {
     private static CommandLineParser getParser() {
         HashMap<String, CommandLineParser.ConfigBuilder> mapping = new HashMap<>();
         mapping.put("--client", new ClientConfigBuilder());
-        mapping.put("--keyServer", new DecryptionAuthorityConfigBuilder());
+        mapping.put("--authority", new DecryptionAuthorityConfigBuilder());
         mapping.put("--bulletinBoard", new BulletinBoardConfigBuilder());
         mapping.put("--dealer", new TrustedDealerConfigBuilder());
         return new CommandLineParser(mapping);
