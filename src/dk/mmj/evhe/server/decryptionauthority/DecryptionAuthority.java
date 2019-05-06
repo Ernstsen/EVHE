@@ -20,8 +20,9 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +46,11 @@ public class DecryptionAuthority extends AbstractServer {
             port = configuration.port;
         }
 
-        bulletinBoard = configureWebTarget(logger, configuration.bulletinBoard, Collections.singletonList(ArrayList.class));
+        List<Class> classes = Arrays.asList(
+                ArrayList.class,
+                PartialResult.class,
+                DLogProofUtils.Proof.class);
+        bulletinBoard = configureWebTarget(logger, configuration.bulletinBoard, classes);
 
         File conf = new File(configuration.confPath);
         if (!conf.exists() || !conf.isFile()) {
@@ -112,8 +117,7 @@ public class DecryptionAuthority extends AbstractServer {
             terminate();
         }
 
-        CipherText acc = ElGamal.homomorphicEncryption(publicKey, BigInteger.ZERO);
-
+        CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
         CipherText sum = votes.stream()
                 .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
                 .map(VoteDTO::getCipherText)

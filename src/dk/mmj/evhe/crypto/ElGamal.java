@@ -146,7 +146,7 @@ public class ElGamal {
         return new CipherText(c, d);
     }
 
-    static int homomorphicDecryptionFromPartials(CipherText cipherText, BigInteger combinedPartials, BigInteger g, BigInteger p, int max) throws UnableToDecryptException {
+    public static int homomorphicDecryptionFromPartials(CipherText cipherText, BigInteger combinedPartials, BigInteger g, BigInteger p, int max) throws UnableToDecryptException {
         BigInteger gPowMessage = cipherText.getD().multiply(combinedPartials.modInverse(p)).mod(p);
 
         return findDecryptionValue(gPowMessage, g, p, max);

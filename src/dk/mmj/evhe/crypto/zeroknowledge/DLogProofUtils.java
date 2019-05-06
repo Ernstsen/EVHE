@@ -82,6 +82,9 @@ public class DLogProofUtils {
         private BigInteger e;
         private BigInteger z;
 
+        public Proof() {
+        }
+
         public Proof(BigInteger e, BigInteger z) {
             this.e = e;
             this.z = z;

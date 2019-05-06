@@ -113,9 +113,10 @@ public class BulletinBoardResource {
      */
     @GET
     @Path("result")
-    @Produces(MediaType.TEXT_HTML)
-    public List getResult() {
-        return state.get(RESULT, List.class);
+    @Produces(MediaType.APPLICATION_JSON)
+    @SuppressWarnings("unchecked")
+    public ResultList getResult() {
+        return new ResultList(state.get(RESULT, List.class));
     }
 
     @POST

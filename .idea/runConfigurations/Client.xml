@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Client" type="Application" factoryName="Application">
+  <configuration default="false" name="Client" type="Application" factoryName="Application" folderName="Client">
     <option name="MAIN_CLASS_NAME" value="dk.mmj.evhe.Main" />
     <module name="EVHE" />
     <option name="PROGRAM_PARAMETERS" value="--client" />

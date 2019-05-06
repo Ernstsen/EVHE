@@ -1,11 +1,10 @@
 package dk.mmj.evhe.client;
 
+import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.SecurityUtils;
+import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
-import dk.mmj.evhe.entities.PartialResult;
-import dk.mmj.evhe.entities.PublicInformationEntity;
-import dk.mmj.evhe.entities.PublicKey;
-import dk.mmj.evhe.entities.VoteList;
+import dk.mmj.evhe.entities.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,13 +29,16 @@ public class ResultFetcher extends Client {
         PublicInformationEntity publicInformationEntity = fetchPublicInfo();
         long endTime = publicInformationEntity.getEndTime();
         if (new Date().getTime() < endTime) {
-            long diff = (new Date().getTime() - endTime) / 60_000;
+            long diff = (endTime - new Date().getTime()) / 60_000;
             logger.info("The vote has not yet terminated, so results are unavailable. " +
                     "The vote should terminate in about " + diff + " minutes");
+            return;
         }
 
         PublicKey publicKey = getPublicKey();
-        List results = target.path("result").request().get(List.class);
+        ResultList resultList = target.path("result").request().get(ResultList.class);
+
+        List<PartialResult> results = resultList.getResults();
 
         Map<Integer, BigInteger> partials = new HashMap<>();
 
@@ -49,16 +51,30 @@ public class ResultFetcher extends Client {
             PartialResult res = (PartialResult) result;
             partials.put(res.getId(), res.getResult());
         }
-        BigInteger result = SecurityUtils.combinePartials(partials, publicKey.getP());
 
-        logger.info("Fetching votes for total vote count");
+
+        logger.info("Fetching votes");
         VoteList votes = target.path("getVotes").request().get(VoteList.class);
         logger.debug("Filtering votes");
         long totalVotes = votes.getVotes().stream()
                 .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
-                .filter(v -> v.getTs().getTime() < endTime)
+//                .filter(v -> v.getTs().getTime() < endTime)
                 .count();
 
+
+        int result = 0;
+        try {
+            CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
+            CipherText sum = votes.getVotes().stream()
+                    .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+                    .map(VoteDTO::getCipherText)
+                    .reduce(acc, ElGamal::homomorphicAddition);
+
+            BigInteger c = SecurityUtils.combinePartials(partials, publicKey.getP());
+            result = ElGamal.homomorphicDecryptionFromPartials(sum, c, publicKey.getG(), publicKey.getP(), Integer.MAX_VALUE);
+        } catch (UnableToDecryptException e) {
+            logger.error("Failed to decrypt from partial decryptions", e);
+        }
 
         logger.info("Result: " + result + "/" + totalVotes);
     }
