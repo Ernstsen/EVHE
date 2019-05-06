@@ -20,11 +20,24 @@ public class DLogProofUtils {
      * @return the proof containing the challenge e and answer z
      */
     public static Proof generateProof(CipherText cipherText, BigInteger secretValue, PublicKey publicKey) {
+        BigInteger y = getRandomNumModN(publicKey.getQ());
+        return generateProof(cipherText, secretValue, publicKey, y);
+    }
+
+    /**
+     * Generates a proof of discrete logarithms equality for a partial decryption
+     *
+     * @param cipherText the cipher text computed using homomorphic addition
+     * @param secretValue the secret value s_i
+     * @param publicKey the public key containing g, q, p and h_i which is specific for authority i
+     * @param y the usually randomly chosen number in Z_q
+     * @return the proof containing the challenge e and answer z
+     */
+    static Proof generateProof(CipherText cipherText, BigInteger secretValue, PublicKey publicKey, BigInteger y) {
         BigInteger c = cipherText.getC();
         BigInteger p = publicKey.getP();
         BigInteger q = publicKey.getQ();
 
-        BigInteger y = getRandomNumModN(q);
         BigInteger a = c.modPow(y, p);
         BigInteger b = publicKey.getG().modPow(y, p);
         BigInteger e = new BigInteger(
@@ -50,9 +63,9 @@ public class DLogProofUtils {
     public static boolean verifyProof(CipherText cipherText, CipherText partialDecryption, PublicKey publicKey, Proof proof) {
         BigInteger p = publicKey.getP();
         BigInteger a = cipherText.getC().modPow(proof.getZ(), p)
-                                        .multiply(partialDecryption.getC().modPow(proof.getE(), p).modInverse(p));
+                                        .multiply(partialDecryption.getC().modPow(proof.getE(), p).modInverse(p)).mod(p);
         BigInteger b = publicKey.getG().modPow(proof.getZ(), p)
-                .multiply(publicKey.getH().modPow(proof.getE(), p).modInverse(p));
+                .multiply(publicKey.getH().modPow(proof.getE(), p).modInverse(p)).mod(p);
 
         BigInteger s = new BigInteger(
                 SecurityUtils.hash(new byte[][]{
