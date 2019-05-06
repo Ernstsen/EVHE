@@ -121,7 +121,7 @@ public class BulletinBoardResource {
     @POST
     @Path("result")
     @Consumes(MediaType.APPLICATION_JSON)
-    public void postResult(BigInteger partialDecryption) {
+    public void postResult(PartialResult partialDecryption) {
         addToList(RESULT, partialDecryption);
     }
 

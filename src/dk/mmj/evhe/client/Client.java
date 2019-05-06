@@ -27,8 +27,9 @@ import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public abstract class Client implements Application {
     private static final String PUBLIC_KEY_NAME = "rsa";
-    private Logger logger = LogManager.getLogger(Client.class);
     JerseyWebTarget target;
+    private Logger logger = LogManager.getLogger(Client.class);
+    private PublicInformationEntity publicInfo;
 
     public Client(ClientConfiguration configuration) {
         List<Class> classes = Arrays.asList(
@@ -50,6 +51,19 @@ public abstract class Client implements Application {
      * @return the response containing the Public Key.
      */
     protected PublicKey getPublicKey() {
+
+        PublicInformationEntity info = fetchPublicInfo();
+
+        BigInteger h = SecurityUtils.combinePartials(info.getPublicKeys(), info.getP());
+
+        return new PublicKey(h, info.getG(), info.getQ());
+    }
+
+    protected PublicInformationEntity fetchPublicInfo() {
+        if (publicInfo != null) {
+            return publicInfo;
+        }
+
         Response response = target.path("getPublicInfo").request().buildGet().invoke();
         String responseString = response.readEntity(String.class);
 
@@ -71,12 +85,8 @@ public abstract class Client implements Application {
             System.exit(-1);
             return null;//Never happens
         }
-
-        PublicInformationEntity info = any.get();
-
-        BigInteger h = SecurityUtils.combinePartials(info.getPublicKeys(), info.getP());
-
-        return new PublicKey(h, info.getG(), info.getQ());
+        publicInfo = any.get();
+        return publicInfo;
     }
 
     private boolean verifyPublicInformation(PublicInformationEntity info) {
