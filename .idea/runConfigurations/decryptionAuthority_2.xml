@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="decryptionAuthority 0" type="Application" factoryName="Application">
+  <configuration default="false" name="decryptionAuthority 2" type="Application" factoryName="Application" folderName="DecryptionAuthority">
     <option name="MAIN_CLASS_NAME" value="dk.mmj.evhe.Main" />
     <module name="EVHE" />
-    <option name="PROGRAM_PARAMETERS" value="--authority --conf=initFiles/0" />
+    <option name="PROGRAM_PARAMETERS" value="--authority --conf=initFiles/2 --port=8082" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

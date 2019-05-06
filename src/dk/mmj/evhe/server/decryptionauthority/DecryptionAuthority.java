@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.crypto.ElGamal;
+import dk.mmj.evhe.crypto.zeroknowledge.DLogProofUtils;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.server.AbstractServer;
@@ -36,7 +37,7 @@ public class DecryptionAuthority extends AbstractServer {
     private static final Logger logger = LogManager.getLogger(DecryptionAuthority.class);
     private final ServerState state = ServerState.getInstance();
     private JerseyWebTarget bulletinBoard;
-    private String id;
+    private Integer id;
     private int port = 8081;
 
     public DecryptionAuthority(KeyServerConfiguration configuration) {
@@ -56,7 +57,7 @@ public class DecryptionAuthority extends AbstractServer {
         try (FileInputStream ous = new FileInputStream(conf)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(ous));
 
-            id = reader.readLine();
+            id = Integer.parseInt(reader.readLine());
             BigInteger secretValue = new BigInteger(reader.readLine());
             BigInteger p = new BigInteger(reader.readLine());
             String publicKeyString = reader.readLine();
@@ -122,9 +123,14 @@ public class DecryptionAuthority extends AbstractServer {
 
         BigInteger result = ElGamal.partialDecryption(sum.getC(), key.getSecretValue(), key.getP());
 
-        logger.info("Partially decrypted value. Posting to bulletin board");
+        logger.info("Partially decrypted value. Generating proof");
 
-        Entity<BigInteger> resultEntity = Entity.entity(result, MediaType.APPLICATION_JSON);
+        DLogProofUtils.Proof proof = null;
+        //TODO!
+
+        logger.info("Posting to bulletin board");
+
+        Entity<PartialResult> resultEntity = Entity.entity(new PartialResult(id, result, proof), MediaType.APPLICATION_JSON);
         Response post = bulletinBoard.path("result").request().post(resultEntity);
 
         if (post.getStatus() < 200 || post.getStatus() > 300) {

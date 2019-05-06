@@ -46,7 +46,7 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
     @Override
     public String help() {
         return "" +
-                "\tMODE: keyServer\n" +
+                "\tMODE: " + SELF.substring(2) + "\n" +
                 "\t  --" + PORT + "int\t\tSpecifies port to be used. Standard=8081\n" +
                 "\t  --" + BULLETIN_BOARD_2 + "/" + BULLETIN_BOARD_1 + "ip:port location bulletin board to be used\n" +
                 "\t  --" + CONF + "Path\t\tRelative path to config file.\n";
