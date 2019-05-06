@@ -16,7 +16,6 @@ public abstract class AbstractServer implements Application {
     private Server server;
 
     public void run() {
-
         int port = getPort();
         logger.info("Starting server on port: " + port);
         server = getServer(port);
@@ -24,15 +23,18 @@ public abstract class AbstractServer implements Application {
             server.start();
             server.join();
         } catch (Exception e) {
+            //noinspection finally
             try {
                 logger.warn("Server threw exception while starting or joining:", e);
                 server.stop();
                 server.destroy();
+                System.exit(0);
             } catch (Exception e1) {
                 logger.warn("Server threw exception while stopping or destroying:", e1);
             } finally {
                 server.destroy();
-                logger.info("Server as been destroyed");
+                logger.info("Server has been destroyed");
+                System.exit(0);
             }
         }
     }

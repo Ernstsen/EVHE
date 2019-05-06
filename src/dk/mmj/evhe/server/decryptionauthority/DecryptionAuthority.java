@@ -54,7 +54,7 @@ public class DecryptionAuthority extends AbstractServer {
 
         File conf = new File(configuration.confPath);
         if (!conf.exists() || !conf.isFile()) {
-            logger.error("Configuration file either did not exists or were not a file. Terminating");
+            logger.error("Configuration file either did not exists or were not a file. Path: " + conf.getAbsolutePath() + "\nTerminating");
             System.exit(-1);
         }
 
