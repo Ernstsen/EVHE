@@ -58,7 +58,7 @@ public class ResultFetcher extends Client {
         logger.debug("Filtering votes");
         long totalVotes = votes.getVotes().stream()
                 .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
-//                .filter(v -> v.getTs().getTime() < endTime)
+//                .filter(v -> v.getTs().getTime() < endTime) //TODO: FIX
                 .count();
 
 
