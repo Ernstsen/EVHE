@@ -58,6 +58,7 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
         } else if (cmd.startsWith(NEW_KEY)) {
             newKey = Boolean.parseBoolean(cmd.substring(NEW_KEY.length()));
         } else if (cmd.equalsIgnoreCase(TIME)) {
+            time = 0;
             for (String param : command.getParams()) {
                 int minute = 60 * 1_000;
                 int hour = minute * 60;
