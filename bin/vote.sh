@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Starting public server"
-if [[ $1 =~ ^-?[0-1]+$ ]]
+if [[ $1 =~ ^-?[0-1]$ ]]
 then
     ./bin/run.sh --client --read=false  --port=8080 --vote=$1
 else

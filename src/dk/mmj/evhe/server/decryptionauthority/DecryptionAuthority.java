@@ -94,36 +94,25 @@ public class DecryptionAuthority extends AbstractServer {
     }
 
     void terminateVoting() {
-        Response getVotes = bulletinBoard.path("getVotes").request().get();
-        VoteList voteObjects = getVotes.readEntity(VoteList.class);
-
         PartialSecretKey key = state.get(SECRET_KEY, PartialSecretKey.class);
         PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
-        logger.info("Terminating voting - summing votes");
 
-        ArrayList<VoteDTO> votes = new ArrayList<>();
-
-        for (Object vote : voteObjects.getVotes()) {
-            if (vote instanceof VoteDTO) {
-                votes.add((VoteDTO) vote);
-            } else {
-                logger.error("Found vote that was not ciphertext. Was " + vote.getClass() + ". Terminating server");
-                terminate();
-            }
-        }
+        logger.info("Terminating voting - Fetching votes");
+        ArrayList<VoteDTO> votes = getVotes();
 
         if (votes.size() < 1) {
             logger.error("No votes registered. Terminating server without result");
             terminate();
         }
 
+        logger.info("Summing votes");
         CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
         CipherText sum = votes.stream()
                 .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
                 .map(VoteDTO::getCipherText)
                 .reduce(acc, ElGamal::homomorphicAddition);
 
-        logger.info("Dispatching decryption request");
+        logger.info("Beginning partial decryption");
 
         BigInteger result = ElGamal.partialDecryption(sum.getC(), key.getSecretValue(), key.getP());
 
@@ -144,6 +133,22 @@ public class DecryptionAuthority extends AbstractServer {
             logger.info("Successfully transferred partial decryption to bulletin board");
         }
 
+    }
+
+    private ArrayList<VoteDTO> getVotes() {
+        Response getVotes = bulletinBoard.path("getVotes").request().get();
+        VoteList voteObjects = getVotes.readEntity(VoteList.class);
+
+        ArrayList<VoteDTO> votes = new ArrayList<>();
+        for (Object vote : voteObjects.getVotes()) {
+            if (vote instanceof VoteDTO) {
+                votes.add((VoteDTO) vote);
+            } else {
+                logger.error("Found vote that was not ciphertext. Was " + vote.getClass() + ". Terminating server");
+                terminate();
+            }
+        }
+        return votes;
     }
 
     @Override
