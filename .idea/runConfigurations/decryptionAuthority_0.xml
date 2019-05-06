@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="keyServer file" type="Application" factoryName="Application">
+  <configuration default="false" name="decryptionAuthority 0" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="dk.mmj.evhe.Main" />
     <module name="EVHE" />
-    <option name="PROGRAM_PARAMETERS" value="--keyServer --keyParams=testKey.params" />
+    <option name="PROGRAM_PARAMETERS" value="--authority --conf=initFiles/0" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

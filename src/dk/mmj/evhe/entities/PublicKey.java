@@ -1,8 +1,10 @@
 package dk.mmj.evhe.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.math.BigInteger;
 
-@SuppressWarnings("WeakerAccess, unused")
+@SuppressWarnings("unused")
 public class PublicKey {
     private BigInteger h, g, q;
 
@@ -43,6 +45,7 @@ public class PublicKey {
         this.q = q;
     }
 
+    @JsonIgnore
     public BigInteger getP() {
         return q.multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
     }

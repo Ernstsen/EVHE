@@ -35,6 +35,8 @@ import java.util.*;
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class TrustedDealer implements Application {
+    private static final String PRIVATE_KEY_NAME = "rsa.pub";
+    private static final String PUBLIC_KEY_NAME = "rsa";
     private static Logger logger = LogManager.getLogger(TrustedDealer.class);
     private JerseyWebTarget bulletinBoard;
     private int polynomialDegree;
@@ -42,8 +44,6 @@ public class TrustedDealer implements Application {
     private Path rootPath;
     private Path keyPath;
     private long endTime;
-    private static final String PRIVATE_KEY_NAME = "rsa.pub";
-    private static final String PUBLIC_KEY_NAME = "rsa";
 
     public TrustedDealer(TrustedDealerConfiguration config) {
         bulletinBoard = configureWebTarget(logger, config.bulletinBoardPath, Arrays.asList(
@@ -117,14 +117,15 @@ public class TrustedDealer implements Application {
                 .map(id -> id + "\n" +
                         secretValues.get(id) + "\n" +
                         distKeyGenResult.getP() + "\n" +
-                        publicKeyString + "\n")
+                        publicKeyString + "\n" +
+                        endTime + "\n")
                 .forEach(output::add);
 
         logger.info("Asserting existence of root dir");
 
         logger.info("Writing files");
         for (int i = 0; i < output.size(); i++) {
-            File dest = rootPath.resolve(Integer.toString(i)).toFile();
+            File dest = rootPath.resolve(Integer.toString(i + 1)).toFile();
             writeFile(dest, output.get(i).getBytes());
         }
 

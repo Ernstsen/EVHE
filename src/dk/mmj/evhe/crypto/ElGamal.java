@@ -1,13 +1,11 @@
 package dk.mmj.evhe.crypto;
 
-import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
+import dk.mmj.evhe.entities.*;
 
 import java.math.BigInteger;
 import java.util.Map;
-
-import static dk.mmj.evhe.crypto.SecurityUtils.generateLagrangeCoefficient;
 
 /**
  * Class for handling encryption, decryption and key-generation for the Elgamal encryption scheme
@@ -22,7 +20,7 @@ public class ElGamal {
      * @param params the pair of primes (p,q) and the generator for G_q
      * @return a KeyPair consisting of a private and secret key
      */
-    public static KeyPair generateKeys(KeyGenerationParameters params) {
+    static KeyPair generateKeys(KeyGenerationParameters params) {
         BigInteger g = params.getGenerator();
         PrimePair primePair = params.getPrimePair();
 
@@ -35,9 +33,9 @@ public class ElGamal {
     /**
      * Generates distributed secret and public values
      *
-     * @param params the pair of primes (p,q) and the generator for G_q
+     * @param params           the pair of primes (p,q) and the generator for G_q
      * @param polynomialDegree the degree of the polynomial
-     * @param authorities number of decryption authorities
+     * @param authorities      number of decryption authorities
      * @return a DistKeyGenResult containing all information the TD needs to distribute to decryption authorities
      */
     public static DistKeyGenResult generateDistributedKeys(KeyGenerationParameters params, int polynomialDegree, int authorities) {
@@ -111,12 +109,25 @@ public class ElGamal {
      * @param cipherText cipher text consisting of c and d
      * @return the original number which were encrypted
      */
-    public static int homomorphicDecryption(KeyPair keyPair, CipherText cipherText, int max) throws UnableToDecryptException {
+    static int homomorphicDecryption(KeyPair keyPair, CipherText cipherText, int max) throws UnableToDecryptException {
         BigInteger p = keyPair.getPublicKey().getQ().multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
         BigInteger hr = cipherText.getC().modPow(keyPair.getSecretKey(), p);
         BigInteger gPowMessage = cipherText.getD().multiply(hr.modInverse(p)).mod(p);
 
         return findDecryptionValue(gPowMessage, keyPair.getPublicKey().getG(), keyPair.getPublicKey().getP(), max);
+    }
+
+
+    /**
+     * Partially decrypts the given c value
+     *
+     * @param c                value to be partially decrypted
+     * @param partialSecretKey partial secret key used to decrypt
+     * @param p                p value from public key
+     * @return A partial decryption of the C value
+     */
+    public static BigInteger partialDecryption(BigInteger c, BigInteger partialSecretKey, BigInteger p) {
+        return SecurityUtils.computePartial(c, partialSecretKey, p);
     }
 
     /**
@@ -135,7 +146,7 @@ public class ElGamal {
         return new CipherText(c, d);
     }
 
-    public static int homomorphicDecryptionFromPartials(CipherText cipherText, BigInteger combinedPartials, BigInteger g, BigInteger p, int max) throws UnableToDecryptException {
+    static int homomorphicDecryptionFromPartials(CipherText cipherText, BigInteger combinedPartials, BigInteger g, BigInteger p, int max) throws UnableToDecryptException {
         BigInteger gPowMessage = cipherText.getD().multiply(combinedPartials.modInverse(p)).mod(p);
 
         return findDecryptionValue(gPowMessage, g, p, max);

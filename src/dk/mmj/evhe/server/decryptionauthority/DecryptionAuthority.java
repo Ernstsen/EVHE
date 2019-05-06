@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.crypto.ElGamal;
-import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.server.AbstractServer;
@@ -21,16 +20,23 @@ import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class DecryptionAuthority extends AbstractServer {
+    static final String SERVER = "server";
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static final String SECRET_KEY = "secretKey";
     private static final String PUBLIC_KEY = "publicKey";
-    static final String SERVER = "server";
+    private static final String END_TIME = "terminationTime";
     private static final Logger logger = LogManager.getLogger(DecryptionAuthority.class);
     private final ServerState state = ServerState.getInstance();
     private JerseyWebTarget bulletinBoard;
+    private String id;
     private int port = 8081;
 
     public DecryptionAuthority(KeyServerConfiguration configuration) {
@@ -50,14 +56,21 @@ public class DecryptionAuthority extends AbstractServer {
         try (FileInputStream ous = new FileInputStream(conf)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(ous));
 
+            id = reader.readLine();
             BigInteger secretValue = new BigInteger(reader.readLine());
             BigInteger p = new BigInteger(reader.readLine());
             String publicKeyString = reader.readLine();
+            String endTimeString = reader.readLine();
 
             PublicKey pk = new ObjectMapper().readerFor(PublicKey.class).readValue(publicKeyString);
 
-            PartialSecretKey sk = new PartialSecretKey(secretValue, p);
 
+            PartialSecretKey sk = new PartialSecretKey(secretValue, p);
+            long endTime = Long.parseLong(endTimeString) - new Date().getTime();
+
+            scheduler.schedule(this::terminateVoting, endTime, TimeUnit.MILLISECONDS);
+
+            state.put(END_TIME, endTime);
             state.put(PUBLIC_KEY, pk);
             state.put(SECRET_KEY, sk);
         } catch (JsonProcessingException e) {
@@ -107,17 +120,18 @@ public class DecryptionAuthority extends AbstractServer {
 
         logger.info("Dispatching decryption request");
 
-        int result = SecurityUtils.computePartial(sum.getC(), key.getSecretValue(), key.getP()).intValue();
+        BigInteger result = ElGamal.partialDecryption(sum.getC(), key.getSecretValue(), key.getP());
 
-        String resultString = "Result was: " + result + " with " + votes.size() + " votes";
-        logger.info(resultString);
+        logger.info("Partially decrypted value. Posting to bulletin board");
 
-        Entity<String> resultEntity = Entity.entity(resultString, MediaType.APPLICATION_JSON);
+        Entity<BigInteger> resultEntity = Entity.entity(result, MediaType.APPLICATION_JSON);
         Response post = bulletinBoard.path("result").request().post(resultEntity);
 
         if (post.getStatus() < 200 || post.getStatus() > 300) {
             logger.error("Unable to post result to bulletinBoard, got response:" + post);
             System.exit(-1);
+        } else {
+            logger.info("Successfully transferred partial decryption to bulletin board");
         }
 
     }

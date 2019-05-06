@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 public class DecryptionAuthorityConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(DecryptionAuthorityConfigBuilder.class);
-    private static final String SELF = "--keyServer";
+    private static final String SELF = "--authority";
 
     //Configuration options
     private static final String PORT = "port=";

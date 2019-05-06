@@ -115,13 +115,13 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
     public String help() {
         return "\tMODE: Trusted Dealer (dealer) - Trusted dealer creates files to configure Decryption Authorities \n" +
                 "\t  --" + ROOT_PATH + "Path\t\t Defines dir to create files in. Relative to curr dir \n" +
-                "\t  --" + KEY_PATH + "Path\t\t Path to the private key used to sign public keys when posting to bb\n" +
+                "\t  --" + KEY_PATH + "Path\t Path to the private key used to sign public keys when posting to bb\n" +
                 "\t\t -relative \t path is relative to root path instead of current dir\n" +
                 "\t  --" + SERVERS + "int\t\t How many servers are going to participate\n" +
                 "\t  --" + DEGREE + "int\t\t Degree of polynomial for keygeneration. System is safe when #of corrupt is less or" +
                 "equals to degree\n" +
                 "\t  --" + BULLETIN_BOARD_PATH + "int\t\t Url pointing to the bulletin board where public keys should be posed\n" +
-                "\t  --" + NEW_KEY + "boolean\t\t Whether new RSA keypair should be generated. If keyPath does not point dir with keys, " +
+                "\t  --" + NEW_KEY + "boolean\t Whether new RSA keypair should be generated. If keyPath does not point dir with keys, " +
                 "it defaults to true. Otherwise false\n" +
                 "\t  --" + TIME + "\t\t Sets time. Vote ends at current time + time parameters. Standard value: 10 min\n" +
                 "\t\t -" + TIME_DAY + "days, -" + TIME_HR + "hours, -" + TIME_MIN + "minutes\n";

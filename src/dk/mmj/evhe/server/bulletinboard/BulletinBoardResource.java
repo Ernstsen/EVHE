@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +49,7 @@ public class BulletinBoardResource {
     @Path("publicKey")
     @Consumes(MediaType.APPLICATION_JSON)
     public void setPublicKey(PublicKey publicKey) {
-        if (publicKey == null) {//TODO: Only once?
+        if (publicKey == null) {
             logger.warn("A submitted key CANNOT be null");
             throw new NotAllowedException("Key was null");
 
@@ -60,14 +61,8 @@ public class BulletinBoardResource {
     @POST
     @Path("postPublicInfo")
     @Consumes(MediaType.APPLICATION_JSON)
-    @SuppressWarnings("unchecked")
     public void initialize(PublicInformationEntity info) {
-        List<PublicInformationEntity> list = state.get(PUBLIC_INFO, List.class);
-        if (list == null) {
-            list = new ArrayList<>();
-            state.put(PUBLIC_INFO, list);
-        }
-        list.add(info);
+        addToList(PUBLIC_INFO, info);
     }
 
     @GET
@@ -113,22 +108,31 @@ public class BulletinBoardResource {
         hasVoted.add(voterId);
     }
 
+    /**
+     * @return List of {@link BigInteger} which is partial decryptions
+     */
     @GET
     @Path("result")
     @Produces(MediaType.TEXT_HTML)
-    public String getResult() {
-        String result = state.get(RESULT, String.class);
-        if (result == null) {
-            return "<h3> Voting has not yet finished </h3>";
-        }
-        return "<h3> Voting has finished </h3> <br/>" + result;
+    public List getResult() {
+        return state.get(RESULT, List.class);
     }
 
     @POST
     @Path("result")
     @Consumes(MediaType.APPLICATION_JSON)
-    public void postResult(String result) {
-        state.put(RESULT, result);
+    public void postResult(BigInteger partialDecryption) {
+        addToList(RESULT, partialDecryption);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addToList(String key, Object element) {
+        List list = state.get(key, List.class);
+        if (list == null) {
+            list = new ArrayList();
+            state.put(key, list);
+        }
+        list.add(element);
     }
 
     @SuppressWarnings("unchecked")
