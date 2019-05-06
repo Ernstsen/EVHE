@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -173,7 +174,7 @@ public class TestElGamal {
                 .filter(e -> !excludedIndexes.contains(e.getKey()))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> cipherText.getC().modPow(e.getValue(), distKeyGenResult.getP())
+                        e -> SecurityUtils.computePartial(cipherText.getC(), e.getValue(), distKeyGenResult.getP())
                 ));
 
         BigInteger combinedPartialDecryptions = SecurityUtils.combinePartials(partialDecryptions, distKeyGenResult.getP());
@@ -192,42 +193,42 @@ public class TestElGamal {
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf7WithDAs123WhenNIs3() {
-        testPartialDecryptionPositive(7, Arrays.asList(0));
+        testPartialDecryptionPositive(7, Collections.singletonList(0));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf857WithDAs123WhenNIs3() {
-        testPartialDecryptionPositive(857, Arrays.asList(0));
+        testPartialDecryptionPositive(857, Collections.singletonList(0));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf7WithDAs12WhenNIs3() {
-        testPartialDecryptionPositive(7, Arrays.asList(3));
+        testPartialDecryptionPositive(7, Collections.singletonList(3));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf857WithDAs12WhenNIs3() {
-        testPartialDecryptionPositive(857, Arrays.asList(3));
+        testPartialDecryptionPositive(857, Collections.singletonList(3));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf7WithDAs13WhenNIs3() {
-        testPartialDecryptionPositive(7, Arrays.asList(2));
+        testPartialDecryptionPositive(7, Collections.singletonList(2));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf857WithDAs13WhenNIs3() {
-        testPartialDecryptionPositive(857, Arrays.asList(2));
+        testPartialDecryptionPositive(857, Collections.singletonList(2));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf7WithDAs23WhenNIs3() {
-        testPartialDecryptionPositive(7, Arrays.asList(1));
+        testPartialDecryptionPositive(7, Collections.singletonList(1));
     }
 
     @Test
     public void shouldBeAbleToDecryptPartialsOf857WithDAs23WhenNIs3() {
-        testPartialDecryptionPositive(857, Arrays.asList(1));
+        testPartialDecryptionPositive(857, Collections.singletonList(1));
     }
 
     @Test(expected = UnableToDecryptException.class)

@@ -6,6 +6,7 @@ import dk.mmj.evhe.entities.PublicKey;
 
 import java.math.BigInteger;
 
+import static dk.mmj.evhe.crypto.SecurityUtils.computePartial;
 import static dk.mmj.evhe.crypto.SecurityUtils.getRandomNumModN;
 
 public class DLogProofUtils {
@@ -30,7 +31,7 @@ public class DLogProofUtils {
                 SecurityUtils.hash(new byte[][]{
                         a.toByteArray(),
                         b.toByteArray(),
-                        c.modPow(secretValue, p).toByteArray(),
+                        computePartial(c, secretValue, p).toByteArray(),
                         publicKey.getH().toByteArray()
                 })).mod(q);
         BigInteger z = y.add(secretValue.multiply(e)).mod(q);

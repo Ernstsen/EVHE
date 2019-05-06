@@ -151,13 +151,13 @@ public class SecurityUtils {
     /**
      * Computes partial
      *
-     * @param a           is the base value
+     * @param c           is the base value
      * @param secretValue the secret value only known by the specific decryption authorities
      * @param p           the modulus prime
      * @return the partial value
      */
-    public static BigInteger computePartial(BigInteger a, BigInteger secretValue, BigInteger p) {
-        return a.modPow(secretValue, p);
+    public static BigInteger computePartial(BigInteger c, BigInteger secretValue, BigInteger p) {
+        return c.modPow(secretValue, p);
     }
 
     /**
