@@ -1,5 +1,6 @@
 package dk.mmj.evhe.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
@@ -8,6 +9,7 @@ import dk.mmj.evhe.entities.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,16 +56,26 @@ public class ResultFetcher extends Client {
 
 
         logger.info("Fetching votes");
-        VoteList votes = target.path("getVotes").request().get(VoteList.class);
-        logger.debug("Filtering votes");
-        long totalVotes = votes.getVotes().stream()
-                .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
-//                .filter(v -> v.getTs().getTime() < endTime) //TODO: FIX
-                .count();
+        VoteList votes;
+        long totalVotes;
+        try {
+            String getVotes = target.path("getVotes").request().get(String.class);
+            votes = new ObjectMapper().readerFor(VoteList.class).readValue(getVotes);
+            logger.debug("Filtering votes");
+            totalVotes = votes.getVotes().stream()
+                    .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+                    .filter(v -> v.getTs().getTime() < endTime)
+                    .count();
+        } catch (IOException e) {
+            logger.error("Failed to read votes from server", e);
+            System.exit(-1);
+            return;
+        }
 
 
         int result = 0;
         try {
+            logger.info("Summing votes and decrypting from partials");
             CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
             CipherText sum = votes.getVotes().stream()
                     .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
@@ -71,7 +83,7 @@ public class ResultFetcher extends Client {
                     .reduce(acc, ElGamal::homomorphicAddition);
 
             BigInteger c = SecurityUtils.combinePartials(partials, publicKey.getP());
-            result = ElGamal.homomorphicDecryptionFromPartials(sum, c, publicKey.getG(), publicKey.getP(), Integer.MAX_VALUE);
+            result = ElGamal.homomorphicDecryptionFromPartials(sum, c, publicKey.getG(), publicKey.getP(), (int) totalVotes);
         } catch (UnableToDecryptException e) {
             logger.error("Failed to decrypt from partial decryptions", e);
         }
