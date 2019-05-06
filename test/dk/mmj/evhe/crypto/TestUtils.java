@@ -1,9 +1,9 @@
 package dk.mmj.evhe.crypto;
 
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
+import dk.mmj.evhe.crypto.keygeneration.PersistedKeyParameters;
 import dk.mmj.evhe.entities.KeyPair;
 import dk.mmj.evhe.entities.PrimePair;
-import dk.mmj.evhe.crypto.keygeneration.PersistedKeyParameters;
 
 import java.math.BigInteger;
 
@@ -24,6 +24,13 @@ class TestUtils {
     static KeyGenerationParameters getKeyGenParamsFromP11G2() {
         PrimePair primes = new PrimePair(new BigInteger("11"), new BigInteger("5"));
         BigInteger g = new BigInteger("2");
+        return new TestElGamal.SimpleKeyGenParams(g, primes);
+    }
+
+    static KeyGenerationParameters getKeyGenParamsFromP227G172() {
+        PrimePair primes = new PrimePair(new BigInteger("227"), new BigInteger("113"));
+        BigInteger g = new BigInteger("172"); //9025
+
         return new TestElGamal.SimpleKeyGenParams(g, primes);
     }
 }
