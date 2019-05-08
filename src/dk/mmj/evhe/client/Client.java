@@ -38,6 +38,7 @@ public abstract class Client implements Application {
                 VoteDTO.class,
                 PublicKey.class,
                 CipherText.class,
+                BigInteger.class,
                 VoteDTO.Proof.class,
                 PublicInfoList.class,
                 PublicInformationEntity.class);
@@ -59,7 +60,7 @@ public abstract class Client implements Application {
         return new PublicKey(h, info.getG(), info.getQ());
     }
 
-    protected PublicInformationEntity fetchPublicInfo() {
+    PublicInformationEntity fetchPublicInfo() {
         if (publicInfo != null) {
             return publicInfo;
         }

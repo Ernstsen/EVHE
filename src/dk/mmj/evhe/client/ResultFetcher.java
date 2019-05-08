@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Class for retrieving vote results
@@ -28,6 +29,7 @@ public class ResultFetcher extends Client {
 
     @Override
     public void run() {
+        logger.info("Fetching public information");
         PublicInformationEntity publicInformationEntity = fetchPublicInfo();
         long endTime = publicInformationEntity.getEndTime();
         if (new Date().getTime() < endTime) {
@@ -37,13 +39,13 @@ public class ResultFetcher extends Client {
             return;
         }
 
+        logger.info("Fetching partial results");
         PublicKey publicKey = getPublicKey();
         ResultList resultList = target.path("result").request().get(ResultList.class);
-
         List<PartialResult> results = resultList.getResults();
 
         Map<Integer, BigInteger> partials = new HashMap<>();
-
+        Map<BigInteger, Integer> dValues = new HashMap<>();
         logger.info("Combining partials to total result");
         for (Object result : results) {
             if (!(result instanceof PartialResult)) {
@@ -52,43 +54,63 @@ public class ResultFetcher extends Client {
             }
             PartialResult res = (PartialResult) result;
             partials.put(res.getId(), res.getResult());
+
+            Integer currCnt = dValues.get(res.getD());
+            dValues.put(res.getD(), currCnt == null ? 1 : currCnt + 1);
         }
 
+        BigInteger d = getMaxValueKey(dValues);
 
         logger.info("Fetching votes");
         VoteList votes;
-        long totalVotes;
+        List<PersistedVote> actualVotes;
         try {
             String getVotes = target.path("getVotes").request().get(String.class);
             votes = new ObjectMapper().readerFor(VoteList.class).readValue(getVotes);
             logger.debug("Filtering votes");
-            totalVotes = votes.getVotes().stream()
-                    .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+            actualVotes = votes.getVotes().stream()
                     .filter(v -> v.getTs().getTime() < endTime)
-                    .count();
+                    .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             logger.error("Failed to read votes from server", e);
             System.exit(-1);
             return;
         }
 
-
-        int result = 0;
-        try {
-            logger.info("Summing votes and decrypting from partials");
+        if (d == null) {
+            logger.warn("No valid d value found. Calculating own");
             CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
+
             CipherText sum = votes.getVotes().stream()
                     .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
                     .map(VoteDTO::getCipherText)
                     .reduce(acc, ElGamal::homomorphicAddition);
-
-            BigInteger c = SecurityUtils.combinePartials(partials, publicKey.getP());
-            result = ElGamal.homomorphicDecryptionFromPartials(sum, c, publicKey.getG(), publicKey.getP(), (int) totalVotes);
-        } catch (UnableToDecryptException e) {
-            logger.error("Failed to decrypt from partial decryptions", e);
+            d = sum.getD();
         }
 
-        logger.info("Result: " + result + "/" + totalVotes);
+        int result = 0;
+        try {
+            logger.info("Summing votes and decrypting from partials");
+            BigInteger c = SecurityUtils.combinePartials(partials, publicKey.getP());
+            result = ElGamal.homomorphicDecryptionFromPartials(d, c, publicKey.getG(), publicKey.getP(), actualVotes.size());
+        } catch (UnableToDecryptException e) {
+            logger.error("Failed to decrypt from partial decryptions. Unable to server result", e);
+            System.exit(-1);
+        }
+
+        logger.info("Result: " + result + "/" + actualVotes.size());
+    }
+
+    private BigInteger getMaxValueKey(Map<BigInteger, Integer> dValues) {
+        BigInteger d = null;
+        int maxOcc = 0;
+        for (Map.Entry<BigInteger, Integer> entry : dValues.entrySet()) {
+            if (entry.getValue() > maxOcc) {
+                d = entry.getKey();
+            }
+        }
+        return d;
     }
 
     /**

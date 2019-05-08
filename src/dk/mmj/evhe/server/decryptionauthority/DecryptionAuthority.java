@@ -72,9 +72,10 @@ public class DecryptionAuthority extends AbstractServer {
 
 
             PartialSecretKey sk = new PartialSecretKey(secretValue, p);
-            long endTime = Long.parseLong(endTimeString) - new Date().getTime();
+            long endTime = Long.parseLong(endTimeString);
+            long relativeEndTime = endTime - new Date().getTime();
 
-            scheduler.schedule(this::terminateVoting, endTime, TimeUnit.MILLISECONDS);
+            scheduler.schedule(this::terminateVoting, relativeEndTime, TimeUnit.MILLISECONDS);
 
             state.put(END_TIME, endTime);
             state.put(PUBLIC_KEY, pk);
@@ -96,23 +97,27 @@ public class DecryptionAuthority extends AbstractServer {
     void terminateVoting() {
         PartialSecretKey key = state.get(SECRET_KEY, PartialSecretKey.class);
         PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
+        Long endTime = state.get(END_TIME, Long.class);
 
         logger.info("Terminating voting - Fetching votes");
-        ArrayList<VoteDTO> votes = getVotes();
+        ArrayList<PersistedVote> votes = getVotes();
 
-        if (votes.size() < 1) {
+        if (votes == null || votes.size() < 1) {
             logger.error("No votes registered. Terminating server without result");
             terminate();
+            return;
         }
 
         logger.info("Summing votes");
         CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
         CipherText sum = votes.stream()
+                .filter(v -> v.getTs().getTime() < endTime)
                 .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
                 .map(VoteDTO::getCipherText)
                 .reduce(acc, ElGamal::homomorphicAddition);
 
         logger.info("Beginning partial decryption");
+
 
         BigInteger result = ElGamal.partialDecryption(sum.getC(), key.getSecretValue(), key.getP());
 
@@ -123,7 +128,7 @@ public class DecryptionAuthority extends AbstractServer {
 
         logger.info("Posting to bulletin board");
 
-        Entity<PartialResult> resultEntity = Entity.entity(new PartialResult(id, result, proof), MediaType.APPLICATION_JSON);
+        Entity<PartialResult> resultEntity = Entity.entity(new PartialResult(id, sum.getD(), result, proof), MediaType.APPLICATION_JSON);
         Response post = bulletinBoard.path("result").request().post(resultEntity);
 
         if (post.getStatus() < 200 || post.getStatus() > 300) {
@@ -135,20 +140,25 @@ public class DecryptionAuthority extends AbstractServer {
 
     }
 
-    private ArrayList<VoteDTO> getVotes() {
-        Response getVotes = bulletinBoard.path("getVotes").request().get();
-        VoteList voteObjects = getVotes.readEntity(VoteList.class);
+    private ArrayList<PersistedVote> getVotes() {
+        try {
+            String getVotes = bulletinBoard.path("getVotes").request().get(String.class);
+            VoteList voteObjects = new ObjectMapper().readerFor(VoteList.class).readValue(getVotes);
 
-        ArrayList<VoteDTO> votes = new ArrayList<>();
-        for (Object vote : voteObjects.getVotes()) {
-            if (vote instanceof VoteDTO) {
-                votes.add((VoteDTO) vote);
-            } else {
-                logger.error("Found vote that was not ciphertext. Was " + vote.getClass() + ". Terminating server");
-                terminate();
+            ArrayList<PersistedVote> votes = new ArrayList<>();
+            for (Object vote : voteObjects.getVotes()) {
+                if (vote instanceof PersistedVote) {
+                    votes.add((PersistedVote) vote);
+                } else {
+                    logger.error("Found vote that was not ciphertext. Was " + vote.getClass() + ". Terminating server");
+                    terminate();
+                }
             }
+            return votes;
+        } catch (IOException e) {
+            logger.error("Failed to read VoteList from JSON string", e);
+            return null;
         }
-        return votes;
     }
 
     @Override
