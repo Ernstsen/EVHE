@@ -13,7 +13,7 @@ public class BulletinBoardConfigBuilder implements CommandLineParser.ConfigBuild
     private static final String PORT = "port=";
 
     //State
-    private Integer port;
+    private Integer port = 8080;
 
 
     @Override

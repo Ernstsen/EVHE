@@ -2,7 +2,7 @@
   <configuration default="false" name="bulletinBoard" type="Application" factoryName="Application" folderName="Bulletin Board">
     <option name="MAIN_CLASS_NAME" value="dk.mmj.evhe.Main" />
     <module name="EVHE" />
-    <option name="PROGRAM_PARAMETERS" value="--bulletinBoard" />
+    <option name="PROGRAM_PARAMETERS" value="--bulletinBoard --port=8080" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
