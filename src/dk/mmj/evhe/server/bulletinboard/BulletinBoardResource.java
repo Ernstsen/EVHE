@@ -82,11 +82,6 @@ public class BulletinBoardResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @SuppressWarnings("unchecked")
     public void Vote(VoteDTO vote) {
-        if (state.get(RESULT, String.class) != null) {
-            logger.warn("A vote as attempted to be cast after voting had been terminated");
-            throw new NotAllowedException("Voting has been terminated");
-        }
-
         Set hasVoted = state.get(HAS_VOTED, HashSet.class);
         String voterId = vote.getId();
 

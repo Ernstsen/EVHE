@@ -43,6 +43,11 @@ public class ResultFetcher extends Client {
         PublicKey publicKey = getPublicKey();
         ResultList resultList = target.path("result").request().get(ResultList.class);
         List<PartialResult> results = resultList.getResults();
+        if(results == null){
+            logger.info("Did not fetch any results. Probable cause is unfinished decryption. Try again later");
+            return;
+        }
+
 
         Map<Integer, BigInteger> partials = new HashMap<>();
         Map<BigInteger, Integer> dValues = new HashMap<>();
