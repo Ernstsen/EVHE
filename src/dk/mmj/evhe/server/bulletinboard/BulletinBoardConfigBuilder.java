@@ -7,25 +7,21 @@ import org.apache.logging.log4j.Logger;
 
 public class BulletinBoardConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final Logger logger = LogManager.getLogger(BulletinBoardConfigBuilder.class);
-    private static final String KEY_SERVER = "keyServer=";
 
     //Configuration options
     private static final String SELF = "--bulletinBoard";
-    private static final String TEST = "test=";
+    private static final String PORT = "port=";
 
     //State
-    private boolean test = false;
-    private String keyServer = "https://localhost:8081";
+    private Integer port;
 
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
         String cmd = command.getCommand();
 
-        if (cmd.startsWith(KEY_SERVER)) {
-            keyServer = cmd.substring(KEY_SERVER.length());
-        } else if (cmd.startsWith(TEST)) {
-            test = Boolean.parseBoolean(cmd.substring(TEST.length()));
+        if (cmd.startsWith(PORT)) {
+            port = Integer.parseInt(cmd.substring(PORT.length()));
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -33,12 +29,12 @@ public class BulletinBoardConfigBuilder implements CommandLineParser.ConfigBuild
 
     @Override
     public Configuration build() {
-        return new BulletinBoard.BulletinBoardConfiguration(8080, test);
+        return new BulletinBoard.BulletinBoardConfiguration(port);
     }
 
     @Override
     public String help() {
         return "\tMODE: bulletinBoard\n" +
-                "\t  --" + TEST + "{true,false}\t specifies whether ids is allowed to be testing ids - not pre-determined ones\n";
+                "\t  --" + PORT + "int\t\tSpecifies port to be used. Standard=8081\n";
     }
 }

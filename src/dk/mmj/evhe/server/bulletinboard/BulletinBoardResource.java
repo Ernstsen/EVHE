@@ -18,7 +18,6 @@ import static dk.mmj.evhe.server.bulletinboard.BulletinBoard.*;
 
 @Path("/")
 public class BulletinBoardResource {
-    private static final String ID_LIST = "idList";
     private static final String PUBLIC_INFO = "publicInfo";
     private static Logger logger = LogManager.getLogger(BulletinBoardResource.class);
     private ServerState state = ServerState.getInstance();
@@ -89,14 +88,8 @@ public class BulletinBoardResource {
         }
 
         Set hasVoted = state.get(HAS_VOTED, HashSet.class);
-        ArrayList idList = state.get(ID_LIST, ArrayList.class);
-        Boolean isTest = state.get(IS_TEST, Boolean.class);
         String voterId = vote.getId();
 
-        if (!isTest && !idList.contains(voterId)) {
-            logger.warn("Unrecognized voter with id=" + voterId);
-            throw new NotAllowedException("Vote was attempted with unrecognized id=" + voterId);
-        }
 
         if (hasVoted.contains(voterId)) {//TODO: Incompatible with BB?
             logger.warn("Voter with id=" + voterId + " attempted to vote more than once");

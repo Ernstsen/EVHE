@@ -25,7 +25,6 @@ public class BulletinBoard extends AbstractServer {
         this.configuration = configuration;
 
         ServerState state = ServerState.getInstance();
-        state.put(IS_TEST, configuration.test);
     }
 
     @Override
@@ -49,11 +48,9 @@ public class BulletinBoard extends AbstractServer {
 
     public static class BulletinBoardConfiguration implements Configuration {
         private Integer port;
-        private boolean test;
 
-        BulletinBoardConfiguration(Integer port, boolean test) {
+        BulletinBoardConfiguration(Integer port) {
             this.port = port;
-            this.test = test;
         }
     }
 }
