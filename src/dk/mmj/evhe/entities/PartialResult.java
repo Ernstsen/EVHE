@@ -7,16 +7,14 @@ import java.math.BigInteger;
 @SuppressWarnings("unused, JavaDocs")
 public class PartialResult {
     private Integer id;
-    private BigInteger d;
     private BigInteger result;
     private DLogProofUtils.Proof proof;
 
     public PartialResult() {
     }
 
-    public PartialResult(Integer id, BigInteger d, BigInteger result, DLogProofUtils.Proof proof) {
+    public PartialResult(Integer id, BigInteger result, DLogProofUtils.Proof proof) {
         this.id = id;
-        this.d = d;
         this.result = result;
         this.proof = proof;
     }
@@ -27,14 +25,6 @@ public class PartialResult {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public BigInteger getD() {
-        return d;
-    }
-
-    public void setD(BigInteger d) {
-        this.d = d;
     }
 
     public BigInteger getResult() {
