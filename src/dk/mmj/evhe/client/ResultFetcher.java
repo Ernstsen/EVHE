@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.mmj.evhe.crypto.ElGamal;
 import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
+import dk.mmj.evhe.crypto.zeroknowledge.DLogProofUtils;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.*;
 import org.apache.logging.log4j.LogManager;
@@ -43,28 +44,10 @@ public class ResultFetcher extends Client {
         PublicKey publicKey = getPublicKey();
         ResultList resultList = target.path("result").request().get(ResultList.class);
         List<PartialResult> results = resultList.getResults();
-        if(results == null){
+        if (results == null) {
             logger.info("Did not fetch any results. Probable cause is unfinished decryption. Try again later");
             return;
         }
-
-
-        Map<Integer, BigInteger> partials = new HashMap<>();
-        Map<BigInteger, Integer> dValues = new HashMap<>();
-        logger.info("Combining partials to total result");
-        for (Object result : results) {
-            if (!(result instanceof PartialResult)) {
-                logger.error("A partial result were not instanceof PartialResult. Was: " + result.getClass() + ". Terminating");
-                System.exit(-1);
-            }
-            PartialResult res = (PartialResult) result;
-            partials.put(res.getId(), res.getResult());
-
-            Integer currCnt = dValues.get(res.getD());
-            dValues.put(res.getD(), currCnt == null ? 1 : currCnt + 1);
-        }
-
-        BigInteger d = getMaxValueKey(dValues);
 
         logger.info("Fetching votes");
         VoteList votes;
@@ -83,22 +66,41 @@ public class ResultFetcher extends Client {
             return;
         }
 
-        if (d == null) {
-            logger.warn("No valid d value found. Calculating own");
-            CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
+        CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
 
-            CipherText sum = votes.getVotes().stream()
-                    .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
-                    .map(VoteDTO::getCipherText)
-                    .reduce(acc, ElGamal::homomorphicAddition);
-            d = sum.getD();
+        CipherText sum = votes.getVotes().stream()
+                .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+                .map(VoteDTO::getCipherText)
+                .reduce(acc, ElGamal::homomorphicAddition);
+        BigInteger d = sum.getD();
+
+
+        Map<Integer, BigInteger> partials = new HashMap<>();
+        logger.info("Combining partials to total result");
+        for (Object result : results) {
+            if (!(result instanceof PartialResult)) {
+                logger.error("A partial result were not instanceof PartialResult. Was: " + result.getClass() + ". Terminating");
+                System.exit(-1);
+            }
+            PartialResult res = (PartialResult) result;
+
+            CipherText partialDecryption = new CipherText(res.getResult(), d);
+            PublicKey partialPublicKey = new PublicKey(
+                    publicInformationEntity.getPublicKeys().get(res.getId()),
+                    publicInformationEntity.getG(),
+                    publicInformationEntity.getQ());
+            boolean validProof = DLogProofUtils.verifyProof(sum, partialDecryption, partialPublicKey, res.getProof(), res.getId());
+
+            if (validProof) {
+                partials.put(res.getId(), res.getResult());
+            }
         }
 
         int result = 0;
         try {
             logger.info("Summing votes and decrypting from partials");
-            BigInteger c = SecurityUtils.combinePartials(partials, publicKey.getP());
-            result = ElGamal.homomorphicDecryptionFromPartials(d, c, publicKey.getG(), publicKey.getP(), actualVotes.size());
+            BigInteger cs = SecurityUtils.combinePartials(partials, publicKey.getP());
+            result = ElGamal.homomorphicDecryptionFromPartials(d, cs, publicKey.getG(), publicKey.getP(), actualVotes.size());
         } catch (UnableToDecryptException e) {
             logger.error("Failed to decrypt from partial decryptions. Unable to server result", e);
             System.exit(-1);

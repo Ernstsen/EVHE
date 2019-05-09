@@ -123,8 +123,8 @@ public class DecryptionAuthority extends AbstractServer {
 
         logger.info("Partially decrypted value. Generating proof");
 
-        DLogProofUtils.Proof proof = null;
-        //TODO!
+        PublicKey partialPublicKey = new PublicKey(publicKey.getG().modPow(key.getSecretValue(), key.getP()), publicKey.getG(), publicKey.getQ());
+        DLogProofUtils.Proof proof = DLogProofUtils.generateProof(sum, key.getSecretValue(), partialPublicKey, id);
 
         logger.info("Posting to bulletin board");
 
