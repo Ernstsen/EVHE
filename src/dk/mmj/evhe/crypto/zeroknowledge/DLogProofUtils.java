@@ -17,11 +17,12 @@ public class DLogProofUtils {
      * @param cipherText the cipher text computed using homomorphic addition
      * @param secretValue the secret value s_i
      * @param publicKey the public key containing g, q, p and h_i which is specific for authority i
+     * @param id the decryption authority's id
      * @return the proof containing the challenge e and answer z
      */
-    public static Proof generateProof(CipherText cipherText, BigInteger secretValue, PublicKey publicKey) {
+    public static Proof generateProof(CipherText cipherText, BigInteger secretValue, PublicKey publicKey, int id) {
         BigInteger y = getRandomNumModN(publicKey.getQ());
-        return generateProof(cipherText, secretValue, publicKey, y);
+        return generateProof(cipherText, secretValue, publicKey, y, id);
     }
 
     /**
@@ -31,9 +32,10 @@ public class DLogProofUtils {
      * @param secretValue the secret value s_i
      * @param publicKey the public key containing g, q, p and h_i which is specific for authority i
      * @param y the usually randomly chosen number in Z_q
+     * @param id the decryption authority's id
      * @return the proof containing the challenge e and answer z
      */
-    static Proof generateProof(CipherText cipherText, BigInteger secretValue, PublicKey publicKey, BigInteger y) {
+    static Proof generateProof(CipherText cipherText, BigInteger secretValue, PublicKey publicKey, BigInteger y, int id) {
         BigInteger c = cipherText.getC();
         BigInteger p = publicKey.getP();
         BigInteger q = publicKey.getQ();
@@ -45,7 +47,8 @@ public class DLogProofUtils {
                         a.toByteArray(),
                         b.toByteArray(),
                         computePartial(c, secretValue, p).toByteArray(),
-                        publicKey.getH().toByteArray()
+                        publicKey.getH().toByteArray(),
+                        BigInteger.valueOf(id).toByteArray()
                 })).mod(q);
         BigInteger z = y.add(secretValue.multiply(e)).mod(q);
         return new Proof(e, z);
@@ -58,9 +61,10 @@ public class DLogProofUtils {
      * @param partialDecryption partial decryption of cipherText using the secret value s_i
      * @param publicKey the public key containing g, q, p and h_i which is specific for authority i
      * @param proof the proof of discrete logarithm equality for computePartial
+     * @param id the decryption authority's id
      * @return whether the partial decryption could be verified
      */
-    public static boolean verifyProof(CipherText cipherText, CipherText partialDecryption, PublicKey publicKey, Proof proof) {
+    public static boolean verifyProof(CipherText cipherText, CipherText partialDecryption, PublicKey publicKey, Proof proof, int id) {
         BigInteger p = publicKey.getP();
         BigInteger a = cipherText.getC().modPow(proof.getZ(), p)
                                         .multiply(partialDecryption.getC().modPow(proof.getE(), p).modInverse(p)).mod(p);
@@ -72,7 +76,8 @@ public class DLogProofUtils {
                         a.toByteArray(),
                         b.toByteArray(),
                         partialDecryption.getC().toByteArray(),
-                        publicKey.getH().toByteArray()
+                        publicKey.getH().toByteArray(),
+                        BigInteger.valueOf(id).toByteArray()
                 })).mod(publicKey.getQ());
 
         return proof.getE().equals(s);

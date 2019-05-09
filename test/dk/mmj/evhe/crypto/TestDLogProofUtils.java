@@ -48,8 +48,11 @@ public class TestDLogProofUtils {
         proofs = distKeyGenResult.getSecretValues().entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> generateProof(cipherText, e.getValue(),
-                                new PublicKey(publicValues.get(e.getKey()), g, q)
+                        e -> generateProof(
+                                cipherText,
+                                e.getValue(),
+                                new PublicKey(publicValues.get(e.getKey()), g, q),
+                                e.getKey()
                         )));
     }
 
@@ -61,7 +64,7 @@ public class TestDLogProofUtils {
             CipherText partialDecryption = new CipherText(partialC, cipherText.getD());
             PublicKey partialPublicKey = new PublicKey(publicValueH, g, q);
 
-            boolean verification = DLogProofUtils.verifyProof(cipherText, partialDecryption, partialPublicKey, proofs.get(i));
+            boolean verification = DLogProofUtils.verifyProof(cipherText, partialDecryption, partialPublicKey, proofs.get(i), i);
 
             assertTrue("Couldn't verify proof.", verification);
         }
@@ -92,8 +95,11 @@ public class TestDLogProofUtils {
         Map<Integer, DLogProofUtils.Proof> fakeproofs = secretValues.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> DLogProofTestUtils.generateFixedProof(cipherText, e.getValue(),
-                                new PublicKey(publicValues.get(e.getKey()), g, q), y
+                        e -> DLogProofTestUtils.generateFixedProof(
+                                cipherText,
+                                e.getValue(),
+                                new PublicKey(publicValues.get(e.getKey()), g, q), y,
+                                e.getKey()
                         )));
 
         BigInteger partialC = partialDec.get(1);
@@ -101,7 +107,7 @@ public class TestDLogProofUtils {
         CipherText partialDecryption = new CipherText(partialC, cipherText.getD());
         PublicKey partialPublicKey = new PublicKey(publicValueH, g, q);
 
-        boolean verification = DLogProofUtils.verifyProof(cipherText, partialDecryption, partialPublicKey, fakeproofs.get(1));
+        boolean verification = DLogProofUtils.verifyProof(cipherText, partialDecryption, partialPublicKey, fakeproofs.get(1), 1);
         assertTrue("Couldn't verify proof.", verification);
     }
 }
