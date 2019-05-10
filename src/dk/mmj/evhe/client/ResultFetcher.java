@@ -102,7 +102,7 @@ public class ResultFetcher extends Client {
             BigInteger cs = SecurityUtils.combinePartials(partials, publicKey.getP());
             result = ElGamal.homomorphicDecryptionFromPartials(d, cs, publicKey.getG(), publicKey.getP(), actualVotes.size());
         } catch (UnableToDecryptException e) {
-            logger.error("Failed to decrypt from partial decryptions. Unable to server result", e);
+            logger.error("Failed to decrypt from partial decryptions.", e);
             System.exit(-1);
         }
 
