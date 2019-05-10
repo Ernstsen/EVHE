@@ -33,4 +33,12 @@ public class CipherText {
     public void setD(BigInteger d) {
         this.d = d;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof CipherText) {
+            return d.equals(((CipherText) o).d) && c.equals(((CipherText) o).c);
+        }
+        return super.equals(o);
+    }
 }

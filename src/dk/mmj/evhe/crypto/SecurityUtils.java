@@ -4,13 +4,13 @@ import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.CipherText;
 import dk.mmj.evhe.entities.PublicKey;
 import dk.mmj.evhe.entities.VoteDTO;
+import jersey.repackaged.com.google.common.collect.Lists;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 /**
@@ -75,7 +75,7 @@ public class SecurityUtils {
      * @param q      q-1 specifies the maximum value of coefficients in the polynomial
      * @return a BigInteger array representing the polynomial
      */
-    public static BigInteger[] generatePolynomial(int degree, BigInteger q) {
+    static BigInteger[] generatePolynomial(int degree, BigInteger q) {
         BigInteger[] polynomial = new BigInteger[degree + 1];
         for (int i = 0; i <= degree; i++) {
             polynomial[i] = getRandomNumModN(q);
@@ -91,7 +91,7 @@ public class SecurityUtils {
      * @param q           q = p/2 - 1
      * @return a map where the key is authority index and value is the corresponding secret value
      */
-    public static Map<Integer, BigInteger> generateSecretValues(BigInteger[] polynomial, int authorities, BigInteger q) {
+    static Map<Integer, BigInteger> generateSecretValues(BigInteger[] polynomial, int authorities, BigInteger q) {
         Map<Integer, BigInteger> secretValuesMap = new HashMap<>();
 
         for (int i = 0; i < authorities; i++) {
@@ -116,7 +116,7 @@ public class SecurityUtils {
      * @param p               p the modulus prime
      * @return a map where the key is an authority index and value is the corresponding public value
      */
-    public static Map<Integer, BigInteger> generatePublicValues(Map<Integer, BigInteger> secretValuesMap, BigInteger g, BigInteger p) {
+    static Map<Integer, BigInteger> generatePublicValues(Map<Integer, BigInteger> secretValuesMap, BigInteger g, BigInteger p) {
         return secretValuesMap.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -132,7 +132,7 @@ public class SecurityUtils {
      * @param q                 q = p - 1 / 2
      * @return the lagrange coefficient
      */
-    public static BigInteger generateLagrangeCoefficient(int[] authorityIndexes, int currentIndexValue, BigInteger q) {
+    static BigInteger generateLagrangeCoefficient(int[] authorityIndexes, int currentIndexValue, BigInteger q) {
         BigInteger acc = BigInteger.ONE;
         BigInteger currentIndexBig = BigInteger.valueOf(currentIndexValue);
 
@@ -178,5 +178,104 @@ public class SecurityUtils {
         return partialsMap.keySet().stream()
                 .map(key -> partialsMap.get(key).modPow(generateLagrangeCoefficient(authorityIndexes, key, q), p))
                 .reduce(BigInteger.ONE, BigInteger::multiply).mod(p);
+    }
+
+    /**
+     * Computes the sum of all votes.
+     * <br/>
+     * Before sum is computed all proofs are verified, and those that could not are discarded.
+     * <br/>
+     * The method are executed synchronously
+     *
+     * @param votes     list of votes which should be summed
+     * @param publicKey public key the votes are encrypted under
+     * @return sum of all votes - meaning the product of the ciphertexts
+     */
+    static CipherText voteSum(List<? extends VoteDTO> votes, PublicKey publicKey) {
+        CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
+        return votes.stream()
+                .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+                .map(VoteDTO::getCipherText)
+                .reduce(acc, ElGamal::homomorphicAddition);
+    }
+
+    /**
+     * Computes the sum of all votes.
+     * <br/>
+     * Before sum is computed all proofs are verified, and those that could not are discarded.
+     * <br/>
+     * The method is executed asynchronously.
+     * All votes are partitioned into subsets of size <code>partitionSize</code>, which are summed in their own thread
+     *
+     * @param votes         list of votes
+     * @param publicKey     public key the votes are encrypted under
+     * @param partitionSize size of partitions
+     * @return sum of all votes
+     */
+    public static CipherText concurrentVoteSum(List<? extends VoteDTO> votes, PublicKey publicKey, int partitionSize) {
+
+        List<CipherText> cipherTexts = votes.parallelStream()
+                .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+                .map(VoteDTO::getCipherText)
+                .collect(Collectors.toList());
+
+        return concurrentSum(cipherTexts, partitionSize);
+    }
+
+    /**
+     * Concurrently sums votes contained in list of cipherTexts.
+     * <br/>
+     * Partitions cipherTexts and sums them in different threads.
+     *
+     * @param cipherTexts   list of cipherTexts to be summed
+     * @param partitionSize size of partitions.
+     * @return sum of all cipherTexts
+     */
+    private static CipherText concurrentSum(List<CipherText> cipherTexts, int partitionSize) {
+        ConcurrentLinkedQueue<CipherText> result = new ConcurrentLinkedQueue<>();
+
+        if (cipherTexts.size() > 2 * partitionSize) {
+            List<Thread> threads = new ArrayList<>();
+
+            List<List<CipherText>> partitions = Lists.partition(cipherTexts, partitionSize);
+            for (List<CipherText> partition : partitions) {
+                Thread thread = new Thread(new VoteSummer(result, partition));
+                thread.start();
+                threads.add(thread);
+            }
+
+            for (Thread thread : threads) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException("Filtering thread was interrupted", e);
+                }
+            }
+
+            return concurrentSum(new ArrayList<>(result), partitionSize);
+
+        } else {
+            CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
+            return cipherTexts.stream().reduce(acc, ElGamal::homomorphicAddition);
+        }
+
+    }
+
+    private static class VoteSummer implements Runnable {
+        private Collection<CipherText> resultRef;
+        private List<CipherText> values;
+
+        VoteSummer(Collection<CipherText> resultRef, List<CipherText> values) {
+            this.resultRef = resultRef;
+            this.values = values;
+        }
+
+        @Override
+        public void run() {
+            CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
+
+            CipherText sum = values.stream().reduce(acc, ElGamal::homomorphicAddition);
+            resultRef.add(sum);
+        }
     }
 }

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.crypto.ElGamal;
+import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.zeroknowledge.DLogProofUtils;
-import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
 import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
@@ -109,12 +110,10 @@ public class DecryptionAuthority extends AbstractServer {
         }
 
         logger.info("Summing votes");
-        CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
-        CipherText sum = votes.stream()
-                .filter(v -> v.getTs().getTime() < endTime)
-                .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
-                .map(VoteDTO::getCipherText)
-                .reduce(acc, ElGamal::homomorphicAddition);
+        CipherText sum = SecurityUtils.concurrentVoteSum(
+                votes.parallelStream().filter(v -> v.getTs().getTime() < endTime).collect(Collectors.toList()),
+                publicKey,
+                1000);
 
         logger.info("Beginning partial decryption");
 
