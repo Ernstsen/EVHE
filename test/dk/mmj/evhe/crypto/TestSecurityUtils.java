@@ -3,8 +3,7 @@ package dk.mmj.evhe.crypto;
 import dk.mmj.evhe.crypto.exceptions.UnableToDecryptException;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import dk.mmj.evhe.crypto.zeroknowledge.VoteProofUtils;
-import dk.mmj.evhe.entities.KeyPair;
-import dk.mmj.evhe.entities.VoteDTO;
+import dk.mmj.evhe.entities.*;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -180,16 +179,96 @@ public class TestSecurityUtils {
 
     @Test
     public void shouldNotBeAbleToRecoverPublicKeyWithSecret1WhenNIs2() {
-        testRecoveringOfPublicKey(Arrays.asList(2,3), false);
+        testRecoveringOfPublicKey(Arrays.asList(2, 3), false);
     }
 
     @Test
     public void shouldNotBeAbleToRecoverPublicKeyWithSecret2WhenNIs2() {
-        testRecoveringOfPublicKey(Arrays.asList(1,3), false);
+        testRecoveringOfPublicKey(Arrays.asList(1, 3), false);
     }
 
     @Test
     public void shouldNotBeAbleToRecoverPublicKeyWithSecret3WhenNIs2() {
-        testRecoveringOfPublicKey(Arrays.asList(1,2), false);
+        testRecoveringOfPublicKey(Arrays.asList(1, 2), false);
+    }
+
+    @Test
+    public void shouldBeSameSumNoWrongProof() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        PublicKey publicKey = keyPair.getPublicKey();
+
+        ArrayList<VoteDTO> votes = new ArrayList<>();
+        int amount = 200;
+        for (int i = 0; i < amount; i++) {
+            votes.add(SecurityUtils.generateVote(i % 2, "ID" + 1, publicKey));
+        }
+
+        long time = new Date().getTime();
+        CipherText oldSum = SecurityUtils.voteSum(votes, publicKey);
+        long elapsedOld = new Date().getTime() - time;
+        System.out.println("Did old sum of " + amount + " votes in " + elapsedOld + "ms");
+
+        time = new Date().getTime();
+        CipherText concSum = SecurityUtils.concurrentVoteSum(votes, publicKey, amount / 10);
+        long elapsedConc = new Date().getTime() - time;
+        System.out.println("Did concurrent sum of " + amount + " votes in " + elapsedConc + "ms");
+
+        assertEquals("Sums did not match.", oldSum, concSum);
+    }
+
+    @Test
+    public void shouldBeSameSumSOMEWrongProof() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        PublicKey publicKey = keyPair.getPublicKey();
+
+        ArrayList<VoteDTO> votes = new ArrayList<>();
+        int amount = 200;
+        for (int i = 0; i < amount; i++) {
+            VoteDTO e = SecurityUtils.generateVote(i % 2, "ID" + 1, publicKey);
+            if (i % 25 == 0) {
+                e.setId(e.getId() + "l");
+            }
+            votes.add(e);
+        }
+
+        long time = new Date().getTime();
+        CipherText oldSum = SecurityUtils.voteSum(votes, publicKey);
+        long elapsedOld = new Date().getTime() - time;
+        System.out.println("Did old sum of " + amount + " votes in " + elapsedOld + "ms");
+
+        time = new Date().getTime();
+        CipherText concSum = SecurityUtils.concurrentVoteSum(votes, publicKey, amount / 10);
+        long elapsedConc = new Date().getTime() - time;
+        System.out.println("Did concurrent sum of " + amount + " votes in " + elapsedConc + "ms");
+
+
+        assertEquals("Sums did not match.", oldSum, concSum);
+    }
+
+    @Test
+    public void benchmarkFilter() {
+        KeyPair keyPair = generateKeysFromP2048bitsG2();
+        PublicKey publicKey = keyPair.getPublicKey();
+        long endTime = new Date().getTime() + 5000;
+
+        ArrayList<PersistedVote> votes = new ArrayList<>();
+        int amount = 2000;
+        for (int i = 0; i < amount; i++) {
+            PersistedVote e = new PersistedVote(SecurityUtils.generateVote(i % 2, "ID" + 1, publicKey));
+            e.setTs(new Date());
+            votes.add(e);
+        }
+
+        long time = new Date().getTime();
+        List<PersistedVote> collect = votes.stream().filter(v -> v.getTs().getTime() < endTime).collect(Collectors.toList());
+        long elapsedOld = new Date().getTime() - time;
+        System.out.println("Did old filter of " + amount + " votes in " + elapsedOld + "ms");
+
+        time = new Date().getTime();
+        List<PersistedVote> collectConc = votes.stream().filter(v -> v.getTs().getTime() < endTime).collect(Collectors.toList());
+        long elapsedConc = new Date().getTime() - time;
+        System.out.println("Did Concurrent filter of " + amount + " votes in " + elapsedConc + "ms");
+
+        assertEquals("Filters did not match in results", collect.size(), collectConc.size());
     }
 }
