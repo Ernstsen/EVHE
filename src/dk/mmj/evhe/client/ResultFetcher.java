@@ -109,17 +109,6 @@ public class ResultFetcher extends Client {
         logger.info("Result: " + result + "/" + actualVotes.size());
     }
 
-    private BigInteger getMaxValueKey(Map<BigInteger, Integer> dValues) {
-        BigInteger d = null;
-        int maxOcc = 0;
-        for (Map.Entry<BigInteger, Integer> entry : dValues.entrySet()) {
-            if (entry.getValue() > maxOcc) {
-                d = entry.getKey();
-            }
-        }
-        return d;
-    }
-
     /**
      * The Result fetcher Configuration.
      * <br/>
