@@ -3,9 +3,17 @@ package dk.mmj.evhe.crypto;
 import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
 import dk.mmj.evhe.crypto.keygeneration.PersistedKeyParameters;
 import dk.mmj.evhe.entities.KeyPair;
+import dk.mmj.evhe.entities.PersistedVote;
 import dk.mmj.evhe.entities.PrimePair;
+import dk.mmj.evhe.entities.PublicKey;
+import jersey.repackaged.com.google.common.collect.Lists;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 class TestUtils {
     static KeyPair generateKeysFromP11G2() {
@@ -32,5 +40,65 @@ class TestUtils {
         BigInteger g = new BigInteger("172"); //9025
 
         return new TestElGamal.SimpleKeyGenParams(g, primes);
+    }
+
+    /**
+     * Concurrently generates a big number of votes, with different ID's
+     *
+     * @param amount    number of votes
+     * @param publicKey public key to use in vote encryption and proofs
+     * @return list of votes
+     */
+    static List<PersistedVote> generateVotes(int amount, final PublicKey publicKey) {
+        ArrayList<String> ids = new ArrayList<>();
+        for (int i = 0; i < amount; i++) {
+            ids.add("ID" + i);
+        }
+
+        List<List<String>> partitions = Lists.partition(ids, 50);
+
+        ConcurrentLinkedQueue<PersistedVote> res = new ConcurrentLinkedQueue<>();
+
+        ArrayList<Thread> threads = new ArrayList<>();
+        for (List<String> partition : partitions) {
+            Thread thread = new Thread(new VoteCreator(partition, res, publicKey));
+            threads.add(thread);
+            thread.start();
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Failed to concurrently create votes", e);
+            }
+        }
+
+        return new ArrayList<>(res);
+    }
+
+    private static class VoteCreator implements Runnable {
+        private List<String> ids;
+        private Collection<PersistedVote> votes;
+        private PublicKey publicKey;
+
+        private VoteCreator(List<String> ids, Collection<PersistedVote> votes, PublicKey publicKey) {
+            this.ids = ids;
+            this.votes = votes;
+            this.publicKey = publicKey;
+        }
+
+        @Override
+        public void run() {
+            ArrayList<PersistedVote> result = new ArrayList<>();
+
+            for (int i = 0; i < ids.size(); i++) {
+                PersistedVote e = new PersistedVote(SecurityUtils.generateVote(i % 2, ids.get(i), publicKey));
+                e.setTs(new Date());
+                result.add(e);
+            }
+
+            votes.addAll(result);
+        }
     }
 }
