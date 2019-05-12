@@ -56,7 +56,7 @@ public class ResultFetcher extends Client {
             String getVotes = target.path("getVotes").request().get(String.class);
             votes = new ObjectMapper().readerFor(VoteList.class).readValue(getVotes);
             logger.debug("Filtering votes");
-            actualVotes = votes.getVotes().stream()
+            actualVotes = votes.getVotes().parallelStream()
                     .filter(v -> v.getTs().getTime() < endTime)
                     .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
                     .collect(Collectors.toList());
@@ -66,12 +66,8 @@ public class ResultFetcher extends Client {
             return;
         }
 
-        CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
 
-        CipherText sum = votes.getVotes().stream()
-                .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
-                .map(VoteDTO::getCipherText)
-                .reduce(acc, ElGamal::homomorphicAddition);
+        CipherText sum = SecurityUtils.concurrentVoteSum(votes.getVotes(), publicKey, 1000);
         BigInteger d = sum.getD();
 
 
@@ -102,7 +98,7 @@ public class ResultFetcher extends Client {
             BigInteger cs = SecurityUtils.combinePartials(partials, publicKey.getP());
             result = ElGamal.homomorphicDecryptionFromPartials(d, cs, publicKey.getG(), publicKey.getP(), actualVotes.size());
         } catch (UnableToDecryptException e) {
-            logger.error("Failed to decrypt from partial decryptions. Unable to server result", e);
+            logger.error("Failed to decrypt from partial decryptions.", e);
             System.exit(-1);
         }
 
