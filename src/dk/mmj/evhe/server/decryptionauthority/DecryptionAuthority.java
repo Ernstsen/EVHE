@@ -98,6 +98,14 @@ public class DecryptionAuthority extends AbstractServer {
         PartialSecretKey key = state.get(SECRET_KEY, PartialSecretKey.class);
         PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
         Long endTime = state.get(END_TIME, Long.class);
+        Long bulletinBoardTime = new Long(bulletinBoard.path("getCurrentTime").request().get(String.class));
+        long remainingTime = endTime - bulletinBoardTime;
+
+        if (remainingTime > 0) {
+            logger.info("Attempted to collect votes from BB, but voting not finished. Retrying in " + (remainingTime / 1000) + "s");
+            scheduler.schedule(this::terminateVoting, remainingTime, TimeUnit.MILLISECONDS);
+            return;
+        }
 
         logger.info("Terminating voting - Fetching votes");
         ArrayList<PersistedVote> votes = getVotes();

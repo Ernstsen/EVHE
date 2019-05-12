@@ -9,10 +9,7 @@ import org.apache.logging.log4j.Logger;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static dk.mmj.evhe.server.bulletinboard.BulletinBoard.*;
 
@@ -135,5 +132,12 @@ public class BulletinBoardResource {
         }
 
         return new VoteList(list);
+    }
+
+    @GET
+    @Path("getCurrentTime")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getCurrentTime() {
+        return Long.toString(new Date().getTime());
     }
 }
