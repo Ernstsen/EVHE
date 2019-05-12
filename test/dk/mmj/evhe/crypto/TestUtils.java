@@ -55,7 +55,7 @@ class TestUtils {
             ids.add("ID" + i);
         }
 
-        List<List<String>> partitions = Lists.partition(ids, 50);
+        List<List<String>> partitions = Lists.partition(ids, amount / 20);
 
         ConcurrentLinkedQueue<PersistedVote> res = new ConcurrentLinkedQueue<>();
 
