@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "Starting public server"
+echo "Starting Decryption Authority"
 if [[ $1 =~ ^-?[0-9]+$ ]]
 then
     ./bin/run.sh --authority --conf=initFiles/"$1" --port=808"$1"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-echo "Starting key server"
+echo "Starting Bulletin Board"
 
 ./bin/run.sh --bulletinBoard "$@"
