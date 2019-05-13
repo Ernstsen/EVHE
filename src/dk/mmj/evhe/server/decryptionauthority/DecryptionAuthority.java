@@ -81,7 +81,7 @@ public class DecryptionAuthority extends AbstractServer {
             long endTime = Long.parseLong(endTimeString);
             long relativeEndTime = endTime - new Date().getTime();
 
-            if (configuration.timeCorrupt > 0) {
+            if (timeCorrupt) {
                 relativeEndTime -= configuration.timeCorrupt; //30 sec.
             }
 
