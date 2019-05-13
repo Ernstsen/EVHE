@@ -14,13 +14,13 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
     private static final String BULLETIN_BOARD_1 = "bb=";
     private static final String BULLETIN_BOARD_2 = "bulletinBoard=";
     private static final String CONF = "conf=";
-    private static final String CORRUPT = "corrupt=";
+    private static final String CORRUPT = "timeCorrupt=";
 
     //State
     private Integer port;
     private String bulletinBoard = "https://localhost:8080";
     private String confPath = "";
-    private String corrupt = "";
+    private Integer timeCorrupt = 0;
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
@@ -36,7 +36,7 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
         } else if (cmd.startsWith(CONF)) {
             confPath = cmd.substring(CONF.length());
         } else if (cmd.startsWith(CORRUPT)) {
-            corrupt = cmd.substring(CORRUPT.length());
+            timeCorrupt = Integer.parseInt(cmd.substring(CORRUPT.length()));
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -44,7 +44,7 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
 
     @Override
     public Configuration build() {
-        return new DecryptionAuthority.KeyServerConfiguration(port, bulletinBoard, confPath, corrupt);
+        return new DecryptionAuthority.KeyServerConfiguration(port, bulletinBoard, confPath, timeCorrupt);
     }
 
     @Override
@@ -54,6 +54,6 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
                 "\t  --" + PORT + "int\t\tSpecifies port to be used. Standard=8081\n" +
                 "\t  --" + BULLETIN_BOARD_2 + "/" + BULLETIN_BOARD_1 + "ip:port location bulletin board to be used\n" +
                 "\t  --" + CONF + "Path\t\tRelative path to config file.\n" +
-                "\t  --" + CORRUPT + "String\t\tMakes the DA corrupt, either with tag 'time' or 'proof'.";
+                "\t  --" + CORRUPT + "int\t\tInteger specifying with what offset a timeCorrupt DA tries to decrypt with.";
     }
 }

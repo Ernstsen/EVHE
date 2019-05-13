@@ -83,7 +83,7 @@ public class BulletinBoardResource {
         String voterId = vote.getId();
 
 
-        if (hasVoted.contains(voterId)) {//TODO: Incompatible with BB?
+        if (hasVoted.contains(voterId)) {
             logger.warn("Voter with id=" + voterId + " attempted to vote more than once");
             throw new NotAllowedException("A vote has already been registered with this ID");
         }

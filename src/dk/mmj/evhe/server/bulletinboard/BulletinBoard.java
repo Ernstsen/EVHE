@@ -22,8 +22,6 @@ public class BulletinBoard extends AbstractServer {
 
     public BulletinBoard(BulletinBoardConfiguration configuration) {
         this.configuration = configuration;
-
-        ServerState state = ServerState.getInstance();
     }
 
     @Override
