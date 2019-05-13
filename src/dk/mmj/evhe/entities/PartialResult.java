@@ -9,17 +9,17 @@ public class PartialResult {
     private Integer id;
     private BigInteger result;
     private DLogProofUtils.Proof proof;
-    private CipherText c;
+    private CipherText cipherText;
     private int votes;
 
     public PartialResult() {
     }
 
-    public PartialResult(Integer id, BigInteger result, DLogProofUtils.Proof proof, CipherText c, int votes) {
+    public PartialResult(Integer id, BigInteger result, DLogProofUtils.Proof proof, CipherText cipherText, int votes) {
         this.id = id;
         this.result = result;
         this.proof = proof;
-        this.c = c;
+        this.cipherText = cipherText;
         this.votes = votes;
     }
 
@@ -47,12 +47,12 @@ public class PartialResult {
         this.proof = proof;
     }
 
-    public CipherText getC() {
-        return c;
+    public CipherText getCipherText() {
+        return cipherText;
     }
 
-    public void setC(CipherText c) {
-        this.c = c;
+    public void setCipherText(CipherText cipherText) {
+        this.cipherText = cipherText;
     }
 
     public int getVotes() {

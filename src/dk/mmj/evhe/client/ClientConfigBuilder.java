@@ -17,6 +17,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private static final String VOTE = "vote=";
     private static final String MULTI = "multi=";
     private static final String READ = "read=";
+    private static final String FORCE_CALCULATIONS = "forceCalculations=";
 
     //State
     private String targetUrl = "https://localhost:8080";
@@ -24,6 +25,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     private Boolean vote = null;
     private Integer multi = null;
     private boolean read = false;
+    private boolean forceCalculations = false;
 
     /**
      * Sets the local variables by translating the input from the command line.
@@ -44,6 +46,8 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
             multi = Integer.parseInt(cmd.substring(MULTI.length()));
         } else if (cmd.startsWith(READ)) {
             read = Boolean.parseBoolean(cmd.substring(READ.length()));
+        } else if (cmd.startsWith(FORCE_CALCULATIONS)) {
+            forceCalculations = Boolean.parseBoolean(cmd.substring(FORCE_CALCULATIONS.length()));
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -57,7 +61,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
     @Override
     public Configuration build() {
         if (read) {
-            return new ResultFetcher.ResultFetcherConfiguration(targetUrl);
+            return new ResultFetcher.ResultFetcherConfiguration(targetUrl, forceCalculations);
         } else {
             return new Voter.VoterConfiguration(targetUrl, id, vote, multi);
         }
@@ -75,6 +79,7 @@ public class ClientConfigBuilder implements CommandLineParser.ConfigBuilder {
                 "\t  --" + VOTE + "{true,false}\t the vote to be cast. If not supplied program will prompt for it\n" +
                 "\t  --" + MULTI + "int\t\t How many random votes should be cast. If set, id and vote is ignored as it is test.\n" +
                 "\t  --" + READ + "boolean\t Default=false. If true, all params except " + TARGET_URL.substring(0, TARGET_URL.length() - 1) +
-                "are ignored. Fetches poll results from bulletin board.\n";
+                "are ignored. Fetches poll results from bulletin board.\n" +
+                "\t  --" + FORCE_CALCULATIONS + "boolean\t\t Forces client to calculate sum of votes.\n";
     }
 }
