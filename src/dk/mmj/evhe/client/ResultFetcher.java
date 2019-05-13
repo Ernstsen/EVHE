@@ -12,10 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,9 +20,11 @@ import java.util.stream.Collectors;
  */
 public class ResultFetcher extends Client {
     private static final Logger logger = LogManager.getLogger(ResultFetcher.class);
+    private boolean forceCalculation = false;
 
     public ResultFetcher(ResultFetcherConfiguration configuration) {
         super(configuration);
+        this.forceCalculation = configuration.forceCalculations;
     }
 
     @Override
@@ -49,46 +48,65 @@ public class ResultFetcher extends Client {
             return;
         }
 
-        logger.info("Fetching votes");
-        VoteList votes;
-        List<PersistedVote> actualVotes;
-        try {
-            String getVotes = target.path("getVotes").request().get(String.class);
-            votes = new ObjectMapper().readerFor(VoteList.class).readValue(getVotes);
-            logger.debug("Filtering votes");
-            actualVotes = votes.getVotes().parallelStream()
-                    .filter(v -> v.getTs().getTime() < endTime)
-                    .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            logger.error("Failed to read votes from server", e);
-            System.exit(-1);
-            return;
-        }
-
-
-        CipherText sum = SecurityUtils.concurrentVoteSum(votes.getVotes(), publicKey, 1000);
-        BigInteger d = sum.getD();
-
-
-        Map<Integer, BigInteger> partials = new HashMap<>();
-        logger.info("Combining partials to total result");
         for (Object result : results) {
             if (!(result instanceof PartialResult)) {
                 logger.error("A partial result were not instanceof PartialResult. Was: " + result.getClass() + ". Terminating");
                 System.exit(-1);
             }
-            PartialResult res = (PartialResult) result;
+        }
 
-            CipherText partialDecryption = new CipherText(res.getResult(), d);
+        if (!forceCalculation) { logger.info("Checking if DAs ciphertexts and amount of collected votes match");}
+        PartialResult firstDA = results.get(0);
+        boolean decryptionAuthoritiesAgrees = decryptionAuthoritiesAgrees(results);
+
+        CipherText sum = firstDA.getCipherText();
+        BigInteger d = sum.getD();
+
+        int amountOfVotes = firstDA.getVotes();
+
+        if (forceCalculation || !decryptionAuthoritiesAgrees) {
+            if (!decryptionAuthoritiesAgrees){ logger.info("DAs do not agree on ciphertexts or amount of collected votes");}
+            if (forceCalculation){ logger.info("Forcing local calculations on votes");}
+
+            logger.info("Fetching votes");
+            VoteList votes;
+            List<PersistedVote> actualVotes;
+            try {
+                String getVotes = target.path("getVotes").request().get(String.class);
+                votes = new ObjectMapper().readerFor(VoteList.class).readValue(getVotes);
+                logger.debug("Filtering votes");
+                actualVotes = votes.getVotes().parallelStream()
+                        .filter(v -> v.getTs().getTime() < endTime)
+                        .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                logger.error("Failed to read votes from server", e);
+                System.exit(-1);
+                return;
+            }
+
+            logger.info("Summing votes");
+            sum = SecurityUtils.concurrentVoteSum(votes.getVotes(), publicKey, 1000);
+            d = sum.getD();
+            amountOfVotes = actualVotes.size();
+        } else {
+            logger.info("DAs agree on ciphertexts and amount of collected votes");
+            logger.info("Using ciphertext and amount of collected votes from DA " + firstDA.getId());
+        }
+
+
+        Map<Integer, BigInteger> partials = new HashMap<>();
+        logger.info("Combining partials to total result");
+        for (PartialResult result : results) {
+            CipherText partialDecryption = new CipherText(result.getResult(), d);
             PublicKey partialPublicKey = new PublicKey(
-                    publicInformationEntity.getPublicKeys().get(res.getId()),
+                    publicInformationEntity.getPublicKeys().get(result.getId()),
                     publicInformationEntity.getG(),
                     publicInformationEntity.getQ());
-            boolean validProof = DLogProofUtils.verifyProof(sum, partialDecryption, partialPublicKey, res.getProof(), res.getId());
+            boolean validProof = DLogProofUtils.verifyProof(sum, partialDecryption, partialPublicKey, result.getProof(), result.getId());
 
             if (validProof) {
-                partials.put(res.getId(), res.getResult());
+                partials.put(result.getId(), result.getResult());
             }
         }
 
@@ -96,13 +114,13 @@ public class ResultFetcher extends Client {
         try {
             logger.info("Attempting to decrypt from " + partials.size() + " partials");
             BigInteger cs = SecurityUtils.combinePartials(partials, publicKey.getP());
-            result = ElGamal.homomorphicDecryptionFromPartials(d, cs, publicKey.getG(), publicKey.getP(), actualVotes.size());
+            result = ElGamal.homomorphicDecryptionFromPartials(d, cs, publicKey.getG(), publicKey.getP(), amountOfVotes);
         } catch (UnableToDecryptException e) {
             logger.error("Failed to decrypt from partial decryptions.", e);
             System.exit(-1);
         }
 
-        logger.info("Result: " + result + "/" + actualVotes.size());
+        logger.info("Result: " + result + "/" + amountOfVotes);
     }
 
     /**
@@ -111,9 +129,25 @@ public class ResultFetcher extends Client {
      * Created in the {@link ClientConfigBuilder}.
      */
     public static class ResultFetcherConfiguration extends ClientConfiguration {
+        private boolean forceCalculations;
 
-        ResultFetcherConfiguration(String targetUrl) {
+        ResultFetcherConfiguration(String targetUrl, boolean forceCalculations) {
             super(targetUrl);
+            this.forceCalculations = forceCalculations;
         }
+    }
+
+    private boolean decryptionAuthoritiesAgrees(List<PartialResult> results) {
+        List<CipherText> cipherTexts = results.stream().map(PartialResult::getCipherText).collect(Collectors.toList());
+
+        List<BigInteger> cList = cipherTexts.stream().map(CipherText::getC).collect(Collectors.toList());
+        List<BigInteger> dList = cipherTexts.stream().map(CipherText::getD).collect(Collectors.toList());
+        List<Integer> voteCounts = results.stream().map(PartialResult::getVotes).collect(Collectors.toList());
+
+        boolean cEqual = cList.isEmpty() || cList.stream().allMatch(cList.get(0)::equals);
+        boolean dEqual = dList.isEmpty() || dList.stream().allMatch(dList.get(0)::equals);
+        boolean voteCountsEqual = voteCounts.isEmpty() || voteCounts.stream().allMatch(voteCounts.get(0)::equals);
+
+        return cEqual && dEqual && voteCountsEqual;
     }
 }

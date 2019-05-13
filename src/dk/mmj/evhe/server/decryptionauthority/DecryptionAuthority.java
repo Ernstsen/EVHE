@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class DecryptionAuthority extends AbstractServer {
-    private static final Logger logger = LogManager.getLogger(DecryptionAuthority.class);
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private static final Logger logger = LogManager.getLogger(DecryptionAuthority.class);
     private JerseyWebTarget bulletinBoard;
     private boolean timeCorrupt = false;
     private PartialSecretKey sk;
@@ -45,7 +45,7 @@ public class DecryptionAuthority extends AbstractServer {
             port = configuration.port;
         }
 
-        if (configuration.corrupt.equals("time")) {
+        if (configuration.timeCorrupt > 0) {
             timeCorrupt = true;
         }
 
@@ -79,7 +79,7 @@ public class DecryptionAuthority extends AbstractServer {
             long relativeEndTime = endTime - new Date().getTime();
 
             if (timeCorrupt) {
-                relativeEndTime -= 30000; //30 sec.
+                relativeEndTime -= configuration.timeCorrupt; //30 sec.
             }
 
             scheduler.schedule(this::terminateVoting, relativeEndTime, TimeUnit.MILLISECONDS);
@@ -186,13 +186,13 @@ public class DecryptionAuthority extends AbstractServer {
         private final Integer port;
         private String bulletinBoard;
         private String confPath;
-        private String corrupt;
+        private int timeCorrupt;
 
-        DecryptionAuthorityConfiguration(Integer port, String bulletinBoard, String confPath, String corrupt) {
+        DecryptionAuthorityConfiguration(Integer port, String bulletinBoard, String confPath, int timeCorrupt) {
             this.port = port;
             this.bulletinBoard = bulletinBoard;
             this.confPath = confPath;
-            this.corrupt = corrupt;
+            this.timeCorrupt = timeCorrupt;
         }
     }
 }
