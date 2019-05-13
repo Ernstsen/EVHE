@@ -14,11 +14,13 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
     private static final String BULLETIN_BOARD_1 = "bb=";
     private static final String BULLETIN_BOARD_2 = "bulletinBoard=";
     private static final String CONF = "conf=";
+    private static final String CORRUPT = "corrupt=";
 
     //State
     private Integer port;
     private String bulletinBoard = "https://localhost:8080";
     private String confPath = "";
+    private String corrupt = "";
 
     @Override
     public void applyCommand(CommandLineParser.Command command) {
@@ -33,6 +35,8 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
             bulletinBoard = cmd.substring(BULLETIN_BOARD_2.length());
         } else if (cmd.startsWith(CONF)) {
             confPath = cmd.substring(CONF.length());
+        } else if (cmd.startsWith(CORRUPT)) {
+            corrupt = cmd.substring(CORRUPT.length());
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
@@ -40,7 +44,7 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
 
     @Override
     public Configuration build() {
-        return new DecryptionAuthority.KeyServerConfiguration(port, bulletinBoard, confPath);
+        return new DecryptionAuthority.KeyServerConfiguration(port, bulletinBoard, confPath, corrupt);
     }
 
     @Override
@@ -49,6 +53,7 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
                 "\tMODE: " + SELF.substring(2) + "\n" +
                 "\t  --" + PORT + "int\t\tSpecifies port to be used. Standard=8081\n" +
                 "\t  --" + BULLETIN_BOARD_2 + "/" + BULLETIN_BOARD_1 + "ip:port location bulletin board to be used\n" +
-                "\t  --" + CONF + "Path\t\tRelative path to config file.\n";
+                "\t  --" + CONF + "Path\t\tRelative path to config file.\n" +
+                "\t  --" + CORRUPT + "String\t\tMakes the DA corrupt, either with tag 'time' or 'proof'.";
     }
 }

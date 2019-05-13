@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class DecryptionAuthority extends AbstractServer {
-    static final String SERVER = "server";
+    private static final String SERVER = "server";
     private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static final String SECRET_KEY = "secretKey";
     private static final String PUBLIC_KEY = "publicKey";
@@ -41,10 +41,15 @@ public class DecryptionAuthority extends AbstractServer {
     private JerseyWebTarget bulletinBoard;
     private Integer id;
     private int port = 8081;
+    private boolean timeCorrupt = false;
 
     public DecryptionAuthority(KeyServerConfiguration configuration) {
         if (configuration.port != null) {
             port = configuration.port;
+        }
+
+        if (configuration.corrupt.equals("time")) {
+            timeCorrupt = true;
         }
 
         List<Class> classes = Arrays.asList(
@@ -76,6 +81,10 @@ public class DecryptionAuthority extends AbstractServer {
             long endTime = Long.parseLong(endTimeString);
             long relativeEndTime = endTime - new Date().getTime();
 
+            if (timeCorrupt) {
+                relativeEndTime -= 30000; //30 sec.
+            }
+
             scheduler.schedule(this::terminateVoting, relativeEndTime, TimeUnit.MILLISECONDS);
 
             state.put(END_TIME, endTime);
@@ -95,14 +104,14 @@ public class DecryptionAuthority extends AbstractServer {
         state.put(SERVER, this);
     }
 
-    void terminateVoting() {
+    private void terminateVoting() {
         PartialSecretKey key = state.get(SECRET_KEY, PartialSecretKey.class);
         PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
         Long endTime = state.get(END_TIME, Long.class);
         Long bulletinBoardTime = new Long(bulletinBoard.path("getCurrentTime").request().get(String.class));
         long remainingTime = endTime - bulletinBoardTime;
 
-        if (remainingTime > 0) {
+        if (!timeCorrupt && remainingTime > 0) {
             logger.info("Attempted to collect votes from BB, but voting not finished. Retrying in " + (remainingTime / 1000) + "s");
             scheduler.schedule(this::terminateVoting, remainingTime, TimeUnit.MILLISECONDS);
             return;
@@ -187,11 +196,13 @@ public class DecryptionAuthority extends AbstractServer {
         private final Integer port;
         private String bulletinBoard;
         private String confPath;
+        private String corrupt;
 
-        KeyServerConfiguration(Integer port, String bulletinBoard, String confPath) {
+        KeyServerConfiguration(Integer port, String bulletinBoard, String confPath, String corrupt) {
             this.port = port;
             this.bulletinBoard = bulletinBoard;
             this.confPath = confPath;
+            this.corrupt = corrupt;
         }
     }
 }
