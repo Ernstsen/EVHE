@@ -97,7 +97,7 @@ public class ElGamal {
      * @param message   message to be encrypted
      * @return encrypted value
      */
-    public static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message) {
+    static CipherText homomorphicEncryption(PublicKey publicKey, BigInteger message) {
         BigInteger r = SecurityUtils.getRandomNumModN(publicKey.getQ());
         return homomorphicEncryption(publicKey, message, r);
     }
@@ -139,7 +139,7 @@ public class ElGamal {
      * @param c2 cipher text of second original plaintext
      * @return cipher text containing sum of two plaintexts
      */
-    public static CipherText homomorphicAddition(CipherText c1, CipherText c2) {
+    static CipherText homomorphicAddition(CipherText c1, CipherText c2) {
         BigInteger c = c1.getC().multiply(c2.getC());
         BigInteger d = c1.getD().multiply(c2.getD());
 
@@ -163,7 +163,6 @@ public class ElGamal {
             if (gPowMessage.equals(g.modPow(BigInteger.valueOf(b), p))) {
                 return b;
             }
-
             b++;
         }
 

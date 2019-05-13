@@ -2,7 +2,6 @@ package dk.mmj.evhe.server.bulletinboard;
 
 
 import dk.eSoftware.commandLineParser.Configuration;
-import dk.mmj.evhe.entities.CipherText;
 import dk.mmj.evhe.entities.PersistedVote;
 import dk.mmj.evhe.server.AbstractServer;
 import dk.mmj.evhe.server.ServerState;

@@ -65,6 +65,11 @@ public class IntegrationTest implements Application {
         retrieveVotes(duration);
     }
 
+    /**
+     * Retrieves votes from bulletin board at later time
+     *
+     * @param timeOffset when to retrieve the votes in minutes
+     */
     private void retrieveVotes(int timeOffset) {
         CommandLineParser parser = new SingletonCommandLineParser(new ClientConfigBuilder());
         Configuration parse;
@@ -145,6 +150,11 @@ public class IntegrationTest implements Application {
         private List<Integer> voteDelays;
         private int duration;
 
+        /**
+         * @param decryptionAuthorities list of ids for all enabled decryption authorities
+         * @param duration              how long the vote should be active(minutes)
+         * @param voteDelays            list of times where votes should be dispatched
+         */
         IntegrationTestConfiguration(List<Integer> decryptionAuthorities, int duration, List<Integer> voteDelays) {
             this.decryptionAuthorities = decryptionAuthorities;
             this.duration = duration;

@@ -36,7 +36,6 @@ public class IntegrationTestConfigBuilder implements CommandLineParser.ConfigBui
     public void applyCommand(CommandLineParser.Command command) {
         String cmd = command.getCommand();
 
-
         if (cmd.startsWith(DURATION)) {
             duration = Integer.parseInt(cmd.substring(DURATION.length()));
         } else if (cmd.equals(VOTE)) {

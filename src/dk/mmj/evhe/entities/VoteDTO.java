@@ -1,7 +1,5 @@
 package dk.mmj.evhe.entities;
 
-import dk.mmj.evhe.entities.CipherText;
-
 import java.math.BigInteger;
 
 /**
@@ -13,7 +11,7 @@ public class VoteDTO {
     private String id;
     private Proof proof;
 
-    public VoteDTO() {
+    VoteDTO() {
     }
 
     public VoteDTO(CipherText cipherText, String id, Proof proof) {

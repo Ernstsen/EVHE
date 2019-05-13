@@ -76,8 +76,6 @@ public class TrustedDealerConfigBuilder implements CommandLineParser.ConfigBuild
         } else if (!cmd.equals(SELF)) {
             logger.warn("Did not recognize command " + command.getCommand());
         }
-
-
     }
 
     public TrustedDealer.TrustedDealerConfiguration build() {

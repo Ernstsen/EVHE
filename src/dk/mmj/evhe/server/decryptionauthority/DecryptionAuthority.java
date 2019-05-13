@@ -19,7 +19,6 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -30,8 +29,8 @@ import java.util.stream.Collectors;
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class DecryptionAuthority extends AbstractServer {
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static final Logger logger = LogManager.getLogger(DecryptionAuthority.class);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private JerseyWebTarget bulletinBoard;
     private boolean timeCorrupt = false;
     private PartialSecretKey sk;
@@ -49,11 +48,7 @@ public class DecryptionAuthority extends AbstractServer {
             timeCorrupt = true;
         }
 
-        List<Class> classes = Arrays.asList(
-                ArrayList.class,
-                PartialResult.class,
-                DLogProofUtils.Proof.class);
-        bulletinBoard = configureWebTarget(logger, configuration.bulletinBoard, classes);
+        bulletinBoard = configureWebTarget(logger, configuration.bulletinBoard);
 
         File conf = new File(configuration.confPath);
         if (!conf.exists() || !conf.isFile()) {

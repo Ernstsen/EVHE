@@ -258,7 +258,6 @@ public class SecurityUtils {
             CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
             return cipherTexts.stream().reduce(acc, ElGamal::homomorphicAddition);
         }
-
     }
 
     private static class VoteSummer implements Runnable {

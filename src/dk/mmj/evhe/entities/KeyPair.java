@@ -5,7 +5,6 @@ import java.math.BigInteger;
 /**
  * "dumb" object for keeping a keypair
  */
-@SuppressWarnings("WeakerAccess")
 public class KeyPair {
     private BigInteger secretKey;
     private PublicKey publicKey;

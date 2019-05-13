@@ -12,7 +12,10 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -20,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class ResultFetcher extends Client {
     private static final Logger logger = LogManager.getLogger(ResultFetcher.class);
-    private boolean forceCalculation = false;
+    private boolean forceCalculation;
 
     public ResultFetcher(ResultFetcherConfiguration configuration) {
         super(configuration);
@@ -43,21 +46,16 @@ public class ResultFetcher extends Client {
         PublicKey publicKey = getPublicKey();
         ResultList resultList = target.path("result").request().get(ResultList.class);
         List<PartialResult> results = resultList.getResults();
-        if (results == null) {
+        if (results == null || results.isEmpty()) {
             logger.info("Did not fetch any results. Probable cause is unfinished decryption. Try again later");
             return;
         }
 
-        for (Object result : results) {
-            if (!(result instanceof PartialResult)) {
-                logger.error("A partial result were not instanceof PartialResult. Was: " + result.getClass() + ". Terminating");
-                System.exit(-1);
-            }
+        if (!forceCalculation) {
+            logger.info("Checking if fetched ciphertexts and amount of collected votes match");
         }
-
-        if (!forceCalculation) { logger.info("Checking if DAs ciphertexts and amount of collected votes match");}
-        PartialResult firstDA = results.get(0);
         boolean decryptionAuthoritiesAgrees = decryptionAuthoritiesAgrees(results);
+        PartialResult firstDA = results.get(0);
 
         CipherText sum = firstDA.getCipherText();
         BigInteger d = sum.getD();
@@ -65,8 +63,12 @@ public class ResultFetcher extends Client {
         int amountOfVotes = firstDA.getVotes();
 
         if (forceCalculation || !decryptionAuthoritiesAgrees) {
-            if (!decryptionAuthoritiesAgrees){ logger.info("DAs do not agree on ciphertexts or amount of collected votes");}
-            if (forceCalculation){ logger.info("Forcing local calculations on votes");}
+            if (!decryptionAuthoritiesAgrees) {
+                logger.info("Fetched partial results differed in ciphertexts or amount of collected votes. Computing own.");
+            }
+            if (forceCalculation) {
+                logger.info("Forcing local calculations on votes");
+            }
 
             logger.info("Fetching votes");
             VoteList votes;
@@ -90,8 +92,8 @@ public class ResultFetcher extends Client {
             d = sum.getD();
             amountOfVotes = actualVotes.size();
         } else {
-            logger.info("DAs agree on ciphertexts and amount of collected votes");
-            logger.info("Using ciphertext and amount of collected votes from DA " + firstDA.getId());
+            logger.info("Fetched ciphertexts and number of votes were equal");
+            logger.info("Using ciphertext and amount of collected votes from DA with id=" + firstDA.getId());
         }
 
 
@@ -123,6 +125,16 @@ public class ResultFetcher extends Client {
         logger.info("Result: " + result + "/" + amountOfVotes);
     }
 
+    private boolean decryptionAuthoritiesAgrees(List<PartialResult> results) {
+        List<CipherText> cipherTexts = results.stream().map(PartialResult::getCipherText).collect(Collectors.toList());
+        List<Integer> voteCounts = results.stream().map(PartialResult::getVotes).collect(Collectors.toList());
+
+        boolean ciphertextEquals = cipherTexts.stream().allMatch(cipherTexts.get(0)::equals);
+        boolean voteCountsEqual = voteCounts.stream().allMatch(voteCounts.get(0)::equals);
+
+        return ciphertextEquals && voteCountsEqual;
+    }
+
     /**
      * The Result fetcher Configuration.
      * <br/>
@@ -131,23 +143,13 @@ public class ResultFetcher extends Client {
     public static class ResultFetcherConfiguration extends ClientConfiguration {
         private boolean forceCalculations;
 
+        /**
+         * @param targetUrl         url for {@link dk.mmj.evhe.server.bulletinboard.BulletinBoard} to get data from
+         * @param forceCalculations whether ciphertext containing sum of votes should be computed locally
+         */
         ResultFetcherConfiguration(String targetUrl, boolean forceCalculations) {
             super(targetUrl);
             this.forceCalculations = forceCalculations;
         }
-    }
-
-    private boolean decryptionAuthoritiesAgrees(List<PartialResult> results) {
-        List<CipherText> cipherTexts = results.stream().map(PartialResult::getCipherText).collect(Collectors.toList());
-
-        List<BigInteger> cList = cipherTexts.stream().map(CipherText::getC).collect(Collectors.toList());
-        List<BigInteger> dList = cipherTexts.stream().map(CipherText::getD).collect(Collectors.toList());
-        List<Integer> voteCounts = results.stream().map(PartialResult::getVotes).collect(Collectors.toList());
-
-        boolean cEqual = cList.isEmpty() || cList.stream().allMatch(cList.get(0)::equals);
-        boolean dEqual = dList.isEmpty() || dList.stream().allMatch(dList.get(0)::equals);
-        boolean voteCountsEqual = voteCounts.isEmpty() || voteCounts.stream().allMatch(voteCounts.get(0)::equals);
-
-        return cEqual && dEqual && voteCountsEqual;
     }
 }

@@ -2,7 +2,7 @@ package dk.mmj.evhe.entities;
 
 import java.math.BigInteger;
 
-@SuppressWarnings({"JavaDocs, unused, WeakerAccess"})
+@SuppressWarnings("JavaDocs, unused")
 public class CipherText {
     private BigInteger c;
     private BigInteger d;

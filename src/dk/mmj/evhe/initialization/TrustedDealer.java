@@ -30,29 +30,26 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.security.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class TrustedDealer implements Application {
     private static final String PRIVATE_KEY_NAME = "rsa.pub";
     private static final String PUBLIC_KEY_NAME = "rsa";
-    private static Logger logger = LogManager.getLogger(TrustedDealer.class);
+    private static final Logger logger = LogManager.getLogger(TrustedDealer.class);
     private JerseyWebTarget bulletinBoard;
     private int polynomialDegree;
     private int servers;
+    private long endTime;
     private Path rootPath;
     private Path keyPath;
-    private long endTime;
 
     public TrustedDealer(TrustedDealerConfiguration config) {
-        bulletinBoard = configureWebTarget(logger, config.bulletinBoardPath, Arrays.asList(
-                PublicInformationEntity.class,
-                Map.class,
-                HashMap.class,
-                List.class,
-                ArrayList.class
-        ));
+        bulletinBoard = configureWebTarget(logger, config.bulletinBoardPath);
         this.polynomialDegree = config.polynomialDegree;
         this.servers = config.servers;
         this.rootPath = config.rootPath;
@@ -86,7 +83,7 @@ public class TrustedDealer implements Application {
 
     @Override
     public void run() {
-        logger.info("Starting Keygeneration");
+        logger.info("Starting key generation");
         KeyGenerationParametersImpl params = new KeyGenerationParametersImpl(1024, 50);
 
         DistKeyGenResult distKeyGenResult = ElGamal.generateDistributedKeys(params, polynomialDegree, servers);
@@ -121,8 +118,6 @@ public class TrustedDealer implements Application {
                         endTime + "\n")
                 .forEach(output::add);
 
-        logger.info("Asserting existence of root dir");
-
         logger.info("Writing files");
         for (int i = 0; i < output.size(); i++) {
             File dest = rootPath.resolve(Integer.toString(i + 1)).toFile();
@@ -137,8 +132,8 @@ public class TrustedDealer implements Application {
                 distKeyGenResult.getP(),
                 endTime);
 
+        logger.info("Signing public information");
         File privateFile = keyPath.resolve(PRIVATE_KEY_NAME).toFile();
-
         try {
             AsymmetricKeyParameter privateKey = loadKey(privateFile);
             RSADigestSigner signer = new RSADigestSigner(new SHA256Digest());

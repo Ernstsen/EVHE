@@ -1,7 +1,5 @@
 package dk.mmj.evhe.crypto.keygeneration;
 
-import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParameters;
-import dk.mmj.evhe.crypto.keygeneration.KeyGenerationParametersImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,7 +41,7 @@ public class TestKeyGenerationsParametersImpl {
     @Test
     public void testGeneratorForPBitLength6() {
         KeyGenerationParameters params = new KeyGenerationParametersImpl(6, 50);
-        List<Integer> possibleGeneratorsForP = null;
+        List<Integer> possibleGeneratorsForP;
 
         if (params.getPrimePair().getP().equals(BigInteger.valueOf(47))) {
             possibleGeneratorsForP = Arrays.asList(5, 10, 11, 13, 15, 19, 20, 22, 23, 26, 29, 30, 31, 33, 35, 38, 39, 40, 41, 43, 44, 45);

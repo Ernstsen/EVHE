@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.eSoftware.commandLineParser.Configuration;
 import dk.mmj.evhe.Application;
 import dk.mmj.evhe.crypto.SecurityUtils;
-import dk.mmj.evhe.entities.*;
+import dk.mmj.evhe.entities.PublicInfoList;
+import dk.mmj.evhe.entities.PublicInformationEntity;
+import dk.mmj.evhe.entities.PublicKey;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,29 +23,21 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
 
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public abstract class Client implements Application {
     private static final String PUBLIC_KEY_NAME = "rsa";
+    private static final Logger logger = LogManager.getLogger(Client.class);
+
     JerseyWebTarget target;
-    private Logger logger = LogManager.getLogger(Client.class);
+
     private PublicInformationEntity publicInfo;
 
     public Client(ClientConfiguration configuration) {
-        List<Class> classes = Arrays.asList(
-                HashMap.class,
-                Map.class,
-                VoteDTO.class,
-                PublicKey.class,
-                CipherText.class,
-                BigInteger.class,
-                VoteDTO.Proof.class,
-                PublicInfoList.class,
-                PublicInformationEntity.class);
-
-        target = configureWebTarget(logger, configuration.targetUrl, classes);
+        target = configureWebTarget(logger, configuration.targetUrl);
     }
 
     /**
@@ -52,7 +46,6 @@ public abstract class Client implements Application {
      * @return the response containing the Public Key.
      */
     protected PublicKey getPublicKey() {
-
         PublicInformationEntity info = fetchPublicInfo();
 
         BigInteger h = SecurityUtils.combinePartials(info.getPublicKeys(), info.getP());
@@ -93,7 +86,7 @@ public abstract class Client implements Application {
     private boolean verifyPublicInformation(PublicInformationEntity info) {
         File keyFile = Paths.get("rsa").resolve(PUBLIC_KEY_NAME).toFile();
         if (!keyFile.exists()) {
-            logger.error("Unable to locate RSA public key from TD");
+            logger.error("Unable to locate RSA public key from Trusted Dealer");
             return false;
         }
 
@@ -103,19 +96,19 @@ public abstract class Client implements Application {
             byte[] actualBytes = Arrays.copyOfRange(bytes, 0, len);
 
             AsymmetricKeyParameter key = PublicKeyFactory.createKey(Base64.decode(actualBytes));
-            RSADigestSigner dig = new RSADigestSigner(new SHA256Digest());
-            dig.init(false, key);
-            info.updateSigner(dig);
-
+            RSADigestSigner digest = new RSADigestSigner(new SHA256Digest());
+            digest.init(false, key);
+            info.updateSigner(digest);
             byte[] encodedSignature = info.getSignature().getBytes();
-            return dig.verifySignature(Base64.decode(encodedSignature));
+
+            return digest.verifySignature(Base64.decode(encodedSignature));
         } catch (IOException e) {
             logger.error("Failed to verify signature", e);
             return false;
         }
     }
 
-    public static class ClientConfiguration implements Configuration {
+    static class ClientConfiguration implements Configuration {
         private final String targetUrl;
 
         ClientConfiguration(String targetUrl) {

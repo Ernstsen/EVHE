@@ -79,7 +79,6 @@ public class Voter extends Client {
 
             doVote(vote, publicKey);
         }
-
         System.out.println("Dispatched " + multi + " votes with " + trueVotes + " for, and " + falseVotes + " against");
     }
 
@@ -170,6 +169,12 @@ public class Voter extends Client {
         private final Boolean vote;
         private final Integer multi;
 
+        /**
+         * @param targetUrl url for bulletin board to post vote(s) to
+         * @param id        voter id
+         * @param vote      what to vote. True is pro while False is against
+         * @param multi     if different from null, multiple random votes are dispatched
+         */
         VoterConfiguration(String targetUrl, String id, Boolean vote, Integer multi) {
             super(targetUrl);
             this.id = id;

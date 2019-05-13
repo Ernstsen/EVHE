@@ -4,6 +4,9 @@ import dk.mmj.evhe.entities.PrimePair;
 
 import java.math.BigInteger;
 
+/**
+ * Parameters used in El-Gamal key generation
+ */
 public interface KeyGenerationParameters {
 
     /**

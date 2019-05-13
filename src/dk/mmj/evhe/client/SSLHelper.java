@@ -14,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.List;
 
 
 public class SSLHelper {
@@ -31,7 +30,7 @@ public class SSLHelper {
      * @throws CertificateException     when one or more of the certificates in the keystore could not be loaded
      * @throws KeyManagementException   when ssl initialization fails
      */
-    public static SSLContext initializeSSL() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, KeyManagementException {
+    private static SSLContext initializeSSL() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, KeyManagementException {
         // Needed for localhost testing.
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
 
@@ -63,13 +62,11 @@ public class SSLHelper {
      * Sets up {@link javax.ws.rs.client.WebTarget} using SSL
      *
      * @param logger    logger used for reporting potential errors
-     * @param targetUrl baseUrl for the webTarget
-     * @param classes   list of classes to be registered
+     * @param targetUrl aseUrl for the webTarget
+     * @return {@link JerseyWebTarget} for accessing server at targetUrl
      */
-    public static JerseyWebTarget configureWebTarget(Logger logger, String targetUrl, List<Class> classes) {
+    public static JerseyWebTarget configureWebTarget(Logger logger, String targetUrl) {
         ClientConfig clientConfig = new ClientConfig();
-
-        classes.forEach(clientConfig::register);
 
         try {
             SSLContext ssl = SSLHelper.initializeSSL();
@@ -93,5 +90,4 @@ public class SSLHelper {
         }
         return null;
     }
-
 }

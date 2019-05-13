@@ -90,7 +90,6 @@ public abstract class AbstractServer implements Application {
         sslConnector.setPort(port);
 
         jettyServer.setConnectors(new Connector[]{sslConnector});
-
         jettyServer.setHandler(context);
 
         configure(jerseyServlet);
