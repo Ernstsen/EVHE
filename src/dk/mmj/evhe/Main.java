@@ -1,14 +1,13 @@
 package dk.mmj.evhe;
 
-import dk.eSoftware.commandLineParser.CommandLineParser;
-import dk.eSoftware.commandLineParser.Configuration;
-import dk.eSoftware.commandLineParser.NoSuchBuilderException;
-import dk.eSoftware.commandLineParser.WrongFormatException;
+import dk.eSoftware.commandLineParser.*;
 import dk.mmj.evhe.client.ClientConfigBuilder;
 import dk.mmj.evhe.client.ResultFetcher;
 import dk.mmj.evhe.client.Voter;
 import dk.mmj.evhe.initialization.TrustedDealer;
 import dk.mmj.evhe.initialization.TrustedDealerConfigBuilder;
+import dk.mmj.evhe.integrationTest.IntegrationTest;
+import dk.mmj.evhe.integrationTest.IntegrationTestConfigBuilder;
 import dk.mmj.evhe.server.bulletinboard.BulletinBoard;
 import dk.mmj.evhe.server.bulletinboard.BulletinBoardConfigBuilder;
 import dk.mmj.evhe.server.decryptionauthority.DecryptionAuthority;
@@ -58,12 +57,14 @@ public class Main {
             return new Voter((Voter.VoterConfiguration) parse);
         } else if (parse instanceof ResultFetcher.ResultFetcherConfiguration) {
             return new ResultFetcher((ResultFetcher.ResultFetcherConfiguration) parse);
-        } else if (parse instanceof DecryptionAuthority.KeyServerConfiguration) {
-            return new DecryptionAuthority((DecryptionAuthority.KeyServerConfiguration) parse);
+        } else if (parse instanceof DecryptionAuthority.DecryptionAuthorityConfiguration) {
+            return new DecryptionAuthority((DecryptionAuthority.DecryptionAuthorityConfiguration) parse);
         } else if (parse instanceof BulletinBoard.BulletinBoardConfiguration) {
             return new BulletinBoard((BulletinBoard.BulletinBoardConfiguration) parse);
         } else if (parse instanceof TrustedDealer.TrustedDealerConfiguration) {
             return new TrustedDealer((TrustedDealer.TrustedDealerConfiguration) parse);
+        } else if (parse instanceof IntegrationTest.IntegrationTestConfiguration) {
+            return new IntegrationTest((IntegrationTest.IntegrationTestConfiguration) parse);
         } else {
             System.out.println("" +
                     "====================\n" +
@@ -82,6 +83,7 @@ public class Main {
         mapping.put("--authority", new DecryptionAuthorityConfigBuilder());
         mapping.put("--bulletinBoard", new BulletinBoardConfigBuilder());
         mapping.put("--dealer", new TrustedDealerConfigBuilder());
-        return new CommandLineParser(mapping);
+        mapping.put("--integrationTest", new IntegrationTestConfigBuilder());
+        return new MultiParser(mapping);
     }
 }

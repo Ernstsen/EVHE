@@ -8,7 +8,6 @@ import dk.mmj.evhe.crypto.SecurityUtils;
 import dk.mmj.evhe.crypto.zeroknowledge.DLogProofUtils;
 import dk.mmj.evhe.entities.*;
 import dk.mmj.evhe.server.AbstractServer;
-import dk.mmj.evhe.server.ServerState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -31,19 +30,17 @@ import java.util.stream.Collectors;
 import static dk.mmj.evhe.client.SSLHelper.configureWebTarget;
 
 public class DecryptionAuthority extends AbstractServer {
-    private static final String SERVER = "server";
-    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private static final String SECRET_KEY = "secretKey";
-    private static final String PUBLIC_KEY = "publicKey";
-    private static final String END_TIME = "terminationTime";
     private static final Logger logger = LogManager.getLogger(DecryptionAuthority.class);
-    private final ServerState state = ServerState.getInstance();
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private JerseyWebTarget bulletinBoard;
-    private Integer id;
-    private int port = 8081;
     private boolean timeCorrupt = false;
+    private PartialSecretKey sk;
+    private int port = 8081;
+    private long endTime;
+    private PublicKey pk;
+    private Integer id;
 
-    public DecryptionAuthority(KeyServerConfiguration configuration) {
+    public DecryptionAuthority(DecryptionAuthorityConfiguration configuration) {
         if (configuration.port != null) {
             port = configuration.port;
         }
@@ -74,11 +71,11 @@ public class DecryptionAuthority extends AbstractServer {
             String publicKeyString = reader.readLine();
             String endTimeString = reader.readLine();
 
-            PublicKey pk = new ObjectMapper().readerFor(PublicKey.class).readValue(publicKeyString);
+            pk = new ObjectMapper().readerFor(PublicKey.class).readValue(publicKeyString);
 
 
-            PartialSecretKey sk = new PartialSecretKey(secretValue, p);
-            long endTime = Long.parseLong(endTimeString);
+            sk = new PartialSecretKey(secretValue, p);
+            endTime = Long.parseLong(endTimeString);
             long relativeEndTime = endTime - new Date().getTime();
 
             if (timeCorrupt) {
@@ -87,9 +84,6 @@ public class DecryptionAuthority extends AbstractServer {
 
             scheduler.schedule(this::terminateVoting, relativeEndTime, TimeUnit.MILLISECONDS);
 
-            state.put(END_TIME, endTime);
-            state.put(PUBLIC_KEY, pk);
-            state.put(SECRET_KEY, sk);
         } catch (JsonProcessingException e) {
             logger.error("Unable to deserialize public key. Terminating", e);
             System.exit(-1);
@@ -100,14 +94,9 @@ public class DecryptionAuthority extends AbstractServer {
             logger.error("Unable to read configuration file. Terminating", e);
             System.exit(-1);
         }
-
-        state.put(SERVER, this);
     }
 
     private void terminateVoting() {
-        PartialSecretKey key = state.get(SECRET_KEY, PartialSecretKey.class);
-        PublicKey publicKey = state.get(PUBLIC_KEY, PublicKey.class);
-        Long endTime = state.get(END_TIME, Long.class);
         Long bulletinBoardTime = new Long(bulletinBoard.path("getCurrentTime").request().get(String.class));
         long remainingTime = endTime - bulletinBoardTime;
 
@@ -130,18 +119,18 @@ public class DecryptionAuthority extends AbstractServer {
         List<PersistedVote> filteredVotes = votes.parallelStream().filter(v -> v.getTs().getTime() < endTime).collect(Collectors.toList());
         CipherText sum = SecurityUtils.concurrentVoteSum(
                 filteredVotes,
-                publicKey,
+                pk,
                 1000);
 
         logger.info("Beginning partial decryption");
 
 
-        BigInteger result = ElGamal.partialDecryption(sum.getC(), key.getSecretValue(), key.getP());
+        BigInteger result = ElGamal.partialDecryption(sum.getC(), sk.getSecretValue(), sk.getP());
 
         logger.info("Partially decrypted value. Generating proof");
 
-        PublicKey partialPublicKey = new PublicKey(publicKey.getG().modPow(key.getSecretValue(), key.getP()), publicKey.getG(), publicKey.getQ());
-        DLogProofUtils.Proof proof = DLogProofUtils.generateProof(sum, key.getSecretValue(), partialPublicKey, id);
+        PublicKey partialPublicKey = new PublicKey(pk.getG().modPow(sk.getSecretValue(), sk.getP()), pk.getG(), pk.getQ());
+        DLogProofUtils.Proof proof = DLogProofUtils.generateProof(sum, sk.getSecretValue(), partialPublicKey, id);
 
         logger.info("Posting to bulletin board");
 
@@ -193,13 +182,13 @@ public class DecryptionAuthority extends AbstractServer {
     /**
      * Configuration for a DecryptionAuthority
      */
-    public static class KeyServerConfiguration implements Configuration {
+    public static class DecryptionAuthorityConfiguration implements Configuration {
         private final Integer port;
         private String bulletinBoard;
         private String confPath;
         private String corrupt;
 
-        KeyServerConfiguration(Integer port, String bulletinBoard, String confPath, String corrupt) {
+        DecryptionAuthorityConfiguration(Integer port, String bulletinBoard, String confPath, String corrupt) {
             this.port = port;
             this.bulletinBoard = bulletinBoard;
             this.confPath = confPath;

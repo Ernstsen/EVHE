@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Class-Path: snakeyaml-1.15.jar jboss-jms-api_1.1_spec-1.0.1.Final.jar 
- jeromq-0.3.5.jar commandLineParser-1.1.1.jar activation-1.1.jar javax
+ jeromq-0.3.5.jar commandLineParser-1.2.2.jar activation-1.1.jar javax
  .servlet-api-4.0.1.jar javax.annotation-api-1.2.jar javax.inject-1.ja
  r javax.inject-2.5.0-b62.jar javax.json-1.0.4.jar javax.ws.rs-api-2.0
  .1.jar istack-commons-runtime-3.0.5.jar osgi-resource-locator-1.0.1.j

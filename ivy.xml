@@ -31,6 +31,6 @@
         <dependency org="org.bouncycastle" name="bcprov-jdk15on" rev="1.60"/>
 
         <!-- CommandLineTool -->
-        <dependency org="dk.eSoftware" name="commandLineParser" rev="1.1.1"/>
+        <dependency org="dk.eSoftware" name="commandLineParser" rev="1.2.2"/>
     </dependencies>
 </ivy-module>

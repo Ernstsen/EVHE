@@ -44,7 +44,7 @@ public class DecryptionAuthorityConfigBuilder implements CommandLineParser.Confi
 
     @Override
     public Configuration build() {
-        return new DecryptionAuthority.KeyServerConfiguration(port, bulletinBoard, confPath, corrupt);
+        return new DecryptionAuthority.DecryptionAuthorityConfiguration(port, bulletinBoard, confPath, corrupt);
     }
 
     @Override
