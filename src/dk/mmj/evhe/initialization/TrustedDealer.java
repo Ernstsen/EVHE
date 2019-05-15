@@ -162,6 +162,7 @@ public class TrustedDealer implements Application {
             logger.error("Unable to read privateKey from file. Terminating", e);
             System.exit(-1);
         }
+
         return null;
     }
 

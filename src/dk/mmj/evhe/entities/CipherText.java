@@ -39,6 +39,7 @@ public class CipherText {
         if (o instanceof CipherText) {
             return d.equals(((CipherText) o).d) && c.equals(((CipherText) o).c);
         }
+
         return super.equals(o);
     }
 }

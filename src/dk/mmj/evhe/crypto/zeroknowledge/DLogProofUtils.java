@@ -22,6 +22,7 @@ public class DLogProofUtils {
      */
     public static Proof generateProof(CipherText cipherText, BigInteger secretValue, PublicKey publicKey, int id) {
         BigInteger y = getRandomNumModN(publicKey.getQ());
+
         return generateProof(cipherText, secretValue, publicKey, y, id);
     }
 
@@ -51,6 +52,7 @@ public class DLogProofUtils {
                         BigInteger.valueOf(id).toByteArray()
                 })).mod(q);
         BigInteger z = y.add(secretValue.multiply(e)).mod(q);
+
         return new Proof(e, z);
     }
 

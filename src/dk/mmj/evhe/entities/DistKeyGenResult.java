@@ -17,7 +17,8 @@ public class DistKeyGenResult {
      * Unused object mapper constructor
      */
     @SuppressWarnings("unused")
-    private DistKeyGenResult() {}
+    private DistKeyGenResult() {
+    }
 
     public DistKeyGenResult(BigInteger g, BigInteger q, Map<Integer, BigInteger> secretValues, Map<Integer, BigInteger> publicValues) {
         this.g = g;

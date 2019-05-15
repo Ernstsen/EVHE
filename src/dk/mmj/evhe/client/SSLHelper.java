@@ -41,6 +41,7 @@ public class SSLHelper {
 
         SSLContext ssl = SSLContext.getInstance("SSL");
         ssl.init(null, tmf.getTrustManagers(), new SecureRandom());
+
         return ssl;
     }
 
@@ -55,6 +56,7 @@ public class SSLHelper {
         sslContextFactory.setKeyStorePassword(CERTIFICATE_PASSWORD);
         sslContextFactory.setKeyManagerPassword(CERTIFICATE_PASSWORD);
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
+
         return sslContextFactory;
     }
 
@@ -88,6 +90,7 @@ public class SSLHelper {
             logger.error("Error Initializing the Certificate: ", e);
             System.exit(-1);
         }
+
         return null;
     }
 }

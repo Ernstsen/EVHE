@@ -111,6 +111,7 @@ public class IntegrationTest implements Application {
         } catch (NoSuchBuilderException | WrongFormatException e) {
             throw new RuntimeException("Failed parsing bulletin board conf", e);
         }
+
         new Thread(new BulletinBoard((BulletinBoard.BulletinBoardConfiguration) conf)).start();
     }
 
@@ -142,6 +143,7 @@ public class IntegrationTest implements Application {
         } catch (NoSuchBuilderException | WrongFormatException e) {
             throw new RuntimeException("Failed parsing decryption authority conf.", e);
         }
+
         new Thread(new DecryptionAuthority((DecryptionAuthority.DecryptionAuthorityConfiguration) conf)).start();
     }
 

@@ -67,10 +67,12 @@ public class BulletinBoardResource {
     @SuppressWarnings("unchecked")
     public PublicInfoList getPublicInfos() {
         List<PublicInformationEntity> list = state.get(PUBLIC_INFO, List.class);
+
         if (list == null) {
             logger.warn("Attempt to fetch public infos before they were created");
             throw new NotFoundException();
         }
+
         return new PublicInfoList(list);
     }
 
@@ -114,10 +116,12 @@ public class BulletinBoardResource {
     @SuppressWarnings("unchecked")
     private void addToList(String key, Object element) {
         List list = state.get(key, List.class);
+
         if (list == null) {
             list = new ArrayList();
             state.put(key, list);
         }
+
         list.add(element);
     }
 
@@ -127,6 +131,7 @@ public class BulletinBoardResource {
     @Produces(MediaType.APPLICATION_JSON)
     public VoteList getVotes() {
         List<PersistedVote> list = state.get(VOTES, List.class);
+
         if (list == null) {
             throw new NotFoundException("Voting has not been initialized");
         }

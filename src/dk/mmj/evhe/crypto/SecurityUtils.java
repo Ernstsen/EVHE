@@ -49,6 +49,7 @@ public class SecurityUtils {
 
         byte[] hash = new byte[sha256Digest.getDigestSize()];
         sha256Digest.doFinal(hash, 0);
+
         return hash;
     }
 
@@ -80,6 +81,7 @@ public class SecurityUtils {
         for (int i = 0; i <= degree; i++) {
             polynomial[i] = getRandomNumModN(q);
         }
+
         return polynomial;
     }
 
@@ -193,6 +195,7 @@ public class SecurityUtils {
      */
     static CipherText voteSum(List<? extends VoteDTO> votes, PublicKey publicKey) {
         CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
+
         return votes.stream()
                 .filter(v -> VoteProofUtils.verifyProof(v, publicKey))
                 .map(VoteDTO::getCipherText)
@@ -256,6 +259,7 @@ public class SecurityUtils {
 
         } else {
             CipherText acc = new CipherText(BigInteger.ONE, BigInteger.ONE);
+
             return cipherTexts.stream().reduce(acc, ElGamal::homomorphicAddition);
         }
     }

@@ -145,8 +145,8 @@ public class DecryptionAuthority extends AbstractServer {
         try {
             String getVotes = bulletinBoard.path("getVotes").request().get(String.class);
             VoteList voteObjects = new ObjectMapper().readerFor(VoteList.class).readValue(getVotes);
-
             ArrayList<PersistedVote> votes = new ArrayList<>();
+
             for (Object vote : voteObjects.getVotes()) {
                 if (vote instanceof PersistedVote) {
                     votes.add((PersistedVote) vote);

@@ -80,6 +80,7 @@ public abstract class Client implements Application {
             return null;//Never happens
         }
         publicInfo = any.get();
+
         return publicInfo;
     }
 

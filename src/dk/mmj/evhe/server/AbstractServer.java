@@ -44,6 +44,7 @@ public abstract class AbstractServer implements Application {
      */
     protected void terminate() {
         logger.info("Terminating server instance");
+
         try {
             server.stop();
             logger.info("Successfully terminated server");
@@ -57,6 +58,7 @@ public abstract class AbstractServer implements Application {
         } finally {
             server.destroy();
         }
+
         System.exit(0);
     }
 

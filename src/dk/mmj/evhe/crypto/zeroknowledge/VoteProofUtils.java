@@ -104,6 +104,7 @@ public class VoteProofUtils {
                 })).mod(publicKey.getQ());
 
         BigInteger e = e0.add(e1);
+
         return e.mod(publicKey.getQ()).equals(s);
     }
 }

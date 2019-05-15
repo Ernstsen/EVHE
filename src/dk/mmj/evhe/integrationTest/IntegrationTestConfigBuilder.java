@@ -81,7 +81,6 @@ public class IntegrationTestConfigBuilder implements CommandLineParser.ConfigBui
         List<Integer> decryptionAuthorities = getDecryptionAuthorities();
         List<Integer> voteDelays = getVoteDelays();
 
-
         return new IntegrationTest.IntegrationTestConfiguration(decryptionAuthorities, duration, voteDelays);
     }
 
@@ -96,6 +95,7 @@ public class IntegrationTestConfigBuilder implements CommandLineParser.ConfigBui
         if (decryptionAuthority3) {
             decryptionAuthorities.add(3);
         }
+
         return decryptionAuthorities;
     }
 
@@ -110,6 +110,7 @@ public class IntegrationTestConfigBuilder implements CommandLineParser.ConfigBui
         if (voteAfter) {
             voteDelays.add(duration + 15_000);//approx. 15. sec after termination
         }
+
         return voteDelays;
     }
 
