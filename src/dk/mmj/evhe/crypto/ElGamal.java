@@ -73,8 +73,7 @@ public class ElGamal {
 
         return findDecryptionValue(gPowMessage, keyPair.getPublicKey().getG(), keyPair.getPublicKey().getP(), max);
     }
-
-
+    
     /**
      * Partially decrypts the given c value
      *

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 class TestUtils {
-    static KeyPair generateKeysForTesting(KeyGenerationParameters params) {
+    private static KeyPair generateKeysForTesting(KeyGenerationParameters params) {
         BigInteger g = params.getGenerator();
         PrimePair primePair = params.getPrimePair();
 
