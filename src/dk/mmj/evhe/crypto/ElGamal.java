@@ -11,25 +11,6 @@ import java.util.Map;
  * Class for handling encryption, decryption and key-generation for the Elgamal encryption scheme
  */
 public class ElGamal {
-
-    /**
-     * Generates secret and public key from a pair of primes p,q and a generator g
-     * <br/>
-     * It should be the cases that <code> p=2q+1 </code> and that g is a generator for the cyclic group <code>G_q</code>
-     *
-     * @param params the pair of primes (p,q) and the generator for G_q
-     * @return a KeyPair consisting of a private and secret key
-     */
-    static KeyPair generateKeys(KeyGenerationParameters params) {
-        BigInteger g = params.getGenerator();
-        PrimePair primePair = params.getPrimePair();
-
-        BigInteger secretKey = generateSecretKey(primePair.getQ());
-        PublicKey publicKey = generatePublicKey(secretKey, g, primePair.getQ());
-
-        return new KeyPair(secretKey, publicKey);
-    }
-
     /**
      * Generates distributed secret and public values
      *
@@ -47,31 +28,6 @@ public class ElGamal {
         Map<Integer, BigInteger> publicValues = SecurityUtils.generatePublicValues(secretValues, g, primePair.getP());
 
         return new DistKeyGenResult(g, primePair.getQ(), secretValues, publicValues);
-    }
-
-    /**
-     * Generates the secret key
-     *
-     * @param q prime number used in the cyclic group Gq
-     * @return the secret key
-     */
-    private static BigInteger generateSecretKey(BigInteger q) {
-        return SecurityUtils.getRandomNumModN(q);
-    }
-
-    /**
-     * Generates the public key
-     *
-     * @param secretKey the secret key
-     * @param g         generator for cyclic group Gq
-     * @param q         prime number used in the cyclic group Gq
-     * @return the public key
-     */
-    private static PublicKey generatePublicKey(BigInteger secretKey, BigInteger g, BigInteger q) {
-        BigInteger p = q.multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
-        BigInteger h = g.modPow(secretKey, p);
-
-        return new PublicKey(h, g, q);
     }
 
     /**

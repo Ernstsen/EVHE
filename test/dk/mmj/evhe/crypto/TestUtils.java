@@ -16,12 +16,33 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 class TestUtils {
+    static KeyPair generateKeysForTesting(KeyGenerationParameters params) {
+        BigInteger g = params.getGenerator();
+        PrimePair primePair = params.getPrimePair();
+
+        BigInteger secretKey = generateSecretKeyForTesting(primePair.getQ());
+        PublicKey publicKey = generatePublicKeyForTesting(secretKey, g, primePair.getQ());
+
+        return new KeyPair(secretKey, publicKey);
+    }
+
+    private static BigInteger generateSecretKeyForTesting(BigInteger q) {
+        return SecurityUtils.getRandomNumModN(q);
+    }
+
+    private static PublicKey generatePublicKeyForTesting(BigInteger secretKey, BigInteger g, BigInteger q) {
+        BigInteger p = q.multiply(BigInteger.valueOf(2)).add(BigInteger.ONE);
+        BigInteger h = g.modPow(secretKey, p);
+
+        return new PublicKey(h, g, q);
+    }
+
     static KeyPair generateKeysFromP11G2() {
-        return ElGamal.generateKeys(getKeyGenParamsFromP11G2());
+        return generateKeysForTesting(getKeyGenParamsFromP11G2());
     }
 
     static KeyPair generateKeysFromP2048bitsG2() {
-        return ElGamal.generateKeys(getKeyGenParamsFromP2048bitsG2());
+        return generateKeysForTesting(getKeyGenParamsFromP2048bitsG2());
     }
 
     static KeyGenerationParameters getKeyGenParamsFromP2048bitsG2() {
