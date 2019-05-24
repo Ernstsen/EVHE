@@ -39,6 +39,7 @@
       <element id="library" level="project" name="lz4-1.2.0" />
       <element id="library" level="project" name="snappy-java-1.1.1.7" />
       <element id="library" level="project" name="bcprov-jdk15on-1.60" />
+      <element id="library" level="project" name="jmh-core-1.21-javadoc" />
     </root>
   </artifact>
 </component>

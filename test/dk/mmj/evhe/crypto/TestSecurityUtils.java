@@ -224,16 +224,9 @@ public class TestSecurityUtils {
         int amount = 2000;
         List<? extends VoteDTO> votes = generateVotes(amount, publicKey);
 
-        long time = new Date().getTime();
         CipherText oldSum = SecurityUtils.voteSum(votes, publicKey);
-        long elapsedOld = new Date().getTime() - time;
-        System.out.println("Did old sum of " + amount + " votes in " + elapsedOld + "ms");
 
-        time = new Date().getTime();
         CipherText concSum = SecurityUtils.concurrentVoteSum(votes, publicKey, amount / 10);
-        long elapsedConc = new Date().getTime() - time;
-        System.out.println("Did concurrent sum of " + amount + " votes in " + elapsedConc + "ms");
-
 
         assertEquals("Sums did not match.", oldSum, concSum);
     }
@@ -247,15 +240,9 @@ public class TestSecurityUtils {
         int amount = 2000;
         List<PersistedVote> votes = generateVotes(amount, publicKey);
 
-        long time = new Date().getTime();
         List<PersistedVote> collect = votes.stream().filter(v -> v.getTs().getTime() < endTime).collect(Collectors.toList());
-        long elapsedOld = new Date().getTime() - time;
-        System.out.println("Did old filter of " + amount + " votes in " + elapsedOld + "ms");
 
-        time = new Date().getTime();
         List<PersistedVote> collectConc = votes.stream().filter(v -> v.getTs().getTime() < endTime).collect(Collectors.toList());
-        long elapsedConc = new Date().getTime() - time;
-        System.out.println("Did Concurrent filter of " + amount + " votes in " + elapsedConc + "ms");
 
         assertEquals("Filters did not match in results", collect.size(), collectConc.size());
     }

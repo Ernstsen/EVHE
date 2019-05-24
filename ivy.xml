@@ -32,5 +32,11 @@
 
         <!-- CommandLineTool -->
         <dependency org="dk.eSoftware" name="commandLineParser" rev="1.2.2"/>
+
+        <!-- Benchmarking -->
+        <dependency org="org.openjdk.jmh" name="jmh-core" rev="1.21"/>
+        <dependency org="org.openjdk.jmh" name="jmh-generator-annprocess" rev="1.21"/>
+        <dependency org="org.apache.commons" name="commons-math3" rev="3.6.1"/>
+
     </dependencies>
 </ivy-module>

@@ -44,5 +44,6 @@
     <orderEntry type="library" name="log4j-web-2.5" level="project" />
     <orderEntry type="library" name="jersey-media-json-jackson-2.22.1" level="project" />
     <orderEntry type="library" name="bcprov-jdk15on-1.60" level="project" />
+    <orderEntry type="library" name="jmh-core-1.21-javadoc" level="project" />
   </component>
 </module>
