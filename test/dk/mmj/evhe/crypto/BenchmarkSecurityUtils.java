@@ -9,12 +9,15 @@ import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static dk.mmj.evhe.crypto.TestUtils.generateKeysFromP2048bitsG2;
 import static dk.mmj.evhe.crypto.TestUtils.generateVotes;
 
 @SuppressWarnings("unused, WeakerAccess")
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class BenchmarkSecurityUtils {
 
     @Benchmark
@@ -34,7 +37,6 @@ public class BenchmarkSecurityUtils {
                 .parallelStream()
                 .filter(v -> v.getTs().getTime() < l).collect(Collectors.toList());
         blackhole.consume(collect);
-
     }
 
     @Benchmark
@@ -46,6 +48,7 @@ public class BenchmarkSecurityUtils {
     @Benchmark
     public void benchmarkSumAsync(VoteState voteState, Blackhole blackhole) {
         CipherText concSum = SecurityUtils.concurrentVoteSum(voteState.votes, voteState.publicKey, voteState.partitionSize);
+        blackhole.consume(concSum);
     }
 
     @State(Scope.Benchmark)
@@ -54,7 +57,7 @@ public class BenchmarkSecurityUtils {
         @Param({"100", "500", "1000"})
         public int size;
 
-        public int partitionSize = size / 10;
+        public int partitionSize;
 
         public List<PersistedVote> votes;
         public PublicKey publicKey;
@@ -64,7 +67,7 @@ public class BenchmarkSecurityUtils {
             KeyPair keyPair = generateKeysFromP2048bitsG2();
             publicKey = keyPair.getPublicKey();
             votes = generateVotes(size, publicKey);
+            partitionSize = votes.size() / 10;
         }
     }
-
 }

@@ -9,8 +9,8 @@ public class BenchmarkSuite {
     public static void main(String[] args) throws Exception {
         Options opt = new OptionsBuilder()
                 .include(".").
-                        warmupIterations(5).
-                        measurementIterations(10).
+                        warmupIterations(1).
+                        measurementIterations(5).
                         threads(1).
                         forks(1).
                         build();
