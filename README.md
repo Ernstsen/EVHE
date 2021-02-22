@@ -1,6 +1,8 @@
 # EVHE
 This is a repository for a bachelors project concerning Electronic Voting using Homomorphic Encryption
 
+The project report can be accessed [here](https://github.com/Ernstsen/EVHE/blob/master/Report.pdf)
+
 ## Description
 The project ran in multiple iterations, which can be seen in the releases. In this section a short description will be made regarding each iteration.
 
